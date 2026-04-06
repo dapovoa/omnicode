@@ -1,6 +1,5 @@
 import axios from 'axios'
 import memoize from 'lodash-es/memoize.js'
-import { getOauthConfig } from 'src/constants/oauth.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -30,6 +29,10 @@ type OmnicodeAIMcpServersResponse = {
 
 const FETCH_TIMEOUT_MS = 5000
 const MCP_SERVERS_BETA_HEADER = 'mcp-servers-2025-12-04'
+
+function getOauthConfig(): { BASE_API_URL: string } {
+  return { BASE_API_URL: 'https://api.omnicode.ai' }
+}
 
 /**
  * Fetches MCP server configurations from Omnicode.ai org configs.

@@ -1,7 +1,5 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { randomUUID } from 'crypto'
-import { getOauthConfig } from 'src/constants/oauth.js'
-import { getOrganizationUUID } from 'src/services/oauth/client.js'
 import z from 'zod/v4'
 import { getOmnicodeAIOAuthTokens } from '../auth.js'
 import { logForDebugging } from '../debug.js'
@@ -11,6 +9,14 @@ import { lazySchema } from '../lazySchema.js'
 import { logError } from '../log.js'
 import { sleep } from '../sleep.js'
 import { jsonStringify } from '../slowOperations.js'
+
+function getOauthConfig(): { BASE_API_URL: string } {
+  return { BASE_API_URL: 'https://api.omnicode.ai' }
+}
+
+function getOrganizationUUID(): Promise<string | null> {
+  return Promise.resolve(null)
+}
 
 // Retry configuration for teleport API requests
 const TELEPORT_RETRY_DELAYS = [2000, 4000, 8000, 16000] // 4 retries with exponential backoff

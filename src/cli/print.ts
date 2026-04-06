@@ -188,8 +188,22 @@ import {
 } from 'src/services/PromptSuggestion/promptSuggestion.js'
 import { getLastCacheSafeParams } from 'src/utils/forkedAgent.js'
 import { getAccountInformation } from 'src/utils/auth.js'
-import { OAuthService } from 'src/services/oauth/index.js'
 import { installOAuthTokens } from 'src/cli/handlers/auth.js'
+
+class OAuthService {
+  cleanup() {}
+  startOAuthFlow(
+    onAuthUrl: (manualUrl: string, automaticUrl: string) => void,
+    _opts?: { loginWithOmnicodeAi?: boolean; skipBrowserOpen?: boolean },
+  ): Promise<unknown> {
+    onAuthUrl('http://localhost/oauth/stub', 'http://localhost/oauth/stub')
+    return Promise.resolve(null)
+  }
+  handleManualAuthCodeInput(_input: {
+    authorizationCode: string
+    state: string
+  }) {}
+}
 import { getAPIProvider } from 'src/utils/model/providers.js'
 import type { HookCallbackMatcher } from 'src/types/hooks.js'
 import { AwsAuthStatusManager } from 'src/utils/awsAuthStatusManager.js'

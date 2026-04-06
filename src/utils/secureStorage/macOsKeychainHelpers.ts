@@ -16,7 +16,6 @@
 
 import { createHash } from 'crypto'
 import { userInfo } from 'os'
-import { getOauthConfig } from 'src/constants/oauth.js'
 import { getOmnicodeConfigHomeDir } from '../envUtils.js'
 import type { SecureStorageData } from './index.js'
 
@@ -41,7 +40,7 @@ export function getSecureStorageServiceName(
   const dirHash = isDefaultDir
     ? ''
     : `-${createHash('sha256').update(configDir).digest('hex').substring(0, 8)}`
-  return `Omnicode Code${getOauthConfig().OAUTH_FILE_SUFFIX}${serviceSuffix}${dirHash}`
+  return `Omnicode Code${serviceSuffix}${dirHash}`
 }
 
 export function getMacOsKeychainStorageServiceName(

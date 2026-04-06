@@ -4,7 +4,6 @@ import { execa } from 'execa'
 import { mkdir, stat } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
 import { join } from 'path'
-import { OMNICODE_AI_PROFILE_SCOPE } from 'src/constants/oauth.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -19,13 +18,40 @@ import {
   getMockSubscriptionType,
   shouldUseMockSubscription,
 } from '../services/mockRateLimits.js'
-import {
-  isOAuthTokenExpired,
-  refreshOAuthToken,
-  shouldUseOmnicodeAIAuth,
-} from '../services/oauth/client.js'
-import { getOauthProfileFromOauthToken } from '../services/oauth/getOauthProfile.js'
-import type { OAuthTokens, SubscriptionType } from '../services/oauth/types.js'
+
+type OAuthTokens = {
+  accessToken: string
+  refreshToken: string | null
+  expiresAt: string | null
+  scopes: string[] | null
+  subscriptionType: string | null
+  rateLimitTier: string | null
+}
+
+type SubscriptionType = 'max' | 'pro' | 'enterprise' | 'team' | null
+
+const OMNICODE_AI_PROFILE_SCOPE = 'user:profile'
+
+function isOAuthTokenExpired(_expiresAt: string | null): boolean {
+  return false
+}
+
+function refreshOAuthToken(
+  _refreshToken: string,
+  _opts?: { scopes?: string[] },
+): Promise<OAuthTokens | null> {
+  return Promise.resolve(null)
+}
+
+function shouldUseOmnicodeAIAuth(_scopes: string[] | null): boolean {
+  return false
+}
+
+function getOauthProfileFromOauthToken(
+  _accessToken: string,
+): Promise<null> {
+  return Promise.resolve(null)
+}
 import {
   getApiKeyFromFileDescriptor,
   getOAuthTokenFromFileDescriptor,

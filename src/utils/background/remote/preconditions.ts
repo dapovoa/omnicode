@@ -1,6 +1,4 @@
 import axios from 'axios'
-import { getOauthConfig } from 'src/constants/oauth.js'
-import { getOrganizationUUID } from 'src/services/oauth/client.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../../services/analytics/growthbook.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
@@ -14,6 +12,14 @@ import { errorMessage } from '../../errors.js'
 import { findGitRoot, getIsClean } from '../../git.js'
 import { getOAuthHeaders } from '../../teleport/api.js'
 import { fetchEnvironments } from '../../teleport/environments.js'
+
+function getOauthConfig(): { BASE_API_URL: string } {
+  return { BASE_API_URL: 'https://api.omnicode.ai' }
+}
+
+function getOrganizationUUID(): Promise<string | null> {
+  return Promise.resolve(null)
+}
 
 /**
  * Checks if user needs to log in with Omnicode.ai

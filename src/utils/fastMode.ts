@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { getOauthConfig, OAUTH_BETA_HEADER } from 'src/constants/oauth.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js'
 import {
   getIsNonInteractiveSession,
@@ -12,7 +11,6 @@ import {
 } from '../services/analytics/index.js'
 import {
   getAnthropicApiKey,
-  getOmnicodeAIOAuthTokens,
   handleOAuth401Error,
   hasProfileScope,
 } from './auth.js'
@@ -44,29 +42,6 @@ export function isFastModeAvailable(): boolean {
     return false
   }
   return getFastModeUnavailableReason() === null
-}
-
-type AuthType = 'oauth' | 'api-key'
-
-function getDisabledReasonMessage(
-  disabledReason: FastModeDisabledReason,
-  authType: AuthType,
-): string {
-  switch (disabledReason) {
-    case 'free':
-      return authType === 'oauth'
-        ? 'Fast mode requires a paid subscription'
-        : 'Fast mode unavailable during evaluation. Please purchase credits.'
-    case 'preference':
-      return 'Fast mode has been disabled by your organization'
-    case 'extra_usage_disabled':
-      // Only OAuth users can have extra_usage_disabled; console users don't have this concept
-      return 'Fast mode requires extra usage billing · /extra-usage to enable'
-    case 'network_error':
-      return 'Fast mode unavailable due to network connectivity issues'
-    case 'unknown':
-      return 'Fast mode is currently unavailable'
-  }
 }
 
 export function getFastModeUnavailableReason(): string | null {

@@ -1,10 +1,16 @@
 import axios from 'axios'
-import { getOauthConfig } from 'src/constants/oauth.js'
-import { getOrganizationUUID } from 'src/services/oauth/client.js'
 import { getOmnicodeAIOAuthTokens } from '../auth.js'
 import { toError } from '../errors.js'
 import { logError } from '../log.js'
 import { getOAuthHeaders } from './api.js'
+
+function getOauthConfig(): { BASE_API_URL: string } {
+  return { BASE_API_URL: 'https://api.omnicode.ai' }
+}
+
+function getOrganizationUUID(): Promise<string | null> {
+  return Promise.resolve(null)
+}
 
 export type EnvironmentKind = 'anthropic_cloud' | 'byoc' | 'bridge'
 export type EnvironmentState = 'active'
