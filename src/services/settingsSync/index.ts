@@ -210,14 +210,7 @@ async function doDownloadUserSettings(
  * download a no-op there. Upload is independently guarded by getIsInteractive().
  */
 function isUsingOAuth(): boolean {
-  if (getAPIProvider() !== 'firstParty' || !isFirstPartyAnthropicBaseUrl()) {
-    return false
-  }
-
-  const tokens = getOmnicodeAIOAuthTokens()
-  return Boolean(
-    tokens?.accessToken && tokens.scopes?.includes(OMNICODE_AI_INFERENCE_SCOPE),
-  )
+  return false
 }
 
 function getSettingsSyncEndpoint(): string {

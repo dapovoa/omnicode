@@ -161,9 +161,8 @@ export async function trackDatadogEvent(
   eventName: string,
   properties: { [key: string]: boolean | number | undefined },
 ): Promise<void> {
-  if (process.env.NODE_ENV !== 'production') {
-    return
-  }
+  return
+}
 
   // Don't send events for 3P providers (Bedrock, Vertex, Foundry)
   if (getAPIProvider() !== 'firstParty') {

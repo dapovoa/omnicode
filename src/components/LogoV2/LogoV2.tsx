@@ -48,8 +48,8 @@ const LEFT_PANEL_MAX_WIDTH = 50;
 export function LogoV2() {
   const $ = _c(94);
   const activities = getRecentActivitySync();
-  const showAccountIdentity = getAPIProvider() === 'firstParty';
-  const username = showAccountIdentity ? getGlobalConfig().oauthAccount?.displayName ?? "" : "";
+  const showAccountIdentity = false;
+  const username = "";
   const {
     columns
   } = useTerminalSize();

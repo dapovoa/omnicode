@@ -76,8 +76,7 @@ export function getAttributionTexts(): AttributionTexts {
       : 'Omnicode Opus 4.6'
   const defaultAttribution =
     '🤖 Generated with Omnicode'
-  const coAuthorDomain =
-    getAPIProvider() === 'firstParty' ? 'anthropic.com' : 'omnicode'
+  const coAuthorDomain = 'omnicode'
   const defaultCommit = isEnvTruthy(
     process.env.OPENOMNICODE_DISABLE_CO_AUTHORED_BY,
   )

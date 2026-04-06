@@ -36,10 +36,7 @@ import {
 import { createSignal } from './signal.js'
 
 export function isFastModeEnabled(): boolean {
-  if (getAPIProvider() !== 'firstParty') {
-    return false
-  }
-  return !isEnvTruthy(process.env.OMNICODE_DISABLE_FAST_MODE)
+  return false
 }
 
 export function isFastModeAvailable(): boolean {
@@ -73,70 +70,7 @@ function getDisabledReasonMessage(
 }
 
 export function getFastModeUnavailableReason(): string | null {
-  if (getAPIProvider() !== 'firstParty') {
-    return 'Fast mode is not available on third-party providers'
-  }
-
-  if (!isFastModeEnabled()) {
-    return 'Fast mode is not available'
-  }
-
-  const statigReason = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_penguins_off',
-    null,
-  )
-  // Statsig reason has priority over other reasons.
-  if (statigReason !== null) {
-    logForDebugging(`Fast mode unavailable: ${statigReason}`)
-    return statigReason
-  }
-
-  // Previously, fast mode required the native binary (bun build). This is no
-  // longer necessary, but we keep this option behind a flag just in case.
-  if (
-    !isInBundledMode() &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_marble_sandcastle', false)
-  ) {
-    return 'Fast mode requires the native binary · Install from: https://omnicode.com/product/omnicode-code'
-  }
-
-  // Not available in the SDK unless explicitly opted in via --settings.
-  // Assistant daemon mode is exempt — it's first-party orchestration, and
-  // kairosActive is set before this check runs (main.tsx:~1626 vs ~3249).
-  if (
-    getIsNonInteractiveSession() &&
-    preferThirdPartyAuthentication() &&
-    !getKairosActive()
-  ) {
-    const flagFastMode = getSettingsForSource('flagSettings')?.fastMode
-    if (!flagFastMode) {
-      const reason = 'Fast mode is not available in the Agent SDK'
-      logForDebugging(`Fast mode unavailable: ${reason}`)
-      return reason
-    }
-  }
-
-  if (orgStatus.status === 'disabled') {
-    if (
-      orgStatus.reason === 'network_error' ||
-      orgStatus.reason === 'unknown'
-    ) {
-      // The org check can fail behind corporate proxies that block the
-      // endpoint. We add OMNICODE_SKIP_FAST_MODE_NETWORK_ERRORS=1 to
-      // bypass this check in the CC binary. This is OK since we have
-      // another check in the API to error out when disabled by org.
-      if (isEnvTruthy(process.env.OMNICODE_SKIP_FAST_MODE_NETWORK_ERRORS)) {
-        return null
-      }
-    }
-    const authType: AuthType =
-      getOmnicodeAIOAuthTokens() !== null ? 'oauth' : 'api-key'
-    const reason = getDisabledReasonMessage(orgStatus.reason, authType)
-    logForDebugging(`Fast mode unavailable: ${reason}`)
-    return reason
-  }
-
-  return null
+  return 'Fast mode is not available on third-party providers'
 }
 
 // @[MODEL LAUNCH]: Update supported Fast Mode models.

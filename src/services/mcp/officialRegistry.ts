@@ -35,34 +35,6 @@ export async function prefetchOfficialMcpUrls(): Promise<void> {
   if (process.env.OMNICODE_DISABLE_NONESSENTIAL_TRAFFIC) {
     return
   }
-
-  // The official first-party MCP registry is only relevant for first-party mode.
-  if (getAPIProvider() !== 'firstParty') {
-    return
-  }
-
-  try {
-    const response = await axios.get<RegistryResponse>(
-      'https://api.anthropic.com/mcp-registry/v0/servers?version=latest&visibility=commercial',
-      { timeout: 5000 },
-    )
-
-    const urls = new Set<string>()
-    for (const entry of response.data.servers) {
-      for (const remote of entry.server.remotes ?? []) {
-        const normalized = normalizeUrl(remote.url)
-        if (normalized) {
-          urls.add(normalized)
-        }
-      }
-    }
-    officialUrls = urls
-    logForDebugging(`[mcp-registry] Loaded ${urls.size} official MCP URLs`)
-  } catch (error) {
-    logForDebugging(`Failed to fetch MCP registry: ${errorMessage(error)}`, {
-      level: 'error',
-    })
-  }
 }
 
 /**

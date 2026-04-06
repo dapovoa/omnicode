@@ -55,10 +55,7 @@ export function getMCPUserAgent(): string {
 // operators match in robots.txt); the omnicode-code suffix lets them distinguish
 // local CLI traffic from omnicode.ai server-side fetches.
 export function getWebFetchUserAgent(): string {
-  const supportUrl =
-    getAPIProvider() === 'firstParty'
-      ? 'https://support.anthropic.com/'
-      : 'https://github.com/dapovoa/omnicode'
+  const supportUrl = 'https://github.com/dapovoa/omnicode'
   return `Omnicode-User (${getOmnicodeCodeUserAgent()}; +${supportUrl})`
 }
 

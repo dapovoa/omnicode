@@ -1890,48 +1890,7 @@ export type UserAccountInfo = {
 }
 
 export function getAccountInformation() {
-  const apiProvider = getAPIProvider()
-  // Only provide account info for first-party Anthropic API
-  if (apiProvider !== 'firstParty') {
-    return undefined
-  }
-  const { source: authTokenSource } = getAuthTokenSource()
-  const accountInfo: UserAccountInfo = {}
-  if (
-    authTokenSource === 'OMNICODE_OAUTH_TOKEN' ||
-    authTokenSource === 'OMNICODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
-  ) {
-    accountInfo.tokenSource = authTokenSource
-  } else if (isOmnicodeAISubscriber()) {
-    accountInfo.subscription = getSubscriptionName()
-  } else {
-    accountInfo.tokenSource = authTokenSource
-  }
-  const { key: apiKey, source: apiKeySource } = getAnthropicApiKeyWithSource()
-  if (apiKey) {
-    accountInfo.apiKeySource = apiKeySource
-  }
-
-  // We don't know the organization if we're relying on an external API key or auth token
-  if (
-    authTokenSource === 'omnicode.ai' ||
-    apiKeySource === '/login managed key'
-  ) {
-    // Get organization name from OAuth account info
-    const orgName = getOauthAccountInfo()?.organizationName
-    if (orgName) {
-      accountInfo.organization = orgName
-    }
-  }
-  const email = getOauthAccountInfo()?.emailAddress
-  if (
-    (authTokenSource === 'omnicode.ai' ||
-      apiKeySource === '/login managed key') &&
-    email
-  ) {
-    accountInfo.email = email
-  }
-  return accountInfo
+  return undefined
 }
 
 /**

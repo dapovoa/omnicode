@@ -242,29 +242,19 @@ export function buildAccountProperties(): Property[] {
 export function buildAPIProviderProperties(): Property[] {
   const apiProvider = getAPIProvider();
   const properties: Property[] = [];
-  if (apiProvider !== 'firstParty') {
-    const providerLabel = {
-      bedrock: 'AWS Bedrock',
-      vertex: 'Google Vertex AI',
-      foundry: 'Microsoft Foundry',
-      openai: 'OpenAI-compatible',
-      codex: 'Codex',
-      gemini: 'Google Gemini',
-    }[apiProvider];
-    properties.push({
-      label: 'API provider',
-      value: providerLabel
-    });
-  }
-  if (apiProvider === 'firstParty') {
-    const anthropicBaseUrl = process.env.ANTHROPIC_BASE_URL;
-    if (anthropicBaseUrl) {
-      properties.push({
-        label: 'Anthropic base URL',
-        value: anthropicBaseUrl
-      });
-    }
-  } else if (apiProvider === 'bedrock') {
+  const providerLabel = {
+    bedrock: 'AWS Bedrock',
+    vertex: 'Google Vertex AI',
+    foundry: 'Microsoft Foundry',
+    openai: 'OpenAI-compatible',
+    codex: 'Codex',
+    gemini: 'Google Gemini',
+  }[apiProvider];
+  properties.push({
+    label: 'API provider',
+    value: providerLabel
+  });
+  if (apiProvider === 'bedrock') {
     const bedrockBaseUrl = process.env.BEDROCK_BASE_URL;
     if (bedrockBaseUrl) {
       properties.push({

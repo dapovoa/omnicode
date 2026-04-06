@@ -81,7 +81,6 @@ export function getUserSpecifiedModelSetting(): ModelSetting | undefined {
     specifiedModel =
       (provider === 'gemini' ? process.env.GEMINI_MODEL : undefined) ||
       (provider === 'openai' || provider === 'gemini' ? process.env.OPENAI_MODEL : undefined) ||
-      (provider === 'firstParty' ? process.env.ANTHROPIC_MODEL : undefined) ||
       settings.model ||
       undefined
   }
@@ -138,9 +137,6 @@ export function getDefaultOpusModel(): ModelName {
   // 3P providers (Bedrock, Vertex, Foundry) — kept as a separate branch
   // even when values match, since 3P availability lags firstParty and
   // these will diverge again at the next model launch.
-  if (getAPIProvider() !== 'firstParty') {
-    return getModelStrings().opus46
-  }
   return getModelStrings().opus46
 }
 
@@ -162,10 +158,7 @@ export function getDefaultSonnetModel(): ModelName {
     return process.env.OPENAI_MODEL || 'gpt-5.4'
   }
   // Default to Sonnet 4.5 for 3P since they may not have 4.6 yet
-  if (getAPIProvider() !== 'firstParty') {
-    return getModelStrings().sonnet45
-  }
-  return getModelStrings().sonnet46
+  return getModelStrings().sonnet45
 }
 
 // @[MODEL LAUNCH]: Update the default Haiku model (3P providers may lag so keep defaults unchanged).
@@ -371,30 +364,11 @@ export function renderDefaultModelSetting(
 }
 
 export function getOpus46PricingSuffix(fastMode: boolean): string {
-  if (getAPIProvider() !== 'firstParty') return ''
-  const pricing = formatModelPricing(getOpus46CostTier(fastMode))
-  const fastModeIndicator = fastMode ? ` (${LIGHTNING_BOLT})` : ''
-  return ` ·${fastModeIndicator} ${pricing}`
+  return ''
 }
 
 export function isOpus1mMergeEnabled(): boolean {
-  if (
-    is1mContextDisabled() ||
-    isProSubscriber() ||
-    getAPIProvider() !== 'firstParty'
-  ) {
-    return false
-  }
-  // Fail closed when a subscriber's subscription type is unknown. The VS Code
-  // config-loading subprocess can have OAuth tokens with valid scopes but no
-  // subscriptionType field (stale or partial refresh). Without this guard,
-  // isProSubscriber() returns false for such users and the merge leaks
-  // opus[1m] into the model dropdown — the API then rejects it with a
-  // misleading "rate limit reached" error.
-  if (isOmnicodeAISubscriber() && getSubscriptionType() === null) {
-    return false
-  }
-  return true
+  return false
 }
 
 export function renderModelSetting(setting: ModelName | ModelAlias): string {
@@ -563,14 +537,6 @@ export function parseUserSpecifiedModel(
   // alias already resolves to 4.6, so the only users on these explicit
   // strings pinned them in settings/env/--model/SDK before 4.5 launched.
   // 3P providers may not yet have 4.6 capacity, so pass through unchanged.
-  if (
-    getAPIProvider() === 'firstParty' &&
-    isLegacyOpusFirstParty(modelString) &&
-    isLegacyModelRemapEnabled()
-  ) {
-    return getDefaultOpusModel() + (has1mTag ? '[1m]' : '')
-  }
-
   if (process.env.USER_TYPE === 'ant') {
     const has1mAntTag = has1mContext(normalizedModel)
     const baseAntModel = normalizedModel.replace(/\[1m]$/i, '').trim()

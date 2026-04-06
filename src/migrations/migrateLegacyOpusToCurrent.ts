@@ -27,31 +27,5 @@ import {
  * project.
  */
 export function migrateLegacyOpusToCurrent(): void {
-  if (getAPIProvider() !== 'firstParty') {
-    return
-  }
-
-  if (!isLegacyModelRemapEnabled()) {
-    return
-  }
-
-  const model = getSettingsForSource('userSettings')?.model
-  if (
-    model !== 'omnicode-opus-4-20250514' &&
-    model !== 'omnicode-opus-4-1-20250805' &&
-    model !== 'omnicode-opus-4-0' &&
-    model !== 'omnicode-opus-4-1'
-  ) {
-    return
-  }
-
-  updateSettingsForSource('userSettings', { model: 'opus' })
-  saveGlobalConfig(current => ({
-    ...current,
-    legacyOpusMigrationTimestamp: Date.now(),
-  }))
-  logEvent('tengu_legacy_opus_migration', {
-    from_model:
-      model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  })
+  return
 }

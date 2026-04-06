@@ -165,49 +165,7 @@ function computeChecksum(
  * getSettings() to avoid circular dependencies during settings loading.
  */
 export function isPolicyLimitsEligible(): boolean {
-  // 3p provider users should not hit the policy limits endpoint
-  if (getAPIProvider() !== 'firstParty') {
-    return false
-  }
-
-  // Custom base URL users should not hit the policy limits endpoint
-  if (!isFirstPartyAnthropicBaseUrl()) {
-    return false
-  }
-
-  // Console users (API key) are eligible if we can get the actual key
-  try {
-    const { key: apiKey } = getAnthropicApiKeyWithSource({
-      skipRetrievingKeyFromApiKeyHelper: true,
-    })
-    if (apiKey) {
-      return true
-    }
-  } catch {
-    // No API key available - continue to check OAuth
-  }
-
-  // For OAuth users, check if they have Omnicode.ai tokens
-  const tokens = getOmnicodeAIOAuthTokens()
-  if (!tokens?.accessToken) {
-    return false
-  }
-
-  // Must have Omnicode.ai inference scope
-  if (!tokens.scopes?.includes(OMNICODE_AI_INFERENCE_SCOPE)) {
-    return false
-  }
-
-  // Only Team and Enterprise OAuth users are eligible — these orgs have
-  // admin-configurable policy restrictions (e.g. allow_remote_sessions)
-  if (
-    tokens.subscriptionType !== 'enterprise' &&
-    tokens.subscriptionType !== 'team'
-  ) {
-    return false
-  }
-
-  return true
+  return false
 }
 
 /**

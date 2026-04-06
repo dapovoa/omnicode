@@ -98,7 +98,7 @@ function shouldUseFirecrawl(): boolean {
   // Don't override native search on providers that already have it
   if (isCodexResponsesWebSearchEnabled()) return false
   const provider = getAPIProvider()
-  if (provider === 'firstParty' || provider === 'vertex' || provider === 'foundry') return false
+  if (provider === 'vertex' || provider === 'foundry') return false
   return true
 }
 
@@ -111,7 +111,7 @@ function shouldUseDuckDuckGo(): boolean {
 
   const provider = getAPIProvider()
   // Don't override providers/models that have native web search support.
-  if (provider === 'firstParty' || provider === 'vertex' || provider === 'foundry') {
+  if (provider === 'vertex' || provider === 'foundry') {
     return false
   }
 
@@ -546,11 +546,6 @@ export const WebSearchTool = buildTool({
     const model = getMainLoopModel()
 
     if (isCodexResponsesWebSearchEnabled()) {
-      return true
-    }
-
-    // Enable for firstParty
-    if (provider === 'firstParty') {
       return true
     }
 

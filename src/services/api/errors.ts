@@ -165,9 +165,7 @@ export const CCR_AUTH_ERROR_MESSAGE =
   'Authentication error · This may be a temporary network issue, please try again'
 export const REPEATED_529_ERROR_MESSAGE = 'Repeated 529 Overloaded errors'
 export function getCustomOffSwitchMessage(): string {
-  return getAPIProvider() === 'firstParty'
-    ? 'Opus is experiencing high load, please use /model to switch to Sonnet'
-    : 'The API is experiencing high load, please try again shortly or use /model to switch models'
+  return 'The API is experiencing high load, please try again shortly or use /model to switch models'
 }
 // Backward-compatible constant for string matching in error handlers
 export const CUSTOM_OFF_SWITCH_MESSAGE =
@@ -558,7 +556,7 @@ export function getAssistantMessageFromError(
     const innerMessage = stripped.match(/"message"\s*:\s*"([^"]*)"/)?.[1]
     const detail = innerMessage || stripped
     return createAssistantAPIErrorMessage({
-      content: `${API_ERROR_MESSAGE_PREFIX}: Request rejected (429) · ${detail || `this may be a temporary capacity issue${getAPIProvider() === 'firstParty' ? ' — check status.anthropic.com' : ''}`}`,
+      content: `${API_ERROR_MESSAGE_PREFIX}: Request rejected (429) · ${detail || `this may be a temporary capacity issue`}`,
       error: 'rate_limit',
     })
   }
@@ -816,32 +814,6 @@ export function getAssistantMessageFromError(
     }
   }
 
-  if (
-    error instanceof Error &&
-    error.message.toLowerCase().includes('x-api-key') &&
-    getAPIProvider() === 'firstParty'
-  ) {
-    // In CCR mode, auth is via JWTs - this is likely a transient network issue
-    if (isCCRMode()) {
-      return createAssistantAPIErrorMessage({
-        error: 'authentication_failed',
-        content: CCR_AUTH_ERROR_MESSAGE,
-      })
-    }
-
-    // Check if the API key is from an external source
-    const { source } = getAnthropicApiKeyWithSource()
-    const isExternalSource =
-      source === 'ANTHROPIC_API_KEY' || source === 'apiKeyHelper'
-
-    return createAssistantAPIErrorMessage({
-      error: 'authentication_failed',
-      content: isExternalSource
-        ? INVALID_API_KEY_ERROR_MESSAGE_EXTERNAL
-        : INVALID_API_KEY_ERROR_MESSAGE,
-    })
-  }
-
   // Check for OAuth token revocation error
   if (
     error instanceof APIError &&
@@ -945,9 +917,6 @@ export function getAssistantMessageFromError(
  * Returns a model name suggestion, or undefined if no suggestion is applicable.
  */
 function get3PModelFallbackSuggestion(model: string): string | undefined {
-  if (getAPIProvider() === 'firstParty') {
-    return undefined
-  }
   // @[MODEL LAUNCH]: Add a fallback suggestion chain for the new model → previous version for 3P
   const m = model.toLowerCase()
   // If the failing model looks like an Opus 4.6 variant, suggest the default Opus (4.1 for 3P)
@@ -1198,10 +1167,7 @@ export function getErrorMessageIfRefusal(
 
   logEvent('tengu_refusal_api_response', {})
 
-  const usagePolicyUrl =
-    getAPIProvider() === 'firstParty'
-      ? 'https://www.anthropic.com/legal/aup'
-      : "your provider's acceptable use policy"
+  const usagePolicyUrl = "your provider's acceptable use policy"
 
   const baseMessage = getIsNonInteractiveSession()
     ? `${API_ERROR_MESSAGE_PREFIX}: Omnicode Code is unable to respond to this request, which appears to violate our Usage Policy (${usagePolicyUrl}). Try rephrasing the request or attempting a different approach.`

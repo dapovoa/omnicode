@@ -103,9 +103,6 @@ export function modelSupportsISP(model: string): boolean {
   if (provider === 'foundry') {
     return true
   }
-  if (provider === 'firstParty') {
-    return !canonical.includes('omnicode-3-')
-  }
   return (
     canonical.includes('omnicode-opus-4') || canonical.includes('omnicode-sonnet-4')
   )
@@ -128,9 +125,6 @@ export function modelSupportsContextManagement(model: string): boolean {
   if (provider === 'foundry') {
     return true
   }
-  if (provider === 'firstParty') {
-    return !canonical.includes('omnicode-3-')
-  }
   return (
     canonical.includes('omnicode-opus-4') ||
     canonical.includes('omnicode-sonnet-4') ||
@@ -142,8 +136,8 @@ export function modelSupportsContextManagement(model: string): boolean {
 export function modelSupportsStructuredOutputs(model: string): boolean {
   const canonical = getCanonicalName(model)
   const provider = getAPIProvider()
-  // Structured outputs only supported on firstParty and Foundry (not Bedrock/Vertex yet)
-  if (provider !== 'firstParty' && provider !== 'foundry') {
+  // Structured outputs only supported on Foundry (not Bedrock/Vertex yet)
+  if (provider !== 'foundry') {
     return false
   }
   return (
@@ -214,7 +208,7 @@ export function getToolSearchBetaHeader(): string {
  */
 export function shouldIncludeFirstPartyOnlyBetas(): boolean {
   return (
-    (getAPIProvider() === 'firstParty' || getAPIProvider() === 'foundry') &&
+    getAPIProvider() === 'foundry' &&
     !isEnvTruthy(process.env.OMNICODE_DISABLE_EXPERIMENTAL_BETAS)
   )
 }
@@ -225,10 +219,7 @@ export function shouldIncludeFirstPartyOnlyBetas(): boolean {
  * treatment data is firstParty-only.
  */
 export function shouldUseGlobalCacheScope(): boolean {
-  return (
-    getAPIProvider() === 'firstParty' &&
-    !isEnvTruthy(process.env.OMNICODE_DISABLE_EXPERIMENTAL_BETAS)
-  )
+  return false
 }
 
 export const getAllModelBetas = memoize((model: string): string[] => {

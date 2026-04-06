@@ -149,15 +149,7 @@ function isErrnoException(e: unknown): e is NodeJS.ErrnoException {
  * Check if user is authenticated with first-party OAuth (required for team memory sync).
  */
 function isUsingOAuth(): boolean {
-  if (getAPIProvider() !== 'firstParty' || !isFirstPartyAnthropicBaseUrl()) {
-    return false
-  }
-  const tokens = getOmnicodeAIOAuthTokens()
-  return Boolean(
-    tokens?.accessToken &&
-    tokens.scopes?.includes(OMNICODE_AI_INFERENCE_SCOPE) &&
-    tokens.scopes.includes(OMNICODE_AI_PROFILE_SCOPE),
-  )
+  return false
 }
 
 function getTeamMemorySyncEndpoint(repoSlug: string): string {

@@ -73,12 +73,6 @@ export async function assertMinVersion(): Promise<void> {
     return
   }
 
-  // Skip version check for third-party providers — the min version
-  // kill-switch is first-party-specific and should not block 3P users
-  if (getAPIProvider() !== 'firstParty') {
-    return
-  }
-
   try {
     const versionConfig = await getDynamicConfig_BLOCKS_ON_INIT<{
       minVersion: string

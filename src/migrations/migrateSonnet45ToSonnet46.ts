@@ -27,41 +27,5 @@ import {
  * Idempotent: only writes if userSettings.model matches a Sonnet 4.5 string.
  */
 export function migrateSonnet45ToSonnet46(): void {
-  if (getAPIProvider() !== 'firstParty') {
-    return
-  }
-
-  if (!isProSubscriber() && !isMaxSubscriber() && !isTeamPremiumSubscriber()) {
-    return
-  }
-
-  const model = getSettingsForSource('userSettings')?.model
-  if (
-    model !== 'omnicode-sonnet-4-5-20250929' &&
-    model !== 'omnicode-sonnet-4-5-20250929[1m]' &&
-    model !== 'sonnet-4-5-20250929' &&
-    model !== 'sonnet-4-5-20250929[1m]'
-  ) {
-    return
-  }
-
-  const has1m = model.endsWith('[1m]')
-  updateSettingsForSource('userSettings', {
-    model: has1m ? 'sonnet[1m]' : 'sonnet',
-  })
-
-  // Skip notification for brand-new users — they never experienced the old default
-  const config = getGlobalConfig()
-  if (config.numStartups > 1) {
-    saveGlobalConfig(current => ({
-      ...current,
-      sonnet45To46MigrationTimestamp: Date.now(),
-    }))
-  }
-
-  logEvent('tengu_sonnet45_to_46_migration', {
-    from_model:
-      model as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    has_1m: has1m,
-  })
+  return
 }

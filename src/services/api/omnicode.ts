@@ -335,7 +335,7 @@ export function getPromptCachingEnabled(model: string): boolean {
   // do not understand cache_control blocks and strict backends (e.g. Azure
   // Foundry) reject or flag requests that contain them.
   const provider = getAPIProvider()
-  if (provider !== 'firstParty' && provider !== 'bedrock' && provider !== 'vertex') {
+  if (provider !== 'bedrock' && provider !== 'vertex') {
     return false
   }
 
@@ -1440,17 +1440,6 @@ async function* queryModel(
   }
 
   let cacheEditingHeaderLatched = getCacheEditingHeaderLatched() === true
-  if (feature('CACHED_MICROCOMPACT')) {
-    if (
-      !cacheEditingHeaderLatched &&
-      cachedMCEnabled &&
-      getAPIProvider() === 'firstParty' &&
-      options.querySource === 'repl_main_thread'
-    ) {
-      cacheEditingHeaderLatched = true
-      setCacheEditingHeaderLatched(true)
-    }
-  }
 
   // Only latch from agentic queries so a classifier call doesn't flip the
   // main thread's context_management mid-turn.

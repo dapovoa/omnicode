@@ -82,7 +82,7 @@ export function PreflightStep(t0) {
   useEffect(t3, t4);
   let t5;
   if ($[6] !== isChecking || $[7] !== result || $[8] !== showSpinner) {
-    t5 = isChecking && showSpinner ? <Box paddingLeft={1}><Spinner /><Text>Checking connectivity...</Text></Box> : !result?.success && !isChecking && <Box flexDirection="column" gap={1}><Text color="error">Unable to connect</Text><Text color="error">{result?.error}</Text>{result?.sslHint ? <Box flexDirection="column" gap={1}><Text>{result.sslHint}</Text><Text color="suggestion">See docs for network config.</Text></Box> : <Box flexDirection="column" gap={1}><Text>Please check your internet connection and network settings.</Text>{getAPIProvider() === 'firstParty' && <Text>Note: This provider might not be available in your country.</Text>}</Box>}</Box>;
+    t5 = isChecking && showSpinner ? <Box paddingLeft={1}><Spinner /><Text>Checking connectivity...</Text></Box> : !result?.success && !isChecking && <Box flexDirection="column" gap={1}><Text color="error">Unable to connect</Text><Text color="error">{result?.error}</Text>{result?.sslHint ? <Box flexDirection="column" gap={1}><Text>{result.sslHint}</Text><Text color="suggestion">See docs for network config.</Text></Box> : <Box flexDirection="column" gap={1}><Text>Please check your internet connection and network settings.</Text></Box>}</Box>;
     $[6] = isChecking;
     $[7] = result;
     $[8] = showSpinner;
