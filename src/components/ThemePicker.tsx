@@ -107,7 +107,11 @@ export function ThemePicker(t0) {
     t9 = $[6];
   }
   useKeybinding("theme:toggleSyntaxHighlighting", t8, t9);
-  const exitState = useExitOnCtrlCDWithKeybindings(skipExitHandling ? _temp2 : undefined);
+  const exitState = useExitOnCtrlCDWithKeybindings(
+    undefined,
+    undefined,
+    !skipExitHandling,
+  );
   let t10;
   if ($[7] === Symbol.for("react.memo_cache_sentinel")) {
     t10 = [...(feature("AUTO_THEME") ? [{
@@ -235,14 +239,14 @@ export function ThemePicker(t0) {
       newStart: 1,
       oldLines: 3,
       newLines: 3,
-      lines: [" function greet() {", "-  console.log(\"Hello, World!\");", "+  console.log(\"Hello, Claude!\");", " }"]
+      lines: [" function greet() {", "-  console.log(\"Hello, World!\");", "+  console.log(\"Hello, Omnicode!\");", " }"]
     };
     $[34] = t20;
   } else {
     t20 = $[34];
   }
   const t21 = <Box flexDirection="column" borderTop={true} borderBottom={true} borderLeft={false} borderRight={false} borderStyle="dashed" borderColor="subtle"><StructuredDiff key={`${theme}:${columns}`} patch={t20} dim={false} filePath="demo.js" firstLine={null} width={columns} /></Box>;
-  const t22 = colorModuleUnavailableReason === "env" ? `Syntax highlighting disabled (via CLAUDE_CODE_SYNTAX_HIGHLIGHT=${process.env.CLAUDE_CODE_SYNTAX_HIGHLIGHT})` : syntaxHighlightingDisabled ? `Syntax highlighting disabled (${syntaxToggleShortcut} to enable)` : syntaxTheme ? `Syntax theme: ${syntaxTheme.theme}${syntaxTheme.source ? ` (from ${syntaxTheme.source})` : ""} (${syntaxToggleShortcut} to disable)` : `Syntax highlighting enabled (${syntaxToggleShortcut} to disable)`;
+  const t22 = colorModuleUnavailableReason === "env" ? `Syntax highlighting disabled (via OMNICODE_SYNTAX_HIGHLIGHT=${process.env.OMNICODE_SYNTAX_HIGHLIGHT})` : syntaxHighlightingDisabled ? `Syntax highlighting disabled (${syntaxToggleShortcut} to enable)` : syntaxTheme ? `Syntax theme: ${syntaxTheme.theme}${syntaxTheme.source ? ` (from ${syntaxTheme.source})` : ""} (${syntaxToggleShortcut} to disable)` : `Syntax highlighting enabled (${syntaxToggleShortcut} to disable)`;
   let t23;
   if ($[37] !== t22) {
     t23 = <Text dimColor={true}>{" "}{t22}</Text>;
@@ -319,7 +323,6 @@ export function ThemePicker(t0) {
   }
   return content;
 }
-function _temp2() {}
 function _temp(s) {
   return s.settings.syntaxHighlightingDisabled;
 }

@@ -31,6 +31,7 @@ import type { PermissionMode } from './utils/permissions/PermissionMode.js';
 import { getBaseRenderOptions } from './utils/renderOptions.js';
 import { getSettingsWithAllErrors } from './utils/settings/allErrors.js';
 import { hasAutoModeOptIn, hasSkipDangerousModePermissionPrompt } from './utils/settings/settings.js';
+import { useExitOnCtrlCDWithKeybindings } from './hooks/useExitOnCtrlCDWithKeybindings.js';
 export function completeOnboarding(): void {
   saveGlobalConfig(current => ({
     ...current,
@@ -139,11 +140,13 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
     } = await import('./components/ThemePicker.js');
     const {
       Box,
+      Text,
       useTheme
     } = await import('./ink.js');
     await showSetupDialog(root, done => {
       const ThemeOnboarding = () => {
         const [, setTheme] = useTheme();
+        const exitState = useExitOnCtrlCDWithKeybindings();
         return <Box flexDirection="column">
           <WelcomeV2 />
           <Box flexDirection="column" marginTop={1} marginX={1}>
@@ -153,6 +156,9 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
               void done();
             }} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} />
           </Box>
+          {exitState.pending && <Box paddingLeft={1} paddingTop={1}>
+            <Text dimColor>Press {exitState.keyName} again to exit</Text>
+          </Box>}
         </Box>;
       };
       return <ThemeOnboarding />;
