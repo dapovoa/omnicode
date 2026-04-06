@@ -139,10 +139,15 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
       ThemePicker
     } = await import('./components/ThemePicker.js');
     const {
+      ProviderWizard
+    } = await import('./commands/provider/provider.js');
+    const {
       Box,
       Text,
       useTheme
     } = await import('./ink.js');
+
+    // Step 1: Theme selection
     await showSetupDialog(root, done => {
       const ThemeOnboarding = () => {
         const [, setTheme] = useTheme();
@@ -152,7 +157,6 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
           <Box flexDirection="column" marginTop={1} marginX={1}>
             <ThemePicker onThemeSelect={setting => {
               setTheme(setting);
-              completeOnboarding();
               void done();
             }} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} />
           </Box>
@@ -165,6 +169,18 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
     }, {
       onChangeAppState
     });
+
+    // Step 2: Provider selection
+    await showSetupDialog(root, done => {
+      return <ProviderWizard onComplete={() => {
+        completeOnboarding();
+        void done();
+      }} />;
+    }, {
+      onChangeAppState
+    });
+
+    return onboardingShown;
   }
 
   // Always show the trust dialog in interactive sessions, regardless of permission mode.
