@@ -28,6 +28,7 @@ import { updateGithubRepoPathMapping } from './utils/githubRepoPathMapping.js';
 import { applyConfigEnvironmentVariables } from './utils/managedEnv.js';
 import { usesAnthropicAccountFlow } from './utils/model/providers.js';
 import type { PermissionMode } from './utils/permissions/PermissionMode.js';
+import { type ThemeSetting } from './utils/theme.js';
 import { getBaseRenderOptions } from './utils/renderOptions.js';
 import { getSettingsWithAllErrors } from './utils/settings/allErrors.js';
 import { hasAutoModeOptIn, hasSkipDangerousModePermissionPrompt } from './utils/settings/settings.js';
@@ -147,40 +148,60 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
       useTheme
     } = await import('./ink.js');
 
-    // Step 1: Theme selection
+    // Combined onboarding flow in a single dialog
     await showSetupDialog(root, done => {
-      const ThemeOnboarding = () => {
+      const OnboardingFlow = () => {
         const [, setTheme] = useTheme();
+        const [step, setStep] = React.useState<'theme' | 'provider'>('theme');
         const exitState = useExitOnCtrlCDWithKeybindings();
-        return <Box flexDirection="column">
-          <WelcomeV2 />
-          <Box flexDirection="column" marginTop={1} marginX={1}>
-            <ThemePicker onThemeSelect={setting => {
-              setTheme(setting);
-              void done();
-            }} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} />
-          </Box>
-          {exitState.pending && <Box paddingLeft={1} paddingTop={1}>
-            <Text dimColor>Press {exitState.keyName} again to exit</Text>
-          </Box>}
-        </Box>;
-      };
-      return <ThemeOnboarding />;
-    }, {
-      onChangeAppState
-    });
 
-    // Step 2: Provider selection
-    await showSetupDialog(root, done => {
-      return <Box flexDirection="column">
-        <WelcomeV2 />
-        <Box flexDirection="column" marginTop={1} marginX={1}>
-          <ProviderWizard onComplete={() => {
-            completeOnboarding();
-            void done();
-          }} />
-        </Box>
-      </Box>;
+        const handleThemeSelect = (setting: ThemeSetting) => {
+          setTheme(setting);
+          setStep('provider');
+        };
+
+        const handleProviderComplete = () => {
+          completeOnboarding();
+          void done();
+        };
+
+        const handleBackToTheme = () => {
+          setStep('theme');
+        };
+
+        return (
+          <Box flexDirection="column">
+            <WelcomeV2 />
+            <Box flexDirection="column" marginTop={1} marginX={1}>
+              {step === 'theme' && (
+                <ThemePicker
+                  onThemeSelect={handleThemeSelect}
+                  showIntroText={true}
+                  helpText="To change this later, run /theme"
+                  hideEscToCancel={true}
+                  skipExitHandling={true}
+                />
+              )}
+              {step === 'provider' && (
+                <Box flexDirection="column">
+                  <Box marginBottom={1}>
+                    <Text dimColor>← back to theme</Text>
+                  </Box>
+                  <ProviderWizard
+                    onComplete={handleProviderComplete}
+                  />
+                </Box>
+              )}
+            </Box>
+            {exitState.pending && (
+              <Box paddingLeft={1} paddingTop={1}>
+                <Text dimColor>Press {exitState.keyName} again to exit</Text>
+              </Box>
+            )}
+          </Box>
+        );
+      };
+      return <OnboardingFlow />;
     }, {
       onChangeAppState
     });
