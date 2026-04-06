@@ -138,9 +138,10 @@ function detectProvider(): { name: string; model: string; baseUrl: string; isLoc
     return { name, model: displayModel, baseUrl, isLocal }
   }
 
-  // Default: Anthropic
-  const model = process.env.ANTHROPIC_MODEL || process.env.OMNICODE_MODEL || 'omnicode-sonnet-4-6'
-  return { name: 'Anthropic', model, baseUrl: 'https://api.anthropic.com', isLocal: false }
+  // Default: OpenAI
+  const model = process.env.OPENAI_MODEL || 'gpt-4o'
+  const baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
+  return { name: 'OpenAI', model, baseUrl, isLocal: false }
 }
 
 // ─── Box drawing ──────────────────────────────────────────────────────────────

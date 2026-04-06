@@ -280,12 +280,7 @@ export function getWebSocketProxyUrl(url: string): string | undefined {
  * Get fetch options for the Anthropic SDK with proxy and mTLS configuration
  * Returns fetch options with appropriate dispatcher for proxy and/or mTLS
  *
- * @param opts.forAnthropicAPI - Enables ANTHROPIC_UNIX_SOCKET tunneling. This
- *   env var is set by `omnicode ssh` on the remote CLI to route API calls through
- *   an ssh -R forwarded unix socket to a local auth proxy. It MUST NOT leak
- *   into non-Anthropic-API fetch paths (MCP HTTP/SSE transports, etc.) or those
- *   requests get misrouted to api.anthropic.com. Only the Anthropic SDK client
- *   should pass `true` here.
+ * @param opts.forAnthropicAPI - Enables ANTHROPIC_UNIX_SOCKET tunneling.
  */
 export function getProxyFetchOptions(opts?: { forAnthropicAPI?: boolean }): {
   tls?: TLSConfig

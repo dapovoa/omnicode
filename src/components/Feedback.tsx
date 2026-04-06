@@ -529,35 +529,10 @@ async function submitFeedback(data: FeedbackData, signal?: AbortSignal): Promise
   try {
     // Third-party providers should not post feedback to Anthropic, but they
     // should still reach the done state so users can open a GitHub issue draft.
-    if (getAPIProvider() !== 'firstParty') {
-      return {
-        success: true,
-        issueDraftOnly: true
-      };
-    }
-
-    // Ensure OAuth token is fresh before getting auth headers
-    // This prevents 401 errors from stale cached tokens
-    await checkAndRefreshOAuthTokenIfNeeded();
-    const authResult = getAuthHeaders();
-    if (authResult.error) {
-      return {
-        success: false
-      };
-    }
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'User-Agent': getUserAgent(),
-      ...authResult.headers
+    return {
+      success: true,
+      issueDraftOnly: true
     };
-    const response = await axios.post('https://api.anthropic.com/api/omnicode_cli_feedback', {
-      content: jsonStringify(data)
-    }, {
-      headers,
-      timeout: 30000,
-      // 30 second timeout to prevent hanging
-      signal
-    });
     if (response.status === 200) {
       const result = response.data;
       if (result?.feedback_id) {

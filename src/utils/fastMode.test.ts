@@ -24,10 +24,7 @@ function installCommonMocks(options?: {
     },
   }))
 
-  mock.module('src/constants/oauth.js', () => ({
-    getOauthConfig: () => ({ BASE_API_URL: 'https://api.anthropic.com' }),
-    OAUTH_BETA_HEADER: 'test-beta',
-  }))
+
 
   mock.module('src/services/analytics/growthbook.js', () => ({
     getFeatureValue_CACHED_MAY_BE_STALE: (_name: string, defaultValue: unknown) =>

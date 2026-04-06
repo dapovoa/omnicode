@@ -163,13 +163,13 @@ type LocalJSXCommand = {
  * of the listed auth types. See meetsAvailabilityRequirement() in commands.ts.
  *
  * Example: `availability: ['omnicode-ai', 'console']` shows the command to
- * omnicode.ai subscribers and direct Console API key users (api.anthropic.com),
+ * omnicode.ai subscribers and direct Console API key users,
  * but hides it from Bedrock/Vertex/Foundry users and custom base URL users.
  */
 export type CommandAvailability =
   // omnicode.ai OAuth subscriber (Pro/Max/Team/Enterprise via omnicode.ai)
   | 'omnicode-ai'
-  // Console API key user (direct api.anthropic.com, not via omnicode.ai OAuth)
+  // Console API key user
   | 'console'
 
 export type CommandBase = {

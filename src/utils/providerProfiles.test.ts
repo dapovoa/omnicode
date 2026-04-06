@@ -69,24 +69,6 @@ describe('applyProviderProfileToProcessEnv', () => {
     expect(process.env.OMNICODE_USE_OPENAI).toBe('1')
     expect(getAPIProvider()).toBe('openai')
   })
-
-  test('anthropic profile clears competing gemini/github flags', () => {
-    process.env.OMNICODE_USE_GEMINI = '1'
-    process.env.OMNICODE_USE_GITHUB = '1'
-
-    applyProviderProfileToProcessEnv(
-      buildProfile({
-        provider: 'anthropic',
-        baseUrl: 'https://api.anthropic.com',
-        model: 'omnicode-sonnet-4-6',
-      }),
-    )
-
-    expect(process.env.OMNICODE_USE_GEMINI).toBeUndefined()
-    expect(process.env.OMNICODE_USE_GITHUB).toBeUndefined()
-    expect(process.env.OMNICODE_USE_OPENAI).toBeUndefined()
-    expect(getAPIProvider()).toBe('firstParty')
-  })
 })
 
 describe('applyActiveProviderProfileFromConfig', () => {

@@ -58,13 +58,7 @@ function debug(msg: string): void {
 }
 
 /**
- * Base URL for uploads. Must match the host the token is valid for.
- *
- * Subprocess hosts (cowork) pass ANTHROPIC_BASE_URL alongside
- * OMNICODE_OAUTH_TOKEN — prefer that since getOauthConfig() only
- * returns staging when USE_STAGING_OAUTH is set, which such hosts don't
- * set. Without this a staging token hits api.anthropic.com → 401 → silent
- * skip → web viewer sees inert cards with no file_uuid.
+ * Base URL for uploads.
  */
 function getBridgeBaseUrl(): string {
   return (

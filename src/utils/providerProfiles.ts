@@ -7,7 +7,6 @@ import {
 import type { ModelOption } from './model/modelOptions.js'
 
 export type ProviderPreset =
-  | 'anthropic'
   | 'ollama'
   | 'openai'
   | 'moonshotai'
@@ -54,7 +53,7 @@ function normalizeBaseUrl(value: string): string {
 function sanitizeProfile(profile: ProviderProfile): ProviderProfile | null {
   const id = trimValue(profile.id)
   const name = trimValue(profile.name)
-  const provider = profile.provider === 'anthropic' ? 'anthropic' : 'openai'
+  const provider = profile.provider
   const baseUrl = normalizeBaseUrl(profile.baseUrl)
   const model = trimValue(profile.model)
 
@@ -117,15 +116,6 @@ export function getProviderPresetDefaults(
   preset: ProviderPreset,
 ): ProviderPresetDefaults {
   switch (preset) {
-    case 'anthropic':
-      return {
-        provider: 'anthropic',
-        name: 'Anthropic',
-        baseUrl: process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com',
-        model: process.env.ANTHROPIC_MODEL ?? 'omnicode-sonnet-4-6',
-        apiKey: process.env.ANTHROPIC_API_KEY ?? '',
-        requiresApiKey: true,
-      }
     case 'openai':
       return {
         provider: 'openai',
@@ -284,16 +274,6 @@ function isProcessEnvAlignedWithProfile(
     return false
   }
 
-  if (profile.provider === 'anthropic') {
-    return (
-      !hasProviderSelectionFlags(processEnv) &&
-      sameOptionalEnvValue(processEnv.ANTHROPIC_BASE_URL, profile.baseUrl) &&
-      sameOptionalEnvValue(processEnv.ANTHROPIC_MODEL, profile.model) &&
-      (!includeApiKey ||
-        sameOptionalEnvValue(processEnv.ANTHROPIC_API_KEY, profile.apiKey))
-    )
-  }
-
   return (
     processEnv.OMNICODE_USE_OPENAI !== undefined &&
     processEnv.OMNICODE_USE_GEMINI === undefined &&
@@ -344,23 +324,6 @@ export function clearProviderProfileEnvFromProcessEnv(
 export function applyProviderProfileToProcessEnv(profile: ProviderProfile): void {
   clearProviderProfileEnvFromProcessEnv()
   process.env[PROFILE_ENV_APPLIED_FLAG] = '1'
-
-  process.env.ANTHROPIC_MODEL = profile.model
-  if (profile.provider === 'anthropic') {
-    process.env.ANTHROPIC_BASE_URL = profile.baseUrl
-
-    if (profile.apiKey) {
-      process.env.ANTHROPIC_API_KEY = profile.apiKey
-    } else {
-      delete process.env.ANTHROPIC_API_KEY
-    }
-
-    delete process.env.OPENAI_BASE_URL
-    delete process.env.OPENAI_API_BASE
-    delete process.env.OPENAI_MODEL
-    delete process.env.OPENAI_API_KEY
-    return
-  }
 
   process.env.OMNICODE_USE_OPENAI = '1'
   process.env.OPENAI_BASE_URL = profile.baseUrl

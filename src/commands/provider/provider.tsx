@@ -197,15 +197,14 @@ export function buildCurrentProviderSummary(options?: {
   }
 
   return {
-    providerLabel: 'Anthropic',
+    providerLabel: 'OpenAI',
     modelLabel: getSafeDisplayValue(
-      processEnv.ANTHROPIC_MODEL ??
-      processEnv.OMNICODE_MODEL ??
-      'omnicode-sonnet-4-6',
+      processEnv.OPENAI_MODEL ??
+      'gpt-4o',
       processEnv,
     ),
     endpointLabel: getSafeDisplayValue(
-      processEnv.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com',
+      processEnv.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
       processEnv,
     ),
     savedProfileLabel,
