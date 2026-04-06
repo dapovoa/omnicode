@@ -25,25 +25,25 @@ export async function setupTokenHandler(root: Root): Promise<void> {
   } = await import('../../components/ConsoleOAuthFlow.js');
   await new Promise<void>(resolve => {
     root.render(<AppStateProvider onChangeAppState={onChangeAppState}>
-        <KeybindingSetup>
-          <Box flexDirection="column" gap={1}>
-            <WelcomeV2 />
-            {showAuthWarning && <Box flexDirection="column">
-                <Text color="warning">
-                  Warning: You already have authentication configured via
-                  environment variable or API key helper.
-                </Text>
-                <Text color="warning">
-                  The setup-token command will create a new OAuth token which
-                  you can use instead.
-                </Text>
-              </Box>}
-            <ConsoleOAuthFlow onDone={() => {
+      <KeybindingSetup>
+        <Box flexDirection="column" gap={1}>
+          <WelcomeV2 />
+          {showAuthWarning && <Box flexDirection="column">
+            <Text color="warning">
+              Warning: You already have authentication configured via
+              environment variable or API key helper.
+            </Text>
+            <Text color="warning">
+              The setup-token command will create a new OAuth token which
+              you can use instead.
+            </Text>
+          </Box>}
+          <ConsoleOAuthFlow onDone={() => {
             void resolve();
-          }} mode="setup-token" startingMessage="This will guide you through long-lived (1-year) auth token setup for your Claude account. Claude subscription required." />
-          </Box>
-        </KeybindingSetup>
-      </AppStateProvider>);
+          }} mode="setup-token" startingMessage="This will guide you through long-lived (1-year) auth token setup for your Omnicode account. Omnicode subscription required." />
+        </Box>
+      </KeybindingSetup>
+    </AppStateProvider>);
   });
   root.unmount();
   process.exit(0);
@@ -73,14 +73,14 @@ export async function doctorHandler(root: Root): Promise<void> {
   logEvent('tengu_doctor_command', {});
   await new Promise<void>(resolve => {
     root.render(<AppStateProvider>
-        <KeybindingSetup>
-          <MCPConnectionManager dynamicMcpConfig={undefined} isStrictMcpConfig={false}>
-            <DoctorWithPlugins onDone={() => {
+      <KeybindingSetup>
+        <MCPConnectionManager dynamicMcpConfig={undefined} isStrictMcpConfig={false}>
+          <DoctorWithPlugins onDone={() => {
             void resolve();
           }} />
-          </MCPConnectionManager>
-        </KeybindingSetup>
-      </AppStateProvider>);
+        </MCPConnectionManager>
+      </KeybindingSetup>
+    </AppStateProvider>);
   });
   root.unmount();
   process.exit(0);

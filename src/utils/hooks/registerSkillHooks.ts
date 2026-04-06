@@ -15,7 +15,7 @@ import { addSessionHook, removeSessionHook } from './sessionHooks.js'
  * @param sessionId - The current session ID
  * @param hooks - The hooks settings from the skill's frontmatter
  * @param skillName - The name of the skill (for logging)
- * @param skillRoot - The base directory of the skill (for CLAUDE_PLUGIN_ROOT env var)
+ * @param skillRoot - The base directory of the skill (for OMNICODE_PLUGIN_ROOT env var)
  */
 export function registerSkillHooks(
   setAppState: (updater: (prev: AppState) => AppState) => void,
@@ -35,11 +35,11 @@ export function registerSkillHooks(
         // For once: true hooks, use onHookSuccess callback to remove after execution
         const onHookSuccess = hook.once
           ? () => {
-              logForDebugging(
-                `Removing one-shot hook for event ${eventName} in skill '${skillName}'`,
-              )
-              removeSessionHook(setAppState, sessionId, eventName, hook)
-            }
+            logForDebugging(
+              `Removing one-shot hook for event ${eventName} in skill '${skillName}'`,
+            )
+            removeSessionHook(setAppState, sessionId, eventName, hook)
+          }
           : undefined
 
         addSessionHook(

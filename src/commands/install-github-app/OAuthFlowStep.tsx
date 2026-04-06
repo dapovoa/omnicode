@@ -111,8 +111,8 @@ export function OAuthFlowStep({
         const timer_0 = setTimeout(setShowPastePrompt, 3000, true);
         timersRef.current.add(timer_0);
       }, {
-        loginWithClaudeAi: true,
-        // Always use Claude AI for subscription tokens
+        loginWithOmnicodeAi: true,
+        // Always use Omnicode AI for subscription tokens
         inferenceOnly: true,
         expiresIn: 365 * 24 * 60 * 60 // 1 year
       });
@@ -199,77 +199,77 @@ export function OAuthFlowStep({
     switch (oauthStatus.state) {
       case 'starting':
         return <Box>
-            <Spinner />
-            <Text>Starting authentication…</Text>
-          </Box>;
+          <Spinner />
+          <Text>Starting authentication…</Text>
+        </Box>;
       case 'waiting_for_login':
         return <Box flexDirection="column" gap={1}>
-            {!showPastePrompt && <Box>
-                <Spinner />
-                <Text>
-                  Opening browser to sign in with your Claude account…
-                </Text>
-              </Box>}
+          {!showPastePrompt && <Box>
+            <Spinner />
+            <Text>
+              Opening browser to sign in with your Omnicode account…
+            </Text>
+          </Box>}
 
-            {showPastePrompt && <Box>
-                <Text>{PASTE_HERE_MSG}</Text>
-                <TextInput value={pastedCode} onChange={setPastedCode} onSubmit={(value_0: string) => handleSubmitCode(value_0, oauthStatus.url)} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} columns={textInputColumns} />
-              </Box>}
-          </Box>;
+          {showPastePrompt && <Box>
+            <Text>{PASTE_HERE_MSG}</Text>
+            <TextInput value={pastedCode} onChange={setPastedCode} onSubmit={(value_0: string) => handleSubmitCode(value_0, oauthStatus.url)} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} columns={textInputColumns} />
+          </Box>}
+        </Box>;
       case 'processing':
         return <Box>
-            <Spinner />
-            <Text>Processing authentication…</Text>
-          </Box>;
+          <Spinner />
+          <Text>Processing authentication…</Text>
+        </Box>;
       case 'success':
         return <Box flexDirection="column" gap={1}>
-            <Text color="success">
-              ✓ Authentication token created successfully!
-            </Text>
-            <Text dimColor>Using token for GitHub Actions setup…</Text>
-          </Box>;
+          <Text color="success">
+            ✓ Authentication token created successfully!
+          </Text>
+          <Text dimColor>Using token for GitHub Actions setup…</Text>
+        </Box>;
       case 'error':
         return <Box flexDirection="column" gap={1}>
-            <Text color="error">OAuth error: {oauthStatus.message}</Text>
-            {oauthStatus.toRetry ? <Text dimColor>
-                Press Enter to try again, or any other key to cancel
-              </Text> : <Text dimColor>Press any key to return to API key selection</Text>}
-          </Box>;
+          <Text color="error">OAuth error: {oauthStatus.message}</Text>
+          {oauthStatus.toRetry ? <Text dimColor>
+            Press Enter to try again, or any other key to cancel
+          </Text> : <Text dimColor>Press any key to return to API key selection</Text>}
+        </Box>;
       case 'about_to_retry':
         return <Box flexDirection="column" gap={1}>
-            <Text color="permission">Retrying…</Text>
-          </Box>;
+          <Text color="permission">Retrying…</Text>
+        </Box>;
       default:
         return null;
     }
   }
   return <Box flexDirection="column" gap={1} tabIndex={0} autoFocus onKeyDown={handleKeyDown}>
-      {/* Show header inline only for initial starting state */}
-      {oauthStatus.state === 'starting' && <Box flexDirection="column" gap={1} paddingBottom={1}>
-          <Text bold>Create Authentication Token</Text>
-          <Text dimColor>Creating a long-lived token for GitHub Actions</Text>
-        </Box>}
-      {/* Show header for non-starting states (to avoid duplicate with inline header)*/}
-      {oauthStatus.state !== 'success' && oauthStatus.state !== 'starting' && oauthStatus.state !== 'processing' && <Box key="header" flexDirection="column" gap={1} paddingBottom={1}>
-            <Text bold>Create Authentication Token</Text>
-            <Text dimColor>Creating a long-lived token for GitHub Actions</Text>
-          </Box>}
-      {/* Show URL when paste prompt is visible */}
-      {oauthStatus.state === 'waiting_for_login' && showPastePrompt && <Box flexDirection="column" key="urlToCopy" gap={1} paddingBottom={1}>
-          <Box paddingX={1}>
-            <Text dimColor>
-              Browser didn&apos;t open? Use the url below to sign in{' '}
-            </Text>
-            {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                <KeyboardShortcutHint shortcut="c" action="copy" parens />
-              </Text>}
-          </Box>
-          <Link url={oauthStatus.url}>
-            <Text dimColor>{oauthStatus.url}</Text>
-          </Link>
-        </Box>}
-      <Box paddingLeft={1} flexDirection="column" gap={1}>
-        {renderStatusMessage()}
+    {/* Show header inline only for initial starting state */}
+    {oauthStatus.state === 'starting' && <Box flexDirection="column" gap={1} paddingBottom={1}>
+      <Text bold>Create Authentication Token</Text>
+      <Text dimColor>Creating a long-lived token for GitHub Actions</Text>
+    </Box>}
+    {/* Show header for non-starting states (to avoid duplicate with inline header)*/}
+    {oauthStatus.state !== 'success' && oauthStatus.state !== 'starting' && oauthStatus.state !== 'processing' && <Box key="header" flexDirection="column" gap={1} paddingBottom={1}>
+      <Text bold>Create Authentication Token</Text>
+      <Text dimColor>Creating a long-lived token for GitHub Actions</Text>
+    </Box>}
+    {/* Show URL when paste prompt is visible */}
+    {oauthStatus.state === 'waiting_for_login' && showPastePrompt && <Box flexDirection="column" key="urlToCopy" gap={1} paddingBottom={1}>
+      <Box paddingX={1}>
+        <Text dimColor>
+          Browser didn&apos;t open? Use the url below to sign in{' '}
+        </Text>
+        {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+          <KeyboardShortcutHint shortcut="c" action="copy" parens />
+        </Text>}
       </Box>
-    </Box>;
+      <Link url={oauthStatus.url}>
+        <Text dimColor>{oauthStatus.url}</Text>
+      </Link>
+    </Box>}
+    <Box paddingLeft={1} flexDirection="column" gap={1}>
+      {renderStatusMessage()}
+    </Box>
+  </Box>;
 }

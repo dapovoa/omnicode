@@ -13,20 +13,20 @@ export function renderToolResultMessage(_output: Output, _progressMessagesForMes
   theme: ThemeName;
 }): React.ReactNode {
   return <Box flexDirection="column" marginTop={1}>
-      <Box flexDirection="row">
-        <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
-        <Text> Entered plan mode</Text>
-      </Box>
-      <Box paddingLeft={2}>
-        <Text dimColor>
-          Claude is now exploring and designing an implementation approach.
-        </Text>
-      </Box>
-    </Box>;
+    <Box flexDirection="row">
+      <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
+      <Text> Entered plan mode</Text>
+    </Box>
+    <Box paddingLeft={2}>
+      <Text dimColor>
+        Omnicode is now exploring and designing an implementation approach.
+      </Text>
+    </Box>
+  </Box>;
 }
 export function renderToolUseRejectedMessage(): React.ReactNode {
   return <Box flexDirection="row" marginTop={1}>
-      <Text color={getModeColor('default')}>{BLACK_CIRCLE}</Text>
-      <Text> User declined to enter plan mode</Text>
-    </Box>;
+    <Text color={getModeColor('default')}>{BLACK_CIRCLE}</Text>
+    <Text> User declined to enter plan mode</Text>
+  </Box>;
 }

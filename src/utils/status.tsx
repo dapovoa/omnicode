@@ -3,14 +3,14 @@ import figures from 'figures';
 import * as React from 'react';
 import { color, Text } from '../ink.js';
 import type { MCPServerConnection } from '../services/mcp/types.js';
-import { getAccountInformation, isClaudeAISubscriber } from './auth.js';
-import { getLargeMemoryFiles, getMemoryFiles, MAX_MEMORY_CHARACTER_COUNT } from './claudemd.js';
+import { getAccountInformation, isOmnicodeAISubscriber } from './auth.js';
+import { getLargeMemoryFiles, getMemoryFiles, MAX_MEMORY_CHARACTER_COUNT } from './omnicodemd.js';
 import { getDoctorDiagnostic } from './doctorDiagnostic.js';
 import { getAWSRegion, getDefaultVertexRegion, isEnvTruthy } from './envUtils.js';
 import { getDisplayPath } from './file.js';
 import { formatNumber } from './format.js';
 import { getIdeClientName, type IDEExtensionInstallationStatus, isJetBrainsIde, toIDEDisplayName } from './ide.js';
-import { getClaudeAiUserDefaultModelDescription, modelDisplayString } from './model/model.js';
+import { getOmnicodeAiUserDefaultModelDescription, modelDisplayString } from './model/model.js';
 import { getAPIProvider } from './model/providers.js';
 import { resolveProviderRequest } from '../services/api/providerConfig.js';
 import { getMTLSConfig } from './mtls.js';
@@ -46,10 +46,10 @@ export function buildIDEProperties(mcpClients: MCPServerConnection[], ideInstall
       return [{
         label: 'IDE',
         value: <Text>
-              {color('error', theme)(figures.cross)} Error installing {ideName}{' '}
-              {pluginOrExtension}: {ideInstallationStatus.error}
-              {'\n'}Please restart your IDE and try again.
-            </Text>
+          {color('error', theme)(figures.cross)} Error installing {ideName}{' '}
+          {pluginOrExtension}: {ideInstallationStatus.error}
+          {'\n'}Please restart your IDE and try again.
+        </Text>
       }];
     }
     if (ideInstallationStatus.installed) {
@@ -103,7 +103,7 @@ export function buildMcpProperties(clients: MCPServerConnection[] = [], theme: T
     failed: 0
   };
   for (const s of servers) {
-    if (s.type === 'connected') byState.connected++;else if (s.type === 'pending') byState.pending++;else if (s.type === 'needs-auth') byState.needsAuth++;else byState.failed++;
+    if (s.type === 'connected') byState.connected++; else if (s.type === 'pending') byState.pending++; else if (s.type === 'needs-auth') byState.needsAuth++; else byState.failed++;
   }
   const parts: string[] = [];
   if (byState.connected) parts.push(color('success', theme)(`${byState.connected} connected`));
@@ -276,7 +276,7 @@ export function buildAPIProviderProperties(): Property[] {
       label: 'AWS region',
       value: getAWSRegion()
     });
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH)) {
+    if (isEnvTruthy(process.env.OMNICODE_SKIP_BEDROCK_AUTH)) {
       properties.push({
         value: 'AWS auth skipped'
       });
@@ -300,7 +300,7 @@ export function buildAPIProviderProperties(): Property[] {
       label: 'Default region',
       value: getDefaultVertexRegion()
     });
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH)) {
+    if (isEnvTruthy(process.env.OMNICODE_SKIP_VERTEX_AUTH)) {
       properties.push({
         value: 'GCP auth skipped'
       });
@@ -320,7 +320,7 @@ export function buildAPIProviderProperties(): Property[] {
         value: foundryResource
       });
     }
-    if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH)) {
+    if (isEnvTruthy(process.env.OMNICODE_SKIP_FOUNDRY_AUTH)) {
       properties.push({
         value: 'Microsoft Foundry auth skipped'
       });
@@ -410,16 +410,16 @@ export function buildAPIProviderProperties(): Property[] {
     });
   }
   if (mtlsConfig) {
-    if (mtlsConfig.cert && process.env.CLAUDE_CODE_CLIENT_CERT) {
+    if (mtlsConfig.cert && process.env.OMNICODE_CLIENT_CERT) {
       properties.push({
         label: 'mTLS client cert',
-        value: process.env.CLAUDE_CODE_CLIENT_CERT
+        value: process.env.OMNICODE_CLIENT_CERT
       });
     }
-    if (mtlsConfig.key && process.env.CLAUDE_CODE_CLIENT_KEY) {
+    if (mtlsConfig.key && process.env.OMNICODE_CLIENT_KEY) {
       properties.push({
         label: 'mTLS client key',
-        value: process.env.CLAUDE_CODE_CLIENT_KEY
+        value: process.env.OMNICODE_CLIENT_KEY
       });
     }
   }
@@ -427,8 +427,8 @@ export function buildAPIProviderProperties(): Property[] {
 }
 export function getModelDisplayLabel(mainLoopModel: string | null): string {
   let modelLabel = modelDisplayString(mainLoopModel);
-  if (mainLoopModel === null && isClaudeAISubscriber()) {
-    const description = getClaudeAiUserDefaultModelDescription();
+  if (mainLoopModel === null && isOmnicodeAISubscriber()) {
+    const description = getOmnicodeAiUserDefaultModelDescription();
     modelLabel = `${chalk.bold('Default')} ${description}`;
   }
   return modelLabel;

@@ -18,7 +18,7 @@ import { getSessionEnvironmentScript } from '../sessionEnvironment.js'
 import { getSessionEnvVars } from '../sessionEnvVars.js'
 import {
   ensureSocketInitialized,
-  getClaudeTmuxEnv,
+  getOmnicodeTmuxEnv,
   hasTmuxToolBeenUsed,
 } from '../tmuxSocket.js'
 import { windowsPathToPosixPath } from '../windowsPaths.js'
@@ -29,7 +29,7 @@ import type { ShellProvider } from './shellProvider.js'
  * Extended globs (bash extglob, zsh EXTENDED_GLOB) can be exploited via
  * malicious filenames that expand after our security validation.
  *
- * When CLAUDE_CODE_SHELL_PREFIX is set, the actual executing shell may differ
+ * When OMNICODE_SHELL_PREFIX is set, the actual executing shell may differ
  * from shellPath (e.g., shellPath is zsh but the wrapper runs bash). In this
  * case, we include commands for BOTH shells. We redirect both stdout and stderr
  * to /dev/null because zsh's command_not_found_handler writes to STDOUT.
@@ -37,9 +37,9 @@ import type { ShellProvider } from './shellProvider.js'
  * When no shell prefix is set, we use the appropriate command for the detected shell.
  */
 function getDisableExtglobCommand(shellPath: string): string | null {
-  // When CLAUDE_CODE_SHELL_PREFIX is set, the wrapper may use a different shell
+  // When OMNICODE_SHELL_PREFIX is set, the wrapper may use a different shell
   // than shellPath, so we include both bash and zsh commands
-  if (process.env.CLAUDE_CODE_SHELL_PREFIX) {
+  if (process.env.OMNICODE_SHELL_PREFIX) {
     // Redirect both stdout and stderr because zsh's command_not_found_handler
     // writes to stdout instead of stderr
     return '{ shopt -u extglob || setopt NO_EXTENDED_GLOB; } >/dev/null 2>&1 || true'
@@ -63,9 +63,9 @@ export async function createBashShellProvider(
   const snapshotPromise: Promise<string | undefined> = options?.skipSnapshot
     ? Promise.resolve(undefined)
     : createAndSaveSnapshot(shellPath).catch(error => {
-        logForDebugging(`Failed to create shell snapshot: ${error}`)
-        return undefined
-      })
+      logForDebugging(`Failed to create shell snapshot: ${error}`)
+      return undefined
+    })
   // Track the last resolved snapshot path for use in getSpawnArgs
   let lastSnapshotFilePath: string | undefined
 
@@ -115,15 +115,15 @@ export async function createBashShellProvider(
       // but Node.js needs native Windows paths for file operations.
       const shellCwdFilePath = opts.useSandbox
         ? posixJoin(opts.sandboxTmpDir!, `cwd-${opts.id}`)
-        : posixJoin(shellTmpdir, `claude-${opts.id}-cwd`)
+        : posixJoin(shellTmpdir, `omnicode-${opts.id}-cwd`)
       const cwdFilePath = opts.useSandbox
         ? posixJoin(opts.sandboxTmpDir!, `cwd-${opts.id}`)
-        : nativeJoin(tmpdir, `claude-${opts.id}-cwd`)
+        : nativeJoin(tmpdir, `omnicode-${opts.id}-cwd`)
 
       // Defensive rewrite: the model sometimes emits Windows CMD-style `2>nul`
       // redirects. In POSIX bash (including Git Bash on Windows), this creates a
       // literal file named `nul` — a reserved device name that breaks git.
-      // See anthropics/claude-code#4928.
+      // See anthropics/omnicode-code#4928.
       const normalizedCommand = rewriteWindowsNullRedirect(command)
       const addStdinRedirect = shouldAddStdinRedirect(normalizedCommand)
       let quotedCommand = quoteShellCommand(normalizedCommand, addStdinRedirect)
@@ -186,10 +186,10 @@ export async function createBashShellProvider(
       commandParts.push(`pwd -P >| ${quote([shellCwdFilePath])}`)
       let commandString = commandParts.join(' && ')
 
-      // Apply CLAUDE_CODE_SHELL_PREFIX if set
-      if (process.env.CLAUDE_CODE_SHELL_PREFIX) {
+      // Apply OMNICODE_SHELL_PREFIX if set
+      if (process.env.OMNICODE_SHELL_PREFIX) {
         commandString = formatShellPrefixCommand(
-          process.env.CLAUDE_CODE_SHELL_PREFIX,
+          process.env.OMNICODE_SHELL_PREFIX,
           commandString,
         )
       }
@@ -209,12 +209,12 @@ export async function createBashShellProvider(
       command: string,
     ): Promise<Record<string, string>> {
       // TMUX SOCKET ISOLATION (DEFERRED):
-      // We initialize Claude's tmux socket ONLY AFTER the Tmux tool has been used
+      // We initialize Omnicode's tmux socket ONLY AFTER the Tmux tool has been used
       // at least once, OR if the current command appears to use tmux.
       // This defers the startup cost until tmux is actually needed.
       //
       // Once the Tmux tool is used (or a tmux command runs), all subsequent Bash
-      // commands will use Claude's isolated socket via the TMUX env var override.
+      // commands will use Omnicode's isolated socket via the TMUX env var override.
       //
       // See tmuxSocket.ts for the full isolation architecture documentation.
       const commandUsesTmux = command.includes('tmux')
@@ -224,13 +224,13 @@ export async function createBashShellProvider(
       ) {
         await ensureSocketInitialized()
       }
-      const claudeTmuxEnv = getClaudeTmuxEnv()
+      const omnicodeTmuxEnv = getOmnicodeTmuxEnv()
       const env: Record<string, string> = {}
-      // CRITICAL: Override TMUX to isolate ALL tmux commands to Claude's socket.
-      // This is NOT the user's TMUX value - it points to Claude's isolated socket.
+      // CRITICAL: Override TMUX to isolate ALL tmux commands to Omnicode's socket.
+      // This is NOT the user's TMUX value - it points to Omnicode's isolated socket.
       // When null (before socket initializes), user's TMUX is preserved.
-      if (claudeTmuxEnv) {
-        env.TMUX = claudeTmuxEnv
+      if (omnicodeTmuxEnv) {
+        env.TMUX = omnicodeTmuxEnv
       }
       if (currentSandboxTmpDir) {
         let posixTmpDir = currentSandboxTmpDir
@@ -238,7 +238,7 @@ export async function createBashShellProvider(
           posixTmpDir = windowsPathToPosixPath(posixTmpDir)
         }
         env.TMPDIR = posixTmpDir
-        env.CLAUDE_CODE_TMPDIR = posixTmpDir
+        env.OMNICODE_TMPDIR = posixTmpDir
         // Zsh uses TMPPREFIX (default /tmp/zsh) for heredoc temp files,
         // not TMPDIR. Set it to a path inside the sandbox tmp dir so
         // heredocs work in sandboxed zsh commands.

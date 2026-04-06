@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
-import { shouldAutoEnableClaudeInChrome } from 'src/utils/claudeInChrome/setup.js'
+import { shouldAutoEnableOmnicodeInChrome } from 'src/utils/omnicodeInChrome/setup.js'
 import { registerBatchSkill } from './batch.js'
-import { registerClaudeInChromeSkill } from './claudeInChrome.js'
+import { registerOmnicodeInChromeSkill } from './omnicodeInChrome.js'
 import { registerDebugSkill } from './debug.js'
 import { registerKeybindingsSkill } from './keybindings.js'
 import { registerLoremIpsumSkill } from './loremIpsum.js'
@@ -59,14 +59,14 @@ export function initBundledSkills(): void {
     /* eslint-enable @typescript-eslint/no-require-imports */
     registerScheduleRemoteAgentsSkill()
   }
-  if (feature('BUILDING_CLAUDE_APPS')) {
+  if (feature('BUILDING_OMNICODE_APPS')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    const { registerClaudeApiSkill } = require('./claudeApi.js')
+    const { registerOmnicodeApiSkill } = require('./omnicodeApi.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
-    registerClaudeApiSkill()
+    registerOmnicodeApiSkill()
   }
-  if (shouldAutoEnableClaudeInChrome()) {
-    registerClaudeInChromeSkill()
+  if (shouldAutoEnableOmnicodeInChrome()) {
+    registerOmnicodeInChromeSkill()
   }
   if (feature('RUN_SKILL_GENERATOR')) {
     /* eslint-disable @typescript-eslint/no-require-imports */

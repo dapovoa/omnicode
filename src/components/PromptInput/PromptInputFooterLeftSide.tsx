@@ -46,7 +46,7 @@ import { PrBadge } from '../PrBadge.js';
 /* eslint-disable @typescript-eslint/no-require-imports */
 const proactiveModule = feature('PROACTIVE') || feature('KAIROS') ? require('../../proactive/index.js') : null;
 /* eslint-enable @typescript-eslint/no-require-imports */
-const NO_OP_SUBSCRIBE = (_cb: () => void) => () => {};
+const NO_OP_SUBSCRIBE = (_cb: () => void) => () => { };
 const NULL = () => null;
 const MAX_VOICE_HINT_SHOWS = 3;
 type Props = {
@@ -265,11 +265,11 @@ function ModeIndicator({
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
   const voiceEnabled = feature('VOICE_MODE') ? useVoiceEnabled() : false;
   const voiceState = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s_5 => s_5.voiceState) : 'idle' as const;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s_5 => s_5.voiceState) : 'idle' as const;
   const voiceWarmingUp = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s_6 => s_6.voiceWarmingUp) : false;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s_6 => s_6.voiceWarmingUp) : false;
   const hasSelection = useHasSelection();
   const selGetState = useSelection().getState;
   const hasNextTick = nextTickAt !== null;
@@ -281,16 +281,16 @@ function ModeIndicator({
   const todosShortcut = useShortcutDisplay('app:toggleTodos', 'Global', 'ctrl+t');
   const killAgentsShortcut = useShortcutDisplay('chat:killAgents', 'Chat', 'ctrl+x ctrl+k');
   const voiceKeyShortcut = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useShortcutDisplay('voice:pushToTalk', 'Chat', 'Space') : '';
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useShortcutDisplay('voice:pushToTalk', 'Chat', 'Space') : '';
   // Captured at mount so the hint doesn't flicker mid-session if another
   // CC instance increments the counter. Incremented once via useEffect the
   // first time voice is enabled in this session — approximates "hint was
   // shown" without tracking the exact render-time condition (which depends
   // on parts/hintParts computed after the early-return hooks boundary).
   const [voiceHintUnderCap] = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useState(() => (getGlobalConfig().voiceFooterHintSeenCount ?? 0) < MAX_VOICE_HINT_SHOWS) : [false];
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useState(() => (getGlobalConfig().voiceFooterHintSeenCount ?? 0) < MAX_VOICE_HINT_SHOWS) : [false];
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
   const voiceHintIncrementedRef = feature('VOICE_MODE') ? useRef(false) : null;
   useEffect(() => {
@@ -341,31 +341,31 @@ function ModeIndicator({
   const hasInProcessTeammates = !showSpinnerTree && hasBackgroundTasks && Object.values(tasks).some(t_1 => t_1.type === 'in_process_teammate');
   const hasTeammatePills = hasInProcessTeammates || !showSpinnerTree && isViewingTeammate;
 
-  // In remote mode (`claude assistant`, --teleport) the agent runs elsewhere;
+  // In remote mode (`omnicode assistant`, --teleport) the agent runs elsewhere;
   // the local permission mode shown here doesn't reflect the agent's state.
   // Rendered before the tasks pill so a long pill label (e.g. ultraplan URL)
   // doesn't push the mode indicator off-screen.
   const modePart = currentMode && hasActiveMode && !getIsRemoteMode() ? <Text color={getModeColor(currentMode)} key="mode">
-        {permissionModeSymbol(currentMode)}{' '}
-        {permissionModeTitle(currentMode).toLowerCase()} on
-        {shouldShowModeHint && <Text dimColor>
-            {' '}
-            <KeyboardShortcutHint shortcut={modeCycleShortcut} action="cycle" parens />
-          </Text>}
-      </Text> : null;
+    {permissionModeSymbol(currentMode)}{' '}
+    {permissionModeTitle(currentMode).toLowerCase()} on
+    {shouldShowModeHint && <Text dimColor>
+      {' '}
+      <KeyboardShortcutHint shortcut={modeCycleShortcut} action="cycle" parens />
+    </Text>}
+  </Text> : null;
 
   // Build parts array - exclude BackgroundTaskStatus when we have teammate pills
   // (teammate pills get their own row)
   const parts = [
-  // Remote session indicator
-  ...(remoteSessionUrl ? [<Link url={remoteSessionUrl} key="remote">
-            <Text color="ide">{figures.circleDouble} remote</Text>
-          </Link>] : []),
-  // BackgroundTaskStatus is NOT in parts — it renders as a Box sibling so
-  // its click-target Box isn't nested inside the <Text wrap="truncate">
-  // wrapper (reconciler throws on Box-in-Text).
-  // Tmux pill (internal-only) — appears right after tasks in nav order
-  ...("external" === 'ant' && hasTmuxSession ? [<TungstenPill key="tmux" selected={tmuxSelected} />] : []), ...(isAgentSwarmsEnabled() && hasTeams ? [<TeamStatus key="teams" teamsSelected={teamsSelected} showHint={showHint && !hasBackgroundTasks} />] : []), ...(shouldShowPrStatus ? [<PrBadge key="pr-status" number={prStatus.number!} url={prStatus.url!} reviewState={prStatus.reviewState!} />] : [])];
+    // Remote session indicator
+    ...(remoteSessionUrl ? [<Link url={remoteSessionUrl} key="remote">
+      <Text color="ide">{figures.circleDouble} remote</Text>
+    </Link>] : []),
+    // BackgroundTaskStatus is NOT in parts — it renders as a Box sibling so
+    // its click-target Box isn't nested inside the <Text wrap="truncate">
+    // wrapper (reconciler throws on Box-in-Text).
+    // Tmux pill (internal-only) — appears right after tasks in nav order
+    ...("external" === 'ant' && hasTmuxSession ? [<TungstenPill key="tmux" selected={tmuxSelected} />] : []), ...(isAgentSwarmsEnabled() && hasTeams ? [<TeamStatus key="teams" teamsSelected={teamsSelected} showHint={showHint && !hasBackgroundTasks} />] : []), ...(shouldShowPrStatus ? [<PrBadge key="pr-status" number={prStatus.number!} url={prStatus.url!} reviewState={prStatus.reviewState!} />] : [])];
 
   // Check if any in-process teammates exist (for hint text cycling)
   const hasAnyInProcessTeammates = Object.values(tasks).some(t_2 => t_2.type === 'in_process_teammate' && t_2.status === 'running');
@@ -375,8 +375,8 @@ function ModeIndicator({
   const hintParts = showHint ? getSpinnerHintParts(isLoading, escShortcut, todosShortcut, killAgentsShortcut, hasTaskItems, expandedView, hasAnyInProcessTeammates, hasRunningAgentTasks, isKillAgentsConfirmShowing) : [];
   if (isViewingCompletedTeammate) {
     parts.push(<Text dimColor key="esc-return">
-        <KeyboardShortcutHint shortcut={escShortcut} action="return to team lead" />
-      </Text>);
+      <KeyboardShortcutHint shortcut={escShortcut} action="return to team lead" />
+    </Text>);
   } else if ((feature('PROACTIVE') || feature('KAIROS')) && hasNextTick) {
     parts.push(<ProactiveCountdown key="proactive" />);
   } else if (!hasTeammatePills && showHint) {
@@ -389,13 +389,13 @@ function ModeIndicator({
     // the "esc to return to team lead" hint already replaces "esc to interrupt"
     const otherParts = [...(modePart ? [modePart] : []), ...parts, ...(isViewingCompletedTeammate ? [] : hintParts)];
     return <Box flexDirection="column">
-        <Box>
-          <BackgroundTaskStatus tasksSelected={tasksSelected} isViewingTeammate={isViewingTeammate} teammateFooterIndex={teammateFooterIndex} isLeaderIdle={!isLoading} onOpenDialog={onOpenTasksDialog} />
-        </Box>
-        {otherParts.length > 0 && <Box>
-            <Byline>{otherParts}</Byline>
-          </Box>}
-      </Box>;
+      <Box>
+        <BackgroundTaskStatus tasksSelected={tasksSelected} isViewingTeammate={isViewingTeammate} teammateFooterIndex={teammateFooterIndex} isLeaderIdle={!isLoading} onOpenDialog={onOpenTasksDialog} />
+      </Box>
+      {otherParts.length > 0 && <Box>
+        <Byline>{otherParts}</Byline>
+      </Box>}
+    </Box>;
   }
 
   // Add "↓ to manage tasks" hint when panel has visible rows
@@ -408,8 +408,8 @@ function ModeIndicator({
   const tasksPart = hasBackgroundTasks && !hasTeammatePills && !shouldHideTasksFooter(tasks, showSpinnerTree) ? <BackgroundTaskStatus tasksSelected={tasksSelected} isViewingTeammate={isViewingTeammate} teammateFooterIndex={teammateFooterIndex} isLeaderIdle={!isLoading} onOpenDialog={onOpenTasksDialog} /> : null;
   if (parts.length === 0 && !tasksPart && !modePart && showHint) {
     parts.push(<Text dimColor key="shortcuts-hint">
-        ? for shortcuts
-      </Text>);
+      ? for shortcuts
+    </Text>);
   }
 
   // Only replace the idle voice hint when there's something to say — otherwise
@@ -437,20 +437,20 @@ function ModeIndicator({
     const isMac = getPlatform() === 'macos';
     const altClickFailed = isMac && (selGetState()?.lastPressHadAlt ?? false);
     parts.push(<Text dimColor key="selection-copy">
-        <Byline>
-          {!copyOnSelect && <KeyboardShortcutHint shortcut="ctrl+c" action="copy" />}
-          {isXtermJs() && (altClickFailed ? <Text>set macOptionClickForcesSelection in VS Code settings</Text> : <KeyboardShortcutHint shortcut={isMac ? 'option+click' : 'shift+click'} action="native select" />)}
-        </Byline>
-      </Text>);
+      <Byline>
+        {!copyOnSelect && <KeyboardShortcutHint shortcut="ctrl+c" action="copy" />}
+        {isXtermJs() && (altClickFailed ? <Text>set macOptionClickForcesSelection in VS Code settings</Text> : <KeyboardShortcutHint shortcut={isMac ? 'option+click' : 'shift+click'} action="native select" />)}
+      </Byline>
+    </Text>);
   } else if (feature('VOICE_MODE') && parts.length > 0 && showHint && voiceEnabled && voiceState === 'idle' && hintParts.length === 0 && voiceHintUnderCap) {
     parts.push(<Text dimColor key="voice-hint">
-        hold {voiceKeyShortcut} to speak
-      </Text>);
+      hold {voiceKeyShortcut} to speak
+    </Text>);
   }
   if ((tasksPart || hasCoordinatorTasks) && showHint && !hasTeams) {
     parts.push(<Text dimColor key="manage-tasks">
-        {tasksSelected ? <KeyboardShortcutHint shortcut="Enter" action="view tasks" /> : <KeyboardShortcutHint shortcut="↓" action="manage" />}
-      </Text>);
+      {tasksSelected ? <KeyboardShortcutHint shortcut="Enter" action="view tasks" /> : <KeyboardShortcutHint shortcut="↓" action="manage" />}
+    </Text>);
   }
 
   // In fullscreen the bottom section is flexShrink:0 — every row here
@@ -468,18 +468,18 @@ function ModeIndicator({
   // flexShrink=0 keeps mode + pill at natural width; the remaining parts
   // truncate at the tail as one string inside the Text wrapper.
   return <Box height={1} overflow="hidden">
-      {modePart && <Box flexShrink={0}>
-          {modePart}
-          {(tasksPart || parts.length > 0) && <Text dimColor> · </Text>}
-        </Box>}
-      {tasksPart && <Box flexShrink={0}>
-          {tasksPart}
-          {parts.length > 0 && <Text dimColor> · </Text>}
-        </Box>}
-      {parts.length > 0 && <Text wrap="truncate">
-          <Byline>{parts}</Byline>
-        </Text>}
-    </Box>;
+    {modePart && <Box flexShrink={0}>
+      {modePart}
+      {(tasksPart || parts.length > 0) && <Text dimColor> · </Text>}
+    </Box>}
+    {tasksPart && <Box flexShrink={0}>
+      {tasksPart}
+      {parts.length > 0 && <Text dimColor> · </Text>}
+    </Box>}
+    {parts.length > 0 && <Text wrap="truncate">
+      <Byline>{parts}</Byline>
+    </Text>}
+  </Box>;
 }
 function getSpinnerHintParts(isLoading: boolean, escShortcut: string, todosShortcut: string, killAgentsShortcut: string, hasTaskItems: boolean, expandedView: 'none' | 'tasks' | 'teammates', hasTeammates: boolean, hasRunningAgentTasks: boolean, isKillAgentsConfirmShowing: boolean): React.ReactElement[] {
   let toggleAction: string;
@@ -504,12 +504,12 @@ function getSpinnerHintParts(isLoading: boolean, escShortcut: string, todosShort
   // teammates to cycle to
   const showToggleHint = hasTaskItems || hasTeammates;
   return [...(isLoading ? [<Text dimColor key="esc">
-            <KeyboardShortcutHint shortcut={escShortcut} action="interrupt" />
-          </Text>] : []), ...(!isLoading && hasRunningAgentTasks && !isKillAgentsConfirmShowing ? [<Text dimColor key="kill-agents">
-            <KeyboardShortcutHint shortcut={killAgentsShortcut} action="stop agents" />
-          </Text>] : []), ...(showToggleHint ? [<Text dimColor key="toggle-tasks">
-            <KeyboardShortcutHint shortcut={todosShortcut} action={toggleAction} />
-          </Text>] : [])];
+    <KeyboardShortcutHint shortcut={escShortcut} action="interrupt" />
+  </Text>] : []), ...(!isLoading && hasRunningAgentTasks && !isKillAgentsConfirmShowing ? [<Text dimColor key="kill-agents">
+    <KeyboardShortcutHint shortcut={killAgentsShortcut} action="stop agents" />
+  </Text>] : []), ...(showToggleHint ? [<Text dimColor key="toggle-tasks">
+    <KeyboardShortcutHint shortcut={todosShortcut} action={toggleAction} />
+  </Text>] : [])];
 }
 function isPrStatusEnabled(): boolean {
   return getGlobalConfig().prStatusFooterEnabled ?? true;

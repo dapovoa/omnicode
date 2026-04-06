@@ -28,7 +28,7 @@ export const inputSchema = lazySchema(() =>
       .optional()
       .describe(
         'Type/role of the team lead (e.g., "researcher", "test-runner"). ' +
-          'Used for team file and inter-agent coordination.',
+        'Used for team file and inter-agent coordination.',
       ),
     team_name: z
       .string()
@@ -657,7 +657,7 @@ export async function cleanupTeamDirectories(teamName: string): Promise<void> {
     await destroyWorktree(worktreePath)
   }
 
-  // Clean up team directory (~/.claude/teams/{team-name}/)
+  // Clean up team directory (~/.omnicode/teams/{team-name}/)
   const teamDir = getTeamDir(teamName)
   try {
     await rm(teamDir, { recursive: true, force: true })
@@ -668,7 +668,7 @@ export async function cleanupTeamDirectories(teamName: string): Promise<void> {
     )
   }
 
-  // Clean up tasks directory (~/.claude/tasks/{taskListId}/)
+  // Clean up tasks directory (~/.omnicode/tasks/{taskListId}/)
   // The leader and teammates all store tasks under the sanitized team name.
   const tasksDir = getTasksDir(sanitizedName)
   try {

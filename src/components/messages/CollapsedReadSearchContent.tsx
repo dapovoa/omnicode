@@ -114,10 +114,10 @@ function VerboseToolUse(t0) {
         t8 = $[23];
       }
       t1 = <Box key={content.id} flexDirection="column" marginTop={1} backgroundColor={bg}><Box flexDirection="row">{t8}<Text><Text bold={true}>{userFacingName}</Text>{toolUseMessage && <Text>({toolUseMessage})</Text>}</Text>{input && tool.renderToolUseTag?.(input)}</Box>{isResolved && !isError && toolResult !== undefined && <Box>{tool.renderToolResultMessage?.(toolResult, [], {
-            verbose: true,
-            tools,
-            theme
-          })}</Box>}</Box>;
+        verbose: true,
+        tools,
+        theme
+      })}</Box>}</Box>;
     }
     $[0] = bg;
     $[1] = content.id;
@@ -228,33 +228,33 @@ export function CollapsedReadSearchContent({
       }
     }
     return <Box flexDirection="column">
-        {toolUses.map(msg_0 => {
+      {toolUses.map(msg_0 => {
         const content = msg_0.message.content[0];
         if (content?.type !== 'tool_use') return null;
         return <VerboseToolUse key={content.id} content={content} tools={tools} lookups={lookups} inProgressToolUseIDs={inProgressToolUseIDs} shouldAnimate={shouldAnimate} theme={theme} />;
       })}
-        {message.hookInfos && message.hookInfos.length > 0 && <>
-            <Text dimColor>
-              {'  ⎿  '}Ran {message.hookCount} PreToolUse{' '}
-              {message.hookCount === 1 ? 'hook' : 'hooks'} (
-              {formatSecondsShort(message.hookTotalMs ?? 0)})
-            </Text>
-            {message.hookInfos.map((info, idx) => <Text key={`hook-${idx}`} dimColor>
-                {'     ⎿ '}
-                {info.command} ({formatSecondsShort(info.durationMs ?? 0)})
-              </Text>)}
-          </>}
-        {message.relevantMemories?.map(m => <Box key={m.path} flexDirection="column" marginTop={1}>
-            <Text dimColor>
-              {'  ⎿  '}Recalled {basename(m.path)}
-            </Text>
-            <Box paddingLeft={5}>
-              <Text>
-                <Ansi>{m.content}</Ansi>
-              </Text>
-            </Box>
-          </Box>)}
-      </Box>;
+      {message.hookInfos && message.hookInfos.length > 0 && <>
+        <Text dimColor>
+          {'  ⎿  '}Ran {message.hookCount} PreToolUse{' '}
+          {message.hookCount === 1 ? 'hook' : 'hooks'} (
+          {formatSecondsShort(message.hookTotalMs ?? 0)})
+        </Text>
+        {message.hookInfos.map((info, idx) => <Text key={`hook-${idx}`} dimColor>
+          {'     ⎿ '}
+          {info.command} ({formatSecondsShort(info.durationMs ?? 0)})
+        </Text>)}
+      </>}
+      {message.relevantMemories?.map(m => <Box key={m.path} flexDirection="column" marginTop={1}>
+        <Text dimColor>
+          {'  ⎿  '}Recalled {basename(m.path)}
+        </Text>
+        <Box paddingLeft={5}>
+          <Text>
+            <Ansi>{m.content}</Ansi>
+          </Text>
+        </Box>
+      </Box>)}
+    </Box>;
   }
 
   // Non-verbose mode: Show counts with blinking grey dot while active, green dot when finalized
@@ -300,8 +300,8 @@ export function CollapsedReadSearchContent({
     const isFirst = nonMemParts.length === 0;
     if (!isFirst) nonMemParts.push(<Text key={`comma-${key}`}>, </Text>);
     nonMemParts.push(<Text key={key}>
-        {isFirst ? verb[0]!.toUpperCase() + verb.slice(1) : verb} {body}
-      </Text>);
+      {isFirst ? verb[0]!.toUpperCase() + verb.slice(1) : verb} {body}
+    </Text>);
   }
   if (isFullscreenEnvEnabled() && message.commits?.length) {
     const byKind = {
@@ -349,9 +349,9 @@ export function CollapsedReadSearchContent({
       nonMemParts.push(<Text key="comma-s">, </Text>);
     }
     nonMemParts.push(<Text key="search">
-        {searchVerb} <Text bold>{searchCount}</Text>{' '}
-        {searchCount === 1 ? 'pattern' : 'patterns'}
-      </Text>);
+      {searchVerb} <Text bold>{searchCount}</Text>{' '}
+      {searchCount === 1 ? 'pattern' : 'patterns'}
+    </Text>);
   }
   if (readCount > 0) {
     const isFirst_1 = nonMemParts.length === 0;
@@ -360,9 +360,9 @@ export function CollapsedReadSearchContent({
       nonMemParts.push(<Text key="comma-r">, </Text>);
     }
     nonMemParts.push(<Text key="read">
-        {readVerb} <Text bold>{readCount}</Text>{' '}
-        {readCount === 1 ? 'file' : 'files'}
-      </Text>);
+      {readVerb} <Text bold>{readCount}</Text>{' '}
+      {readCount === 1 ? 'file' : 'files'}
+    </Text>);
   }
   if (listCount > 0) {
     const isFirst_2 = nonMemParts.length === 0;
@@ -371,9 +371,9 @@ export function CollapsedReadSearchContent({
       nonMemParts.push(<Text key="comma-l">, </Text>);
     }
     nonMemParts.push(<Text key="list">
-        {listVerb} <Text bold>{listCount}</Text>{' '}
-        {listCount === 1 ? 'directory' : 'directories'}
-      </Text>);
+      {listVerb} <Text bold>{listCount}</Text>{' '}
+      {listCount === 1 ? 'directory' : 'directories'}
+    </Text>);
   }
   if (replCount > 0) {
     const replVerb = isActiveGroup ? "REPL'ing" : "REPL'd";
@@ -381,24 +381,24 @@ export function CollapsedReadSearchContent({
       nonMemParts.push(<Text key="comma-repl">, </Text>);
     }
     nonMemParts.push(<Text key="repl">
-        {replVerb} <Text bold>{replCount}</Text>{' '}
-        {replCount === 1 ? 'time' : 'times'}
-      </Text>);
+      {replVerb} <Text bold>{replCount}</Text>{' '}
+      {replCount === 1 ? 'time' : 'times'}
+    </Text>);
   }
   if (mcpCallCount > 0) {
-    const serverLabel = message.mcpServerNames?.map(n => n.replace(/^claude\.ai /, '')).join(', ') || 'MCP';
+    const serverLabel = message.mcpServerNames?.map(n => n.replace(/^omnicode\.ai /, '')).join(', ') || 'MCP';
     const isFirst_3 = nonMemParts.length === 0;
     const verb_0 = isActiveGroup ? isFirst_3 ? 'Querying' : 'querying' : isFirst_3 ? 'Queried' : 'queried';
     if (!isFirst_3) {
       nonMemParts.push(<Text key="comma-mcp">, </Text>);
     }
     nonMemParts.push(<Text key="mcp">
-        {verb_0} {serverLabel}
-        {mcpCallCount > 1 && <>
-            {' '}
-            <Text bold>{mcpCallCount}</Text> times
-          </>}
-      </Text>);
+      {verb_0} {serverLabel}
+      {mcpCallCount > 1 && <>
+        {' '}
+        <Text bold>{mcpCallCount}</Text> times
+      </>}
+    </Text>);
   }
   if (isFullscreenEnvEnabled() && bashCount > 0) {
     const isFirst_4 = nonMemParts.length === 0;
@@ -407,9 +407,9 @@ export function CollapsedReadSearchContent({
       nonMemParts.push(<Text key="comma-bash">, </Text>);
     }
     nonMemParts.push(<Text key="bash">
-        {verb_1} <Text bold>{bashCount}</Text> bash{' '}
-        {bashCount === 1 ? 'command' : 'commands'}
-      </Text>);
+      {verb_1} <Text bold>{bashCount}</Text> bash{' '}
+      {bashCount === 1 ? 'command' : 'commands'}
+    </Text>);
   }
 
   // Build memory parts (auto-memory) — rendered after nonMemParts
@@ -422,9 +422,9 @@ export function CollapsedReadSearchContent({
       memParts.push(<Text key="comma-mr">, </Text>);
     }
     memParts.push(<Text key="mem-read">
-        {verb_2} <Text bold>{memoryReadCount}</Text>{' '}
-        {memoryReadCount === 1 ? 'memory' : 'memories'}
-      </Text>);
+      {verb_2} <Text bold>{memoryReadCount}</Text>{' '}
+      {memoryReadCount === 1 ? 'memory' : 'memories'}
+    </Text>);
   }
   if (memorySearchCount > 0) {
     const isFirst_6 = !hasPrecedingNonMem && memParts.length === 0;
@@ -441,43 +441,43 @@ export function CollapsedReadSearchContent({
       memParts.push(<Text key="comma-mw">, </Text>);
     }
     memParts.push(<Text key="mem-write">
-        {verb_4} <Text bold>{memoryWriteCount}</Text>{' '}
-        {memoryWriteCount === 1 ? 'memory' : 'memories'}
-      </Text>);
+      {verb_4} <Text bold>{memoryWriteCount}</Text>{' '}
+      {memoryWriteCount === 1 ? 'memory' : 'memories'}
+    </Text>);
   }
   return <Box flexDirection="column" marginTop={1} backgroundColor={bg}>
-      <Box flexDirection="row">
-        {isActiveGroup ? <ToolUseLoader shouldAnimate isUnresolved isError={anyError} /> : <Box minWidth={2} />}
-        <Text dimColor={!isActiveGroup}>
-          {nonMemParts}
-          {memParts}
-          {feature('TEAMMEM') ? teamMemCollapsed!.TeamMemCountParts({
+    <Box flexDirection="row">
+      {isActiveGroup ? <ToolUseLoader shouldAnimate isUnresolved isError={anyError} /> : <Box minWidth={2} />}
+      <Text dimColor={!isActiveGroup}>
+        {nonMemParts}
+        {memParts}
+        {feature('TEAMMEM') ? teamMemCollapsed!.TeamMemCountParts({
           message,
           isActiveGroup,
           hasPrecedingParts: hasPrecedingNonMem || memParts.length > 0
         }) : null}
-          {isActiveGroup && <Text key="ellipsis">…</Text>} <CtrlOToExpand />
-        </Text>
-      </Box>
-      {isActiveGroup && displayedHint !== undefined &&
-    // Row layout: 5-wide gutter for ⎿, then a flex column for the text.
-    // Ink's wrap stays inside the right column so continuation lines
-    // indent under ⎿. MAX_HINT_CHARS in commandAsHint caps total at ~5 lines.
-    <Box flexDirection="row">
-          <Box width={5} flexShrink={0}>
-            <Text dimColor>{'  ⎿  '}</Text>
-          </Box>
-          <Box flexDirection="column" flexGrow={1}>
-            {displayedHint.split('\n').map((line, i, arr) => <Text key={`hint-${i}`} dimColor>
-                {line}
-                {i === arr.length - 1 && shellProgressSuffix}
-              </Text>)}
-          </Box>
-        </Box>}
-      {message.hookTotalMs !== undefined && message.hookTotalMs > 0 && <Text dimColor>
-          {'  ⎿  '}Ran {message.hookCount} PreToolUse{' '}
-          {message.hookCount === 1 ? 'hook' : 'hooks'} (
-          {formatSecondsShort(message.hookTotalMs)})
-        </Text>}
-    </Box>;
+        {isActiveGroup && <Text key="ellipsis">…</Text>} <CtrlOToExpand />
+      </Text>
+    </Box>
+    {isActiveGroup && displayedHint !== undefined &&
+      // Row layout: 5-wide gutter for ⎿, then a flex column for the text.
+      // Ink's wrap stays inside the right column so continuation lines
+      // indent under ⎿. MAX_HINT_CHARS in commandAsHint caps total at ~5 lines.
+      <Box flexDirection="row">
+        <Box width={5} flexShrink={0}>
+          <Text dimColor>{'  ⎿  '}</Text>
+        </Box>
+        <Box flexDirection="column" flexGrow={1}>
+          {displayedHint.split('\n').map((line, i, arr) => <Text key={`hint-${i}`} dimColor>
+            {line}
+            {i === arr.length - 1 && shellProgressSuffix}
+          </Text>)}
+        </Box>
+      </Box>}
+    {message.hookTotalMs !== undefined && message.hookTotalMs > 0 && <Text dimColor>
+      {'  ⎿  '}Ran {message.hookCount} PreToolUse{' '}
+      {message.hookCount === 1 ? 'hook' : 'hooks'} (
+      {formatSecondsShort(message.hookTotalMs)})
+    </Text>}
+  </Box>;
 }

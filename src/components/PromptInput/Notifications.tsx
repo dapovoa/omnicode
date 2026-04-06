@@ -12,7 +12,7 @@ import type { IDESelection } from '../../hooks/useIdeSelection.js';
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js';
 import { useVoiceEnabled } from '../../hooks/useVoiceEnabled.js';
 import { Box, Text } from '../../ink.js';
-import { useClaudeAiLimits } from '../../services/claudeAiLimitsHook.js';
+import { useOmnicodeAiLimits } from '../../services/omnicodeAiLimitsHook.js';
 import { calculateTokenWarningState } from '../../services/compact/autoCompact.js';
 import type { MCPServerConnection } from '../../services/mcp/types.js';
 import type { Message } from '../../types/message.js';
@@ -99,7 +99,7 @@ export function Notifications(t0) {
     addNotification,
     removeNotification
   } = useNotifications();
-  const claudeAiLimits = useClaudeAiLimits();
+  const omnicodeAiLimits = useOmnicodeAiLimits();
   let t5;
   let t6;
   if ($[5] !== addNotification) {
@@ -126,7 +126,7 @@ export function Notifications(t0) {
   useEffect(t5, t6);
   const shouldShowIdeSelection = ideStatus === "connected" && (ideSelection?.filePath || ideSelection?.text && ideSelection.lineCount > 0);
   const shouldShowAutoUpdater = !shouldShowIdeSelection || isAutoUpdating || autoUpdaterResult?.status !== "success";
-  const isInOverageMode = claudeAiLimits.isUsingOverage;
+  const isInOverageMode = omnicodeAiLimits.isUsingOverage;
   let t7;
   if ($[8] === Symbol.for("react.memo_cache_sentinel")) {
     t7 = getSubscriptionType();
@@ -267,16 +267,16 @@ function NotificationContent({
 
   // Voice state (VOICE_MODE builds only, runtime-gated by GrowthBook)
   const voiceState = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s => s.voiceState) : 'idle' as const;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s => s.voiceState) : 'idle' as const;
   // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
   const voiceEnabled = feature('VOICE_MODE') ? useVoiceEnabled() : false;
   const voiceError = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s_0 => s_0.voiceError) : null;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s_0 => s_0.voiceError) : null;
   const isBriefOnly = feature('KAIROS') || feature('KAIROS_BRIEF') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useAppState(s_1 => s_1.isBriefOnly) : false;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useAppState(s_1 => s_1.isBriefOnly) : false;
 
   // When voice is actively recording or processing, replace all
   // notifications with just the voice indicator.
@@ -284,48 +284,48 @@ function NotificationContent({
     return <VoiceIndicator voiceState={voiceState} />;
   }
   return <>
-      <IdeStatusIndicator ideSelection={ideSelection} mcpClients={mcpClients} />
-      {notifications.current && ('jsx' in notifications.current ? <Text wrap="truncate" key={notifications.current.key}>
-            {notifications.current.jsx}
-          </Text> : <Text color={notifications.current.color} dimColor={!notifications.current.color} wrap="truncate">
-            {notifications.current.text}
-          </Text>)}
-      {isInOverageMode && !isTeamOrEnterprise && <Box>
-          <Text dimColor wrap="truncate">
-            Now using extra usage
-          </Text>
-        </Box>}
-      {apiKeyHelperSlow && <Box>
-          <Text color="warning" wrap="truncate">
-            apiKeyHelper is taking a while{' '}
-          </Text>
-          <Text dimColor wrap="truncate">
-            ({apiKeyHelperSlow})
-          </Text>
-        </Box>}
-      {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && <Box>
-          <Text color="error" wrap="truncate">
-            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ? 'Authentication error · Try again' : 'Not logged in · Run /login'}
-          </Text>
-        </Box>}
-      {debug && <Box>
-          <Text color="warning" wrap="truncate">
-            Debug mode
-          </Text>
-        </Box>}
-      {apiKeyStatus !== 'invalid' && apiKeyStatus !== 'missing' && verbose && <Box>
-          <Text dimColor wrap="truncate">
-            {tokenUsage} tokens
-          </Text>
-        </Box>}
-      {!isBriefOnly && <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />}
-      {shouldShowAutoUpdater && <AutoUpdaterWrapper verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} autoUpdaterResult={autoUpdaterResult} isUpdating={isAutoUpdating} onChangeIsUpdating={onChangeIsUpdating} showSuccessMessage={!isShowingCompactMessage} />}
-      {feature('VOICE_MODE') ? voiceEnabled && voiceError && <Box>
-              <Text color="error" wrap="truncate">
-                {voiceError}
-              </Text>
-            </Box> : null}
-      <MemoryUsageIndicator />
-      <SandboxPromptFooterHint />
-    </>;
+    <IdeStatusIndicator ideSelection={ideSelection} mcpClients={mcpClients} />
+    {notifications.current && ('jsx' in notifications.current ? <Text wrap="truncate" key={notifications.current.key}>
+      {notifications.current.jsx}
+    </Text> : <Text color={notifications.current.color} dimColor={!notifications.current.color} wrap="truncate">
+      {notifications.current.text}
+    </Text>)}
+    {isInOverageMode && !isTeamOrEnterprise && <Box>
+      <Text dimColor wrap="truncate">
+        Now using extra usage
+      </Text>
+    </Box>}
+    {apiKeyHelperSlow && <Box>
+      <Text color="warning" wrap="truncate">
+        apiKeyHelper is taking a while{' '}
+      </Text>
+      <Text dimColor wrap="truncate">
+        ({apiKeyHelperSlow})
+      </Text>
+    </Box>}
+    {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && <Box>
+      <Text color="error" wrap="truncate">
+        {isEnvTruthy(process.env.OMNICODE_REMOTE) ? 'Authentication error · Try again' : 'Not logged in · Run /login'}
+      </Text>
+    </Box>}
+    {debug && <Box>
+      <Text color="warning" wrap="truncate">
+        Debug mode
+      </Text>
+    </Box>}
+    {apiKeyStatus !== 'invalid' && apiKeyStatus !== 'missing' && verbose && <Box>
+      <Text dimColor wrap="truncate">
+        {tokenUsage} tokens
+      </Text>
+    </Box>}
+    {!isBriefOnly && <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />}
+    {shouldShowAutoUpdater && <AutoUpdaterWrapper verbose={verbose} onAutoUpdaterResult={onAutoUpdaterResult} autoUpdaterResult={autoUpdaterResult} isUpdating={isAutoUpdating} onChangeIsUpdating={onChangeIsUpdating} showSuccessMessage={!isShowingCompactMessage} />}
+    {feature('VOICE_MODE') ? voiceEnabled && voiceError && <Box>
+      <Text color="error" wrap="truncate">
+        {voiceError}
+      </Text>
+    </Box> : null}
+    <MemoryUsageIndicator />
+    <SandboxPromptFooterHint />
+  </>;
 }

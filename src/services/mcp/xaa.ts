@@ -44,7 +44,7 @@ function makeXaaFetch(abortSignal?: AbortSignal): FetchLike {
     const timeout = AbortSignal.timeout(XAA_REQUEST_TIMEOUT_MS)
     const signal = abortSignal
       ? // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
-        AbortSignal.any([timeout, abortSignal])
+      AbortSignal.any([timeout, abortSignal])
       : timeout
     // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
     return fetch(url, { ...init, signal })
@@ -417,7 +417,7 @@ export type XaaConfig = {
 /**
  * Full XAA flow: PRM → AS metadata → token-exchange → jwt-bearer → access_token.
  * Thin composition of the four Layer-2 ops. Used by performMCPXaaAuth,
- * ClaudeAuthProvider.xaaRefresh, and the try-xaa*.ts debug scripts.
+ * OmnicodeAuthProvider.xaaRefresh, and the try-xaa*.ts debug scripts.
  *
  * @param serverUrl The MCP server URL (e.g. `https://mcp.example.com/mcp`)
  * @param config IdP + AS credentials
@@ -475,8 +475,8 @@ export async function performCrossAppAccess(
   const authMethods = asMeta.token_endpoint_auth_methods_supported
   const authMethod: 'client_secret_basic' | 'client_secret_post' =
     authMethods &&
-    !authMethods.includes('client_secret_basic') &&
-    authMethods.includes('client_secret_post')
+      !authMethods.includes('client_secret_basic') &&
+      authMethods.includes('client_secret_post')
       ? 'client_secret_post'
       : 'client_secret_basic'
   logMCPDebug(

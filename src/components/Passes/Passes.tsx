@@ -71,7 +71,7 @@ export function Passes({
         setReferrerReward(eligibilityData.referrer_reward);
 
         // Use the campaign returned from eligibility for redemptions
-        const campaign = eligibilityData.referral_code_details?.campaign ?? 'claude_code_guest_pass';
+        const campaign = eligibilityData.referral_code_details?.campaign ?? 'omnicode_code_guest_pass';
 
         // Fetch redemptions data
         let redemptionsData: ReferralRedemptionsResponse;
@@ -108,23 +108,23 @@ export function Passes({
   }, []);
   if (loading) {
     return <Pane>
-        <Box flexDirection="column" gap={1}>
-          <Text dimColor>Loading guest pass information…</Text>
-          <Text dimColor italic>
-            {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Esc to cancel</>}
-          </Text>
-        </Box>
-      </Pane>;
+      <Box flexDirection="column" gap={1}>
+        <Text dimColor>Loading guest pass information…</Text>
+        <Text dimColor italic>
+          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Esc to cancel</>}
+        </Text>
+      </Box>
+    </Pane>;
   }
   if (!isAvailable) {
     return <Pane>
-        <Box flexDirection="column" gap={1}>
-          <Text>Guest passes are not currently available.</Text>
-          <Text dimColor italic>
-            {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Esc to cancel</>}
-          </Text>
-        </Box>
-      </Pane>;
+      <Box flexDirection="column" gap={1}>
+        <Text>Guest passes are not currently available.</Text>
+        <Text dimColor italic>
+          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Esc to cancel</>}
+        </Text>
+      </Box>
+    </Pane>;
   }
   const availableCount = count(passStatuses, p => p.isAvailable);
 
@@ -137,47 +137,47 @@ export function Passes({
     if (isRedeemed) {
       // Grayed out redeemed ticket with slashes
       return <Box key={pass.passNumber} flexDirection="column" marginRight={1}>
-          <Text dimColor>{'┌─────────╱'}</Text>
-          <Text dimColor>{` ) CC ${TEARDROP_ASTERISK} ┊╱`}</Text>
-          <Text dimColor>{'└───────╱'}</Text>
-        </Box>;
+        <Text dimColor>{'┌─────────╱'}</Text>
+        <Text dimColor>{` ) CC ${TEARDROP_ASTERISK} ┊╱`}</Text>
+        <Text dimColor>{'└───────╱'}</Text>
+      </Box>;
     }
     return <Box key={pass.passNumber} flexDirection="column" marginRight={1}>
-        <Text>{'┌──────────┐'}</Text>
-        <Text>
-          {' ) CC '}
-          <Text color="claude">{TEARDROP_ASTERISK}</Text>
-          {' ┊ ( '}
-        </Text>
-        <Text>{'└──────────┘'}</Text>
-      </Box>;
+      <Text>{'┌──────────┐'}</Text>
+      <Text>
+        {' ) CC '}
+        <Text color="omnicode">{TEARDROP_ASTERISK}</Text>
+        {' ┊ ( '}
+      </Text>
+      <Text>{'└──────────┘'}</Text>
+    </Box>;
   };
   return <Pane>
-      <Box flexDirection="column" gap={1}>
-        <Text color="permission">Guest passes · {availableCount} left</Text>
+    <Box flexDirection="column" gap={1}>
+      <Text color="permission">Guest passes · {availableCount} left</Text>
 
-        <Box flexDirection="row" marginLeft={2}>
-          {sortedPasses.slice(0, 3).map(pass_0 => renderTicket(pass_0))}
-        </Box>
-
-        {referralLink && <Box marginLeft={2}>
-            <Text>{referralLink}</Text>
-          </Box>}
-
-        <Box flexDirection="column" marginLeft={2}>
-          <Text dimColor>
-            {referrerReward ? `Share a free week of Claude Code with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to keep building. ` : 'Share a free week of Claude Code with friends. '}
-            <Link url={referrerReward ? 'https://support.claude.com/en/articles/13456702-claude-code-guest-passes' : 'https://support.claude.com/en/articles/12875061-claude-code-guest-passes'}>
-              Terms apply.
-            </Link>
-          </Text>
-        </Box>
-
-        <Box>
-          <Text dimColor italic>
-            {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Enter to copy link · Esc to cancel</>}
-          </Text>
-        </Box>
+      <Box flexDirection="row" marginLeft={2}>
+        {sortedPasses.slice(0, 3).map(pass_0 => renderTicket(pass_0))}
       </Box>
-    </Pane>;
+
+      {referralLink && <Box marginLeft={2}>
+        <Text>{referralLink}</Text>
+      </Box>}
+
+      <Box flexDirection="column" marginLeft={2}>
+        <Text dimColor>
+          {referrerReward ? `Share a free week of Omnicode Code with friends. If they love it and subscribe, you'll get ${formatCreditAmount(referrerReward)} of extra usage to keep building. ` : 'Share a free week of Omnicode Code with friends. '}
+          <Link url={referrerReward ? 'https://support.omnicode.com/en/articles/13456702-omnicode-code-guest-passes' : 'https://support.omnicode.com/en/articles/12875061-omnicode-code-guest-passes'}>
+            Terms apply.
+          </Link>
+        </Text>
+      </Box>
+
+      <Box>
+        <Text dimColor italic>
+          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Enter to copy link · Esc to cancel</>}
+        </Text>
+      </Box>
+    </Box>
+  </Pane>;
 }

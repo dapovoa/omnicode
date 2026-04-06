@@ -17,8 +17,8 @@ function installCommonMocks(options?: {
     default: {
       get: options?.axiosReject
         ? async () => {
-            throw new Error('network fail')
-          }
+          throw new Error('network fail')
+        }
         : async () => ({ data: { enabled: false, disabled_reason: 'preference' } }),
       isAxiosError: () => false,
     },
@@ -41,14 +41,14 @@ function installCommonMocks(options?: {
   }))
 
   mock.module('../services/analytics/index.js', () => ({
-    logEvent: () => {},
+    logEvent: () => { },
   }))
 
   mock.module('./auth.js', () => ({
     getAnthropicApiKey: () => options?.apiKey ?? null,
-    getClaudeAIOAuthTokens: () =>
+    getOmnicodeAIOAuthTokens: () =>
       options?.oauthToken ? { accessToken: options.oauthToken } : null,
-    handleOAuth401Error: async () => {},
+    handleOAuth401Error: async () => { },
     hasProfileScope: () => options?.hasProfileScope ?? false,
   }))
 
@@ -65,7 +65,7 @@ function installCommonMocks(options?: {
   }))
 
   mock.module('./debug.js', () => ({
-    logForDebugging: () => {},
+    logForDebugging: () => { },
   }))
 
   mock.module('./envUtils.js', () => ({
@@ -74,7 +74,7 @@ function installCommonMocks(options?: {
   }))
 
   mock.module('./model/model.js', () => ({
-    getDefaultMainLoopModelSetting: () => 'claude-sonnet-4-6',
+    getDefaultMainLoopModelSetting: () => 'omnicode-sonnet-4-6',
     isOpus1mMergeEnabled: () => false,
     parseUserSpecifiedModel: (model: string) => model,
   }))
@@ -90,13 +90,13 @@ function installCommonMocks(options?: {
   mock.module('./settings/settings.js', () => ({
     getInitialSettings: () => ({ fastMode: true }),
     getSettingsForSource: () => ({}),
-    updateSettingsForSource: () => {},
+    updateSettingsForSource: () => { },
   }))
 
   mock.module('./signal.js', () => ({
     createSignal: () => {
-      const subscribe = () => () => {}
-      const emit = () => {}
+      const subscribe = () => () => { }
+      const emit = () => { }
       return { subscribe, emit }
     },
   }))

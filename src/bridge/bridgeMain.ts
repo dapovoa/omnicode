@@ -109,12 +109,12 @@ function pollSleepDetectionThresholdMs(backoff: BackoffConfig): number {
 }
 
 /**
- * Returns the args that must precede CLI flags when spawning a child claude
- * process. In compiled binaries, process.execPath is the claude binary itself
+ * Returns the args that must precede CLI flags when spawning a child omnicode
+ * process. In compiled binaries, process.execPath is the omnicode binary itself
  * and args go directly to it. In npm installs (node running cli.js),
  * process.execPath is the node runtime — the child spawn must pass the script
  * path as the first arg, otherwise node interprets --sdk-url as a node option
- * and exits with "bad option: --sdk-url". See anthropics/claude-code#28334.
+ * and exits with "bad option: --sdk-url". See anthropics/omnicode-code#28334.
  */
 function spawnScriptArgs(): string[] {
   if (isInBundledMode() || !process.argv[1]) {
@@ -283,33 +283,33 @@ export async function runBridgeLoop(
   // not auto-re-dispatch ACK'd work on lease expiry).
   const tokenRefresh = getAccessToken
     ? createTokenRefreshScheduler({
-        getAccessToken,
-        onRefresh: (sessionId, oauthToken) => {
-          const handle = activeSessions.get(sessionId)
-          if (!handle) {
-            return
-          }
-          if (v2Sessions.has(sessionId)) {
-            logger.logVerbose(
-              `Refreshing session ${sessionId} token via bridge/reconnect`,
-            )
-            void api
-              .reconnectSession(environmentId, sessionId)
-              .catch((err: unknown) => {
-                logger.logError(
-                  `Failed to refresh session ${sessionId} token: ${errorMessage(err)}`,
-                )
-                logForDebugging(
-                  `[bridge:token] reconnectSession(${sessionId}) failed: ${errorMessage(err)}`,
-                  { level: 'error' },
-                )
-              })
-          } else {
-            handle.updateAccessToken(oauthToken)
-          }
-        },
-        label: 'bridge',
-      })
+      getAccessToken,
+      onRefresh: (sessionId, oauthToken) => {
+        const handle = activeSessions.get(sessionId)
+        if (!handle) {
+          return
+        }
+        if (v2Sessions.has(sessionId)) {
+          logger.logVerbose(
+            `Refreshing session ${sessionId} token via bridge/reconnect`,
+          )
+          void api
+            .reconnectSession(environmentId, sessionId)
+            .catch((err: unknown) => {
+              logger.logError(
+                `Failed to refresh session ${sessionId} token: ${errorMessage(err)}`,
+              )
+              logForDebugging(
+                `[bridge:token] reconnectSession(${sessionId}) failed: ${errorMessage(err)}`,
+                { level: 'error' },
+              )
+            })
+        } else {
+          handle.updateAccessToken(oauthToken)
+        }
+      },
+      label: 'bridge',
+    })
     : null
   const loopStartTime = Date.now()
   // Track all in-flight cleanup promises (stopWork, worktree removal) so
@@ -349,7 +349,7 @@ export async function runBridgeLoop(
           ? `${config.debugFile.slice(0, ext)}-*${config.debugFile.slice(ext)}`
           : `${config.debugFile}-*`
     } else {
-      debugGlob = join(tmpdir(), 'claude', 'bridge-session-*.log')
+      debugGlob = join(tmpdir(), 'omnicode', 'bridge-session-*.log')
     }
     logger.setDebugLogPath(debugGlob)
   }
@@ -913,7 +913,7 @@ export async function runBridgeLoop(
           // ant-dev override (e.g. forcing v2 before the server flag is on).
           if (
             secret.use_code_sessions === true ||
-            isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+            isEnvTruthy(process.env.OMNICODE_BRIDGE_USE_CCR_V2)
           ) {
             sdkUrl = buildCCRv2SdkUrl(config.apiBaseUrl, sessionId)
             // Retry once on transient failure (network blip, 500) before
@@ -1135,7 +1135,7 @@ export async function runBridgeLoop(
           } else if (config.verbose || process.env.USER_TYPE === 'ant') {
             sessionDebugFile = join(
               tmpdir(),
-              'claude',
+              'omnicode',
               `bridge-session-${safeId}.log`,
             )
           }
@@ -1513,7 +1513,7 @@ export async function runBridgeLoop(
   }
 
   // In single-session mode with a known session, leave the session and
-  // environment alive so `claude remote-control --session-id=<id>` can resume.
+  // environment alive so `omnicode remote-control --session-id=<id>` can resume.
   // The backend GCs stale environments via a 4h TTL (BRIDGE_LAST_POLL_TTL).
   // Archiving the session or deregistering the environment would make the
   // printed resume command a lie — deregister deletes Firestore + Redis stream.
@@ -1529,7 +1529,7 @@ export async function runBridgeLoop(
     !fatalExit
   ) {
     logger.logStatus(
-      `Resume this session by running \`claude remote-control --continue\``,
+      `Resume this session by running \`omnicode remote-control --continue\``,
     )
     logForDebugging(
       `[bridge:shutdown] Skipping archive+deregister to allow resume of session ${initialSessionId}`,
@@ -1820,7 +1820,7 @@ export function parseArgs(args: string[]): ParsedArgs {
       createSessionInDir = false
     } else {
       return makeError(
-        `Unknown argument: ${arg}\nRun 'claude remote-control --help' for usage.`,
+        `Unknown argument: ${arg}\nRun 'omnicode remote-control --help' for usage.`,
       )
     }
   }
@@ -1918,20 +1918,19 @@ async function printHelp(): Promise<void> {
 `
     : ''
   const help = `
-Remote Control - Connect your local environment to claude.ai/code
+Remote Control - Connect your local environment to omnicode.ai/code
 
 USAGE
-  claude remote-control [options]
+  omnicode remote-control [options]
 OPTIONS
-  --name <name>                    Name for the session (shown in claude.ai/code)
-${
-  feature('KAIROS')
-    ? `  -c, --continue                   Resume the last session in this directory
+  --name <name>                    Name for the session (shown in omnicode.ai/code)
+${feature('KAIROS')
+      ? `  -c, --continue                   Resume the last session in this directory
   --session-id <id>                Resume a specific session by ID (cannot be
                                    used with spawn flags or --continue)
 `
-    : ''
-}  --permission-mode <mode>         Permission mode for spawned sessions
+      : ''
+    }  --permission-mode <mode>         Permission mode for spawned sessions
                                    (${modes})
   --debug-file <path>              Write debug logs to file
   -v, --verbose                    Enable verbose output
@@ -1939,12 +1938,12 @@ ${
 ${serverOptions}
 DESCRIPTION
   Remote Control allows you to control sessions on your local device from
-  claude.ai/code (https://claude.ai/code). Run this command in the
-  directory you want to work in, then connect from the Claude app or web.
+  omnicode.ai/code (https://omnicode.ai/code). Run this command in the
+  directory you want to work in, then connect from the Omnicode app or web.
 ${serverDescription}
 NOTES
-  - You must be logged in with a Claude account that has a subscription
-  - Run \`claude\` first in the directory to accept the workspace trust dialog
+  - You must be logged in with a Omnicode account that has a subscription
+  - Run \`omnicode\` first in the directory to accept the workspace trust dialog
 ${serverNote}`
   // biome-ignore lint/suspicious/noConsole: intentional help output
   console.log(help)
@@ -2066,7 +2065,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     await Promise.race([
       Promise.all([shutdown1PEventLogging(), shutdownDatadog()]),
       sleep(500, undefined, { unref: true }),
-    ]).catch(() => {})
+    ]).catch(() => { })
     // biome-ignore lint/suspicious/noConsole: intentional error output
     console.error(
       'Error: Multi-session Remote Control is not enabled for your account yet.',
@@ -2082,11 +2081,11 @@ export async function bridgeMain(args: string[]): Promise<void> {
   setCwdState(dir)
 
   // The bridge bypasses main.tsx (which renders the interactive TrustDialog via showSetupScreens),
-  // so we must verify trust was previously established by a normal `claude` session.
+  // so we must verify trust was previously established by a normal `omnicode` session.
   if (!checkHasTrustDialogAccepted()) {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.error(
-      `Error: Workspace not trusted. Please run \`claude\` in ${dir} first to review and accept the workspace trust dialog.`,
+      `Error: Workspace not trusted. Please run \`omnicode\` in ${dir} first to review and accept the workspace trust dialog.`,
     )
     // eslint-disable-next-line custom-rules/no-process-exit
     process.exit(1)
@@ -2122,7 +2121,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     })
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.log(
-      '\nRemote Control lets you access this CLI session from the web (claude.ai/code)\nor the Claude app, so you can pick up where you left off on any device.\n\nYou can disconnect remote access anytime by running /remote-control again.\n',
+      '\nRemote Control lets you access this CLI session from the web (omnicode.ai/code)\nor the Omnicode app, so you can pick up where you left off on any device.\n\nYou can disconnect remote access anytime by running /remote-control again.\n',
     )
     const answer = await new Promise<string>(resolve => {
       rl.question('Enable Remote Control? (y/n) ', resolve)
@@ -2154,7 +2153,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     if (!found) {
       // biome-ignore lint/suspicious/noConsole: intentional error output
       console.error(
-        `Error: No recent session found in this directory or its worktrees. Run \`claude remote-control\` to start a new one.`,
+        `Error: No recent session found in this directory or its worktrees. Run \`omnicode remote-control\` to start a new one.`,
       )
       // eslint-disable-next-line custom-rules/no-process-exit
       process.exit(1)
@@ -2175,7 +2174,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
   }
 
   // In production, baseUrl is the Anthropic API (from OAuth config).
-  // CLAUDE_BRIDGE_BASE_URL overrides this for ant local dev only.
+  // OMNICODE_BRIDGE_BASE_URL overrides this for ant local dev only.
   const baseUrl = getBridgeBaseUrl()
 
   // For non-localhost targets, require HTTPS to protect credentials.
@@ -2195,12 +2194,12 @@ export async function bridgeMain(args: string[]): Promise<void> {
   // Session ingress URL for WebSocket connections. In production this is the
   // same as baseUrl (Envoy routes /v1/session_ingress/* to session-ingress).
   // Locally, session-ingress runs on a different port (9413) than the
-  // contain-provide-api (8211), so CLAUDE_BRIDGE_SESSION_INGRESS_URL must be
-  // set explicitly. Ant-only, matching CLAUDE_BRIDGE_BASE_URL.
+  // contain-provide-api (8211), so OMNICODE_BRIDGE_SESSION_INGRESS_URL must be
+  // set explicitly. Ant-only, matching OMNICODE_BRIDGE_BASE_URL.
   const sessionIngressUrl =
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+      process.env.OMNICODE_BRIDGE_SESSION_INGRESS_URL
+      ? process.env.OMNICODE_BRIDGE_SESSION_INGRESS_URL
       : baseUrl
 
   const { getBranch, getRemoteUrl, findGitRoot } = await import(
@@ -2252,11 +2251,11 @@ export async function bridgeMain(args: string[]): Promise<void> {
     })
     // biome-ignore lint/suspicious/noConsole: intentional dialog output
     console.log(
-      `\nClaude Remote Control is launching in spawn mode which lets you create new sessions in this project from Claude Code on Web or your Mobile app. Learn more here: https://code.claude.com/docs/en/remote-control\n\n` +
-        `Spawn mode for this project:\n` +
-        `  [1] same-dir \u2014 sessions share the current directory (default)\n` +
-        `  [2] worktree \u2014 each session gets an isolated git worktree\n\n` +
-        `This can be changed later or explicitly set with --spawn=same-dir or --spawn=worktree.\n`,
+      `\nOmnicode Remote Control is launching in spawn mode which lets you create new sessions in this project from Omnicode Code on Web or your Mobile app. Learn more here: https://code.omnicode.com/docs/en/remote-control\n\n` +
+      `Spawn mode for this project:\n` +
+      `  [1] same-dir \u2014 sessions share the current directory (default)\n` +
+      `  [2] worktree \u2014 each session gets an isolated git worktree\n\n` +
+      `This can be changed later or explicitly set with --spawn=same-dir or --spawn=worktree.\n`,
     )
     const answer = await new Promise<string>(resolve => {
       rl.question('Choose [1/2] (default: 1): ', resolve)
@@ -2392,7 +2391,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
       }
       // biome-ignore lint/suspicious/noConsole: intentional error output
       console.error(
-        `Error: Session ${resumeSessionId} not found. It may have been archived or expired, or your login may have lapsed (run \`claude /login\`).`,
+        `Error: Session ${resumeSessionId} not found. It may have been archived or expired, or your login may have lapsed (run \`omnicode /login\`).`,
       )
       // eslint-disable-next-line custom-rules/no-process-exit
       process.exit(1)
@@ -2425,7 +2424,7 @@ export async function bridgeMain(args: string[]): Promise<void> {
     verbose,
     sandbox,
     bridgeId,
-    workerType: 'claude_code',
+    workerType: 'omnicode_code',
     environmentId: randomUUID(),
     reuseEnvironmentId,
     apiBaseUrl: baseUrl,
@@ -2830,7 +2829,7 @@ export async function runBridgeHeadless(
 
   if (!checkHasTrustDialogAccepted()) {
     throw new BridgeHeadlessPermanentError(
-      `Workspace not trusted: ${dir}. Run \`claude\` in that directory first to accept the trust dialog.`,
+      `Workspace not trusted: ${dir}. Run \`omnicode\` in that directory first to accept the trust dialog.`,
     )
   }
 
@@ -2852,8 +2851,8 @@ export async function runBridgeHeadless(
   }
   const sessionIngressUrl =
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
+      process.env.OMNICODE_BRIDGE_SESSION_INGRESS_URL
+      ? process.env.OMNICODE_BRIDGE_SESSION_INGRESS_URL
       : baseUrl
 
   const { getBranch, getRemoteUrl, findGitRoot } = await import(
@@ -2886,7 +2885,7 @@ export async function runBridgeHeadless(
     verbose: false,
     sandbox: opts.sandbox,
     bridgeId,
-    workerType: 'claude_code',
+    workerType: 'omnicode_code',
     environmentId: randomUUID(),
     apiBaseUrl: baseUrl,
     sessionIngressUrl,
@@ -2966,7 +2965,7 @@ export async function runBridgeHeadless(
 
 /** BridgeLogger adapter that routes everything to a single line-log fn. */
 function createHeadlessBridgeLogger(log: (s: string) => void): BridgeLogger {
-  const noop = (): void => {}
+  const noop = (): void => { }
   return {
     printBanner: (cfg, envId) =>
       log(

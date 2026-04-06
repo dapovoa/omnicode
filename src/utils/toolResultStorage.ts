@@ -298,7 +298,7 @@ async function maybePersistLargeToolResult(
     return toolResultBlock
   }
 
-  // Skip persistence for image content blocks - they need to be sent as-is to Claude
+  // Skip persistence for image content blocks - they need to be sent as-is to Omnicode
   if (hasImageBlock(content)) {
     return toolResultBlock
   }
@@ -916,8 +916,8 @@ export async function enforceToolResultBudget(
   if (newlyReplaced.length > 0) {
     logForDebugging(
       `Per-message budget: persisted ${newlyReplaced.length} tool results ` +
-        `across ${messagesOverBudget} over-budget message(s), ` +
-        `shed ~${formatFileSize(replacedSize)}, ${reappliedCount} re-applied`,
+      `across ${messagesOverBudget} over-budget message(s), ` +
+      `shed ~${formatFileSize(replacedSize)}, ${reappliedCount} re-applied`,
     )
     logEvent('tengu_message_level_tool_result_budget_enforced', {
       resultsPersisted: newlyReplaced.length,

@@ -38,21 +38,21 @@ export default function TextInput(props: Props): React.ReactNode {
   const [theme] = useTheme();
   const isTerminalFocused = useTerminalFocus();
   // Hoisted to mount-time — this component re-renders on every keystroke.
-  const accessibilityEnabled = useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_ACCESSIBILITY), []);
+  const accessibilityEnabled = useMemo(() => isEnvTruthy(process.env.OMNICODE_ACCESSIBILITY), []);
   const settings = useSettings();
   const reducedMotion = settings.prefersReducedMotion ?? false;
   const voiceState = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s => s.voiceState) : 'idle' as const;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s => s.voiceState) : 'idle' as const;
   const isVoiceRecording = voiceState === 'recording';
   const audioLevels = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useVoiceState(s_0 => s_0.voiceAudioLevels) : [];
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useVoiceState(s_0 => s_0.voiceAudioLevels) : [];
   const smoothedRef = useRef<number[]>(new Array(CURSOR_WAVEFORM_WIDTH).fill(0));
   const needsAnimation = isVoiceRecording && !reducedMotion;
   const [animRef, animTime] = feature('VOICE_MODE') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useAnimationFrame(needsAnimation ? 50 : null) : [() => {}, 0];
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useAnimationFrame(needsAnimation ? 50 : null) : [() => { }, 0];
 
   // Show hint when terminal regains focus and clipboard has an image
   useClipboardImageHint(isTerminalFocused, !!props.onImagePaste);
@@ -118,6 +118,6 @@ export default function TextInput(props: Props): React.ReactNode {
     dim: chalk.dim
   });
   return <Box ref={animRef}>
-      <BaseTextInput inputState={textInputState} terminalFocus={isTerminalFocused} highlights={props.highlights} invert={invert} hidePlaceholderText={isVoiceRecording} {...props} />
-    </Box>;
+    <BaseTextInput inputState={textInputState} terminalFocus={isTerminalFocused} highlights={props.highlights} invert={invert} hidePlaceholderText={isVoiceRecording} {...props} />
+  </Box>;
 }

@@ -397,7 +397,7 @@ export class WebSocketTransport implements Transport {
   private handleConnectionError(closeCode?: number): void {
     logForDebugging(
       `WebSocketTransport: Disconnected from ${this.url.href}` +
-        (closeCode != null ? ` (code ${closeCode})` : ''),
+      (closeCode != null ? ` (code ${closeCode})` : ''),
     )
     logForDiagnosticsNoPII('info', 'cli_websocket_disconnected')
     if (this.isBridge) {
@@ -768,7 +768,7 @@ export class WebSocketTransport implements Transport {
     this.stopKeepaliveInterval()
 
     // In CCR sessions, session activity heartbeats handle keep-alives
-    if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
+    if (isEnvTruthy(process.env.OMNICODE_REMOTE)) {
       return
     }
 

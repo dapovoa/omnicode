@@ -35,15 +35,15 @@ export type McpDoctorLiveCheck = {
 export type McpDoctorDefinition = {
   name: string
   sourceType:
-    | 'local'
-    | 'project'
-    | 'user'
-    | 'enterprise'
-    | 'managed'
-    | 'plugin'
-    | 'claudeai'
-    | 'dynamic'
-    | 'internal'
+  | 'local'
+  | 'project'
+  | 'user'
+  | 'enterprise'
+  | 'managed'
+  | 'plugin'
+  | 'omnicodeai'
+  | 'dynamic'
+  | 'internal'
   sourcePath?: string
   transport?: string
   runtimeVisible: boolean
@@ -186,8 +186,8 @@ function splitValidationFindings(validationFindings: McpDoctorFinding[]): {
 }
 
 function getSourceType(config: ScopedMcpServerConfig): McpDoctorDefinition['sourceType'] {
-  if (config.scope === 'claudeai') {
-    return 'claudeai'
+  if (config.scope === 'omnicodeai') {
+    return 'omnicodeai'
   }
   if (config.scope === 'dynamic') {
     return config.pluginSource ? 'plugin' : 'dynamic'
@@ -207,7 +207,7 @@ function getConfigSignature(config: ScopedMcpServerConfig): string {
     case 'sse':
     case 'http':
     case 'ws':
-    case 'claudeai-proxy':
+    case 'omnicodeai-proxy':
       return `${config.scope}:${config.type}:${config.url}`
     case 'sdk':
       return `${config.scope}:${config.type}:${config.name}`
@@ -299,8 +299,8 @@ function buildObservedDefinition(
     sourcePath:
       getSourceType(activeConfig) === 'plugin'
         ? `plugin:${activeConfig.pluginSource ?? 'unknown'}`
-        : getSourceType(activeConfig) === 'claudeai'
-          ? 'claude.ai'
+        : getSourceType(activeConfig) === 'omnicodeai'
+          ? 'omnicode.ai'
           : activeConfig.scope,
     transport: getTransport(activeConfig),
     runtimeVisible: options?.runtimeVisible ?? true,
@@ -318,8 +318,8 @@ function hasDefinitionForRuntimeSource(
   const runtimeSourcePath =
     runtimeSourceType === 'plugin'
       ? `plugin:${runtimeConfig.pluginSource ?? 'unknown'}`
-      : runtimeSourceType === 'claudeai'
-        ? 'claude.ai'
+      : runtimeSourceType === 'omnicodeai'
+        ? 'omnicode.ai'
         : deps.describeMcpConfigFilePath(runtimeConfig.scope)
 
   return definitions.some(

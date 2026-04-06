@@ -7,7 +7,7 @@ import type { PermissionResult } from 'src/utils/permissions/PermissionResult.js
 
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
-import { queryModelWithStreaming } from '../../services/api/claude.js'
+import { queryModelWithStreaming } from '../../services/api/omnicode.js'
 import { collectCodexCompletedResponse } from '../../services/api/codexShim.js'
 import {
   resolveCodexApiCredentials,
@@ -102,8 +102,8 @@ function shouldUseFirecrawl(): boolean {
   return true
 }
 
-function isClaudeModel(model: string): boolean {
-  return /claude/i.test(model)
+function isOmnicodeModel(model: string): boolean {
+  return /omnicode/i.test(model)
 }
 
 function shouldUseDuckDuckGo(): boolean {
@@ -115,8 +115,8 @@ function shouldUseDuckDuckGo(): boolean {
     return false
   }
 
-  // Use free DDG search for non-Claude models by default.
-  return !isClaudeModel(getMainLoopModel())
+  // Use free DDG search for non-Omnicode models by default.
+  return !isOmnicodeModel(getMainLoopModel())
 }
 
 async function runDuckDuckGoSearch(input: Input): Promise<Output> {
@@ -523,7 +523,7 @@ export const WebSearchTool = buildTool({
   maxResultSizeChars: 100_000,
   shouldDefer: true,
   async description(input) {
-    return `Claude wants to search the web for: ${input.query}`
+    return `Omnicode wants to search the web for: ${input.query}`
   },
   userFacingName() {
     return 'Web Search'
@@ -554,12 +554,12 @@ export const WebSearchTool = buildTool({
       return true
     }
 
-    // Enable for Vertex AI with supported models (Claude 4.0+)
+    // Enable for Vertex AI with supported models (Omnicode 4.0+)
     if (provider === 'vertex') {
       const supportsWebSearch =
-        model.includes('claude-opus-4') ||
-        model.includes('claude-sonnet-4') ||
-        model.includes('claude-haiku-4')
+        model.includes('omnicode-opus-4') ||
+        model.includes('omnicode-sonnet-4') ||
+        model.includes('omnicode-haiku-4')
 
       return supportsWebSearch
     }
@@ -807,25 +807,25 @@ export const WebSearchTool = buildTool({
 
     let formattedOutput = `Web search results for query: "${query}"\n\n`
 
-    // Process the results array - it can contain both string summaries and search result objects.
-    // Guard against null/undefined entries that can appear after JSON round-tripping
-    // (e.g., from compaction or transcript deserialization).
-    ;(results ?? []).forEach(result => {
-      if (result == null) {
-        return
-      }
-      if (typeof result === 'string') {
-        // Text summary
-        formattedOutput += result + '\n\n'
-      } else {
-        // Search result with links
-        if (result.content?.length > 0) {
-          formattedOutput += `Links: ${jsonStringify(result.content)}\n\n`
-        } else {
-          formattedOutput += 'No links found.\n\n'
+      // Process the results array - it can contain both string summaries and search result objects.
+      // Guard against null/undefined entries that can appear after JSON round-tripping
+      // (e.g., from compaction or transcript deserialization).
+      ; (results ?? []).forEach(result => {
+        if (result == null) {
+          return
         }
-      }
-    })
+        if (typeof result === 'string') {
+          // Text summary
+          formattedOutput += result + '\n\n'
+        } else {
+          // Search result with links
+          if (result.content?.length > 0) {
+            formattedOutput += `Links: ${jsonStringify(result.content)}\n\n`
+          } else {
+            formattedOutput += 'No links found.\n\n'
+          }
+        }
+      })
 
     formattedOutput +=
       '\nREMINDER: You MUST include the sources above in your response to the user using markdown hyperlinks.'

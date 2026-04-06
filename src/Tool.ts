@@ -95,10 +95,10 @@ export type QueryChainTracking = {
 export type ValidationResult =
   | { result: true }
   | {
-      result: false
-      message: string
-      errorCode: number
-    }
+    result: false
+    message: string
+    errorCode: number
+  }
 
 export type SetToolJSXFn = (
   args: {
@@ -149,9 +149,9 @@ export const getEmptyToolPermissionContext: () => ToolPermissionContext =
 
 export type CompactProgressEvent =
   | {
-      type: 'hooks_start'
-      hookType: 'pre_compact' | 'post_compact' | 'session_start'
-    }
+    type: 'hooks_start'
+    hookType: 'pre_compact' | 'post_compact' | 'session_start'
+  }
   | { type: 'compact_start' }
   | { type: 'compact_end' }
 
@@ -216,10 +216,10 @@ export type ToolUseContext = {
   }) => void
   nestedMemoryAttachmentTriggers?: Set<string>
   /**
-   * CLAUDE.md paths already injected as nested_memory attachments this
+   * OMNICODE.md paths already injected as nested_memory attachments this
    * session. Dedup for memoryFilesToAttachments — readFileState is an LRU
    * that evicts entries in busy sessions, so its .has() check alone can
-   * re-inject the same CLAUDE.md dozens of times.
+   * re-inject the same OMNICODE.md dozens of times.
    */
   loadedNestedMemoryPaths?: Set<string>
   dynamicSkillDirTriggers?: Set<string>
@@ -460,13 +460,13 @@ export type Tool<
   /**
    * For MCP tools: the server and tool names as received from the MCP server (unnormalized).
    * Present on all MCP tools regardless of whether `name` is prefixed (mcp__server__tool)
-   * or unprefixed (CLAUDE_AGENT_SDK_MCP_NO_PREFIX mode).
+   * or unprefixed (OMNICODE_AGENT_SDK_MCP_NO_PREFIX mode).
    */
   mcpInfo?: { serverName: string; toolName: string }
   readonly name: string
   /**
    * Maximum size in characters for tool result before it gets persisted to disk.
-   * When exceeded, the result is saved to a file and Claude receives a preview
+   * When exceeded, the result is saved to a file and Omnicode receives a preview
    * with the file path instead of the full content.
    *
    * Set to Infinity for tools whose output must never be persisted (e.g. Read,
@@ -744,10 +744,10 @@ export type ToolDef<
  */
 type BuiltTool<D> = Omit<D, DefaultableToolKeys> & {
   [K in DefaultableToolKeys]-?: K extends keyof D
-    ? undefined extends D[K]
-      ? ToolDefaults[K]
-      : D[K]
-    : ToolDefaults[K]
+  ? undefined extends D[K]
+  ? ToolDefaults[K]
+  : D[K]
+  : ToolDefaults[K]
 }
 
 /**

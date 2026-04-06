@@ -27,7 +27,7 @@ import { useDoublePress } from './useDoublePress.js'
 type MaybeCursor = void | Cursor
 type InputHandler = (input: string) => MaybeCursor
 type InputMapper = (input: string) => MaybeCursor
-const NOOP_HANDLER: InputHandler = () => {}
+const NOOP_HANDLER: InputHandler = () => { }
 function mapInput(input_map: Array<[string, InputHandler]>): InputMapper {
   const map = new Map(input_map)
   return function (input: string): MaybeCursor {
@@ -396,7 +396,7 @@ export function useTextInput({
               // paste — convert to \n. Backslash+\r is a stale VS Code
               // Shift+Enter binding (pre-#8991 /terminal-setup wrote
               // args.text "\\\r\n" to keybindings.json); keep the \r so
-              // it becomes \n below (anthropics/claude-code#31316).
+              // it becomes \n below (anthropics/omnicode-code#31316).
               const text = stripAnsi(input)
                 // eslint-disable-next-line custom-rules/no-lookbehind-regex -- .replace(re, str) on 1-2 char keystrokes: no-match returns same string (Object.is), regex never runs
                 .replace(/(?<=[^\\\r\n])\r$/, '')

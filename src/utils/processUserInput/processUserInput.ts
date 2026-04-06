@@ -355,7 +355,7 @@ async function processUserInputBase(
     : []
   const imagePasteIds = imageContents.map(img => img.id)
 
-  // Store images to disk so Claude can reference the path in context
+  // Store images to disk so Omnicode can reference the path in context
   // (for manipulation with CLI tools, uploading to PRs, etc.)
   const storedImagePaths = pastedContents
     ? await storeImages(pastedContents)
@@ -501,15 +501,15 @@ async function processUserInputBase(
   queryCheckpoint('query_attachment_loading_start')
   const attachmentMessages = shouldExtractAttachments
     ? await toArray(
-        getAttachmentMessages(
-          inputString,
-          context,
-          ideSelection ?? null,
-          [], // queuedCommands - handled by query.ts for mid-turn attachments
-          messages,
-          querySource,
-        ),
-      )
+      getAttachmentMessages(
+        inputString,
+        context,
+        ideSelection ?? null,
+        [], // queuedCommands - handled by query.ts for mid-turn attachments
+        messages,
+        querySource,
+      ),
+    )
     : []
   queryCheckpoint('query_attachment_loading_end')
 

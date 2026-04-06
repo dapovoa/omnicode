@@ -5,7 +5,7 @@ export type ModelConfig = Record<APIProvider, ModelName>
 
 // ---------------------------------------------------------------------------
 // OpenAI-compatible model mappings
-// Maps Claude model tiers to sensible defaults for popular providers.
+// Maps Omnicode model tiers to sensible defaults for popular providers.
 // Override with OPENAI_MODEL, ANTHROPIC_MODEL, or settings.model
 // ---------------------------------------------------------------------------
 export const OPENAI_MODEL_DEFAULTS = {
@@ -16,7 +16,7 @@ export const OPENAI_MODEL_DEFAULTS = {
 
 // ---------------------------------------------------------------------------
 // Gemini model mappings
-// Maps Claude model tiers to Google Gemini equivalents.
+// Maps Omnicode model tiers to Google Gemini equivalents.
 // Override with GEMINI_MODEL env var.
 // ---------------------------------------------------------------------------
 export const GEMINI_MODEL_DEFAULTS = {
@@ -25,126 +25,126 @@ export const GEMINI_MODEL_DEFAULTS = {
   haiku: 'gemini-2.0-flash-lite',          // fast & cheap
 } as const
 
-// @[MODEL LAUNCH]: Add a new CLAUDE_*_CONFIG constant here. Double check the correct model strings
+// @[MODEL LAUNCH]: Add a new OMNICODE_*_CONFIG constant here. Double check the correct model strings
 // here since the pattern may change.
 
-export const CLAUDE_3_7_SONNET_CONFIG = {
-  firstParty: 'claude-3-7-sonnet-20250219',
-  bedrock: 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
-  vertex: 'claude-3-7-sonnet@20250219',
-  foundry: 'claude-3-7-sonnet',
+export const OMNICODE_3_7_SONNET_CONFIG = {
+  firstParty: 'omnicode-3-7-sonnet-20250219',
+  bedrock: 'us.anthropic.omnicode-3-7-sonnet-20250219-v1:0',
+  vertex: 'omnicode-3-7-sonnet@20250219',
+  foundry: 'omnicode-3-7-sonnet',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash',
 } as const satisfies ModelConfig
 
-export const CLAUDE_3_5_V2_SONNET_CONFIG = {
-  firstParty: 'claude-3-5-sonnet-20241022',
-  bedrock: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
-  vertex: 'claude-3-5-sonnet-v2@20241022',
-  foundry: 'claude-3-5-sonnet',
+export const OMNICODE_3_5_V2_SONNET_CONFIG = {
+  firstParty: 'omnicode-3-5-sonnet-20241022',
+  bedrock: 'anthropic.omnicode-3-5-sonnet-20241022-v2:0',
+  vertex: 'omnicode-3-5-sonnet-v2@20241022',
+  foundry: 'omnicode-3-5-sonnet',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash',
 } as const satisfies ModelConfig
 
-export const CLAUDE_3_5_HAIKU_CONFIG = {
-  firstParty: 'claude-3-5-haiku-20241022',
-  bedrock: 'us.anthropic.claude-3-5-haiku-20241022-v1:0',
-  vertex: 'claude-3-5-haiku@20241022',
-  foundry: 'claude-3-5-haiku',
+export const OMNICODE_3_5_HAIKU_CONFIG = {
+  firstParty: 'omnicode-3-5-haiku-20241022',
+  bedrock: 'us.anthropic.omnicode-3-5-haiku-20241022-v1:0',
+  vertex: 'omnicode-3-5-haiku@20241022',
+  foundry: 'omnicode-3-5-haiku',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash-lite',
 } as const satisfies ModelConfig
 
-export const CLAUDE_HAIKU_4_5_CONFIG = {
-  firstParty: 'claude-haiku-4-5-20251001',
-  bedrock: 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
-  vertex: 'claude-haiku-4-5@20251001',
-  foundry: 'claude-haiku-4-5',
+export const OMNICODE_HAIKU_4_5_CONFIG = {
+  firstParty: 'omnicode-haiku-4-5-20251001',
+  bedrock: 'us.anthropic.omnicode-haiku-4-5-20251001-v1:0',
+  vertex: 'omnicode-haiku-4-5@20251001',
+  foundry: 'omnicode-haiku-4-5',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash-lite',
 } as const satisfies ModelConfig
 
-export const CLAUDE_SONNET_4_CONFIG = {
-  firstParty: 'claude-sonnet-4-20250514',
-  bedrock: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
-  vertex: 'claude-sonnet-4@20250514',
-  foundry: 'claude-sonnet-4',
+export const OMNICODE_SONNET_4_CONFIG = {
+  firstParty: 'omnicode-sonnet-4-20250514',
+  bedrock: 'us.anthropic.omnicode-sonnet-4-20250514-v1:0',
+  vertex: 'omnicode-sonnet-4@20250514',
+  foundry: 'omnicode-sonnet-4',
   openai: 'gpt-4o-mini',
   gemini: 'gemini-2.0-flash',
 } as const satisfies ModelConfig
 
-export const CLAUDE_SONNET_4_5_CONFIG = {
-  firstParty: 'claude-sonnet-4-5-20250929',
-  bedrock: 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
-  vertex: 'claude-sonnet-4-5@20250929',
-  foundry: 'claude-sonnet-4-5',
+export const OMNICODE_SONNET_4_5_CONFIG = {
+  firstParty: 'omnicode-sonnet-4-5-20250929',
+  bedrock: 'us.anthropic.omnicode-sonnet-4-5-20250929-v1:0',
+  vertex: 'omnicode-sonnet-4-5@20250929',
+  foundry: 'omnicode-sonnet-4-5',
   openai: 'gpt-4o',
   gemini: 'gemini-2.0-flash',
 } as const satisfies ModelConfig
 
-export const CLAUDE_OPUS_4_CONFIG = {
-  firstParty: 'claude-opus-4-20250514',
-  bedrock: 'us.anthropic.claude-opus-4-20250514-v1:0',
-  vertex: 'claude-opus-4@20250514',
-  foundry: 'claude-opus-4',
+export const OMNICODE_OPUS_4_CONFIG = {
+  firstParty: 'omnicode-opus-4-20250514',
+  bedrock: 'us.anthropic.omnicode-opus-4-20250514-v1:0',
+  vertex: 'omnicode-opus-4@20250514',
+  foundry: 'omnicode-opus-4',
   openai: 'gpt-4o',
   gemini: 'gemini-2.5-pro-preview-03-25',
 } as const satisfies ModelConfig
 
-export const CLAUDE_OPUS_4_1_CONFIG = {
-  firstParty: 'claude-opus-4-1-20250805',
-  bedrock: 'us.anthropic.claude-opus-4-1-20250805-v1:0',
-  vertex: 'claude-opus-4-1@20250805',
-  foundry: 'claude-opus-4-1',
+export const OMNICODE_OPUS_4_1_CONFIG = {
+  firstParty: 'omnicode-opus-4-1-20250805',
+  bedrock: 'us.anthropic.omnicode-opus-4-1-20250805-v1:0',
+  vertex: 'omnicode-opus-4-1@20250805',
+  foundry: 'omnicode-opus-4-1',
   openai: 'gpt-4o',
   gemini: 'gemini-2.5-pro-preview-03-25',
 } as const satisfies ModelConfig
 
-export const CLAUDE_OPUS_4_5_CONFIG = {
-  firstParty: 'claude-opus-4-5-20251101',
-  bedrock: 'us.anthropic.claude-opus-4-5-20251101-v1:0',
-  vertex: 'claude-opus-4-5@20251101',
-  foundry: 'claude-opus-4-5',
+export const OMNICODE_OPUS_4_5_CONFIG = {
+  firstParty: 'omnicode-opus-4-5-20251101',
+  bedrock: 'us.anthropic.omnicode-opus-4-5-20251101-v1:0',
+  vertex: 'omnicode-opus-4-5@20251101',
+  foundry: 'omnicode-opus-4-5',
   openai: 'gpt-4o',
   gemini: 'gemini-2.5-pro-preview-03-25',
 } as const satisfies ModelConfig
 
-export const CLAUDE_OPUS_4_6_CONFIG = {
-  firstParty: 'claude-opus-4-6',
-  bedrock: 'us.anthropic.claude-opus-4-6-v1',
-  vertex: 'claude-opus-4-6',
-  foundry: 'claude-opus-4-6',
+export const OMNICODE_OPUS_4_6_CONFIG = {
+  firstParty: 'omnicode-opus-4-6',
+  bedrock: 'us.anthropic.omnicode-opus-4-6-v1',
+  vertex: 'omnicode-opus-4-6',
+  foundry: 'omnicode-opus-4-6',
   openai: 'gpt-4o',
   gemini: 'gemini-2.5-pro-preview-03-25',
 } as const satisfies ModelConfig
 
-export const CLAUDE_SONNET_4_6_CONFIG = {
-  firstParty: 'claude-sonnet-4-6',
-  bedrock: 'us.anthropic.claude-sonnet-4-6',
-  vertex: 'claude-sonnet-4-6',
-  foundry: 'claude-sonnet-4-6',
+export const OMNICODE_SONNET_4_6_CONFIG = {
+  firstParty: 'omnicode-sonnet-4-6',
+  bedrock: 'us.anthropic.omnicode-sonnet-4-6',
+  vertex: 'omnicode-sonnet-4-6',
+  foundry: 'omnicode-sonnet-4-6',
   openai: 'gpt-4o',
   gemini: 'gemini-2.0-flash',
 } as const satisfies ModelConfig
 
 // @[MODEL LAUNCH]: Register the new config here.
 export const ALL_MODEL_CONFIGS = {
-  haiku35: CLAUDE_3_5_HAIKU_CONFIG,
-  haiku45: CLAUDE_HAIKU_4_5_CONFIG,
-  sonnet35: CLAUDE_3_5_V2_SONNET_CONFIG,
-  sonnet37: CLAUDE_3_7_SONNET_CONFIG,
-  sonnet40: CLAUDE_SONNET_4_CONFIG,
-  sonnet45: CLAUDE_SONNET_4_5_CONFIG,
-  sonnet46: CLAUDE_SONNET_4_6_CONFIG,
-  opus40: CLAUDE_OPUS_4_CONFIG,
-  opus41: CLAUDE_OPUS_4_1_CONFIG,
-  opus45: CLAUDE_OPUS_4_5_CONFIG,
-  opus46: CLAUDE_OPUS_4_6_CONFIG,
+  haiku35: OMNICODE_3_5_HAIKU_CONFIG,
+  haiku45: OMNICODE_HAIKU_4_5_CONFIG,
+  sonnet35: OMNICODE_3_5_V2_SONNET_CONFIG,
+  sonnet37: OMNICODE_3_7_SONNET_CONFIG,
+  sonnet40: OMNICODE_SONNET_4_CONFIG,
+  sonnet45: OMNICODE_SONNET_4_5_CONFIG,
+  sonnet46: OMNICODE_SONNET_4_6_CONFIG,
+  opus40: OMNICODE_OPUS_4_CONFIG,
+  opus41: OMNICODE_OPUS_4_1_CONFIG,
+  opus45: OMNICODE_OPUS_4_5_CONFIG,
+  opus46: OMNICODE_OPUS_4_6_CONFIG,
 } as const satisfies Record<string, ModelConfig>
 
 export type ModelKey = keyof typeof ALL_MODEL_CONFIGS
 
-/** Union of all canonical first-party model IDs, e.g. 'claude-opus-4-6' | 'claude-sonnet-4-5-20250929' | … */
+/** Union of all canonical first-party model IDs, e.g. 'omnicode-opus-4-6' | 'omnicode-sonnet-4-5-20250929' | … */
 export type CanonicalModelId =
   (typeof ALL_MODEL_CONFIGS)[ModelKey]['firstParty']
 

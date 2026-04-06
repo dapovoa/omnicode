@@ -12,7 +12,7 @@ import {
 } from '../constants/system.js'
 import { logEvent } from '../services/analytics/index.js'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../services/analytics/metadata.js'
-import { getAPIMetadata } from '../services/api/claude.js'
+import { getAPIMetadata } from '../services/api/omnicode.js'
 import { getAnthropicClient } from '../services/api/client.js'
 import { getModelBetas, modelSupportsStructuredOutputs } from './betas.js'
 import { computeFingerprint } from './fingerprint.js'
@@ -51,7 +51,7 @@ export type SideQueryOptions = {
   maxRetries?: number
   /** Abort signal */
   signal?: AbortSignal
-  /** Skip CLI system prompt prefix (keeps attribution header for OAuth). Default true — side queries are internal classifiers with their own prompt. Set false only for queries that need the full "You are Claude Code…" prefix. */
+  /** Skip CLI system prompt prefix (keeps attribution header for OAuth). Default true — side queries are internal classifiers with their own prompt. Set false only for queries that need the full "You are Omnicode Code…" prefix. */
   skipSystemPromptPrefix?: boolean
   /** Temperature override */
   temperature?: number
@@ -151,14 +151,14 @@ export async function sideQuery(opts: SideQueryOptions): Promise<BetaMessage> {
     ...(skipSystemPromptPrefix
       ? []
       : [
-          {
-            type: 'text' as const,
-            text: getCLISyspromptPrefix({
-              isNonInteractive: false,
-              hasAppendSystemPrompt: false,
-            }),
-          },
-        ]),
+        {
+          type: 'text' as const,
+          text: getCLISyspromptPrefix({
+            isNonInteractive: false,
+            hasAppendSystemPrompt: false,
+          }),
+        },
+      ]),
     ...(Array.isArray(system)
       ? system
       : system

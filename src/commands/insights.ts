@@ -14,13 +14,13 @@ import {
 import { tmpdir } from 'os'
 import { extname, join } from 'path'
 import type { Command } from '../commands.js'
-import { queryWithModel } from '../services/api/claude.js'
+import { queryWithModel } from '../services/api/omnicode.js'
 import {
   AGENT_TOOL_NAME,
   LEGACY_AGENT_TOOL_NAME,
 } from '../tools/AgentTool/constants.js'
 import type { LogOption } from '../types/logs.js'
-import { getClaudeConfigHomeDir } from '../utils/envUtils.js'
+import { getOmnicodeConfigHomeDir } from '../utils/envUtils.js'
 import { toError } from '../utils/errors.js'
 import { execFileNoThrow } from '../utils/execFileNoThrow.js'
 import { logError } from '../utils/log.js'
@@ -60,40 +60,40 @@ type RemoteHostInfo = {
 const getRunningRemoteHosts: () => Promise<string[]> =
   process.env.USER_TYPE === 'ant'
     ? async () => {
-        const { stdout, code } = await execFileNoThrow(
-          'coder',
-          ['list', '-o', 'json'],
-          { timeout: 30000 },
-        )
-        if (code !== 0) return []
-        try {
-          const workspaces = jsonParse(stdout) as Array<{
-            name: string
-            latest_build?: { status?: string }
-          }>
-          return workspaces
-            .filter(w => w.latest_build?.status === 'running')
-            .map(w => w.name)
-        } catch {
-          return []
-        }
+      const { stdout, code } = await execFileNoThrow(
+        'coder',
+        ['list', '-o', 'json'],
+        { timeout: 30000 },
+      )
+      if (code !== 0) return []
+      try {
+        const workspaces = jsonParse(stdout) as Array<{
+          name: string
+          latest_build?: { status?: string }
+        }>
+        return workspaces
+          .filter(w => w.latest_build?.status === 'running')
+          .map(w => w.name)
+      } catch {
+        return []
       }
+    }
     : async () => []
 
 const getRemoteHostSessionCount: (hs: string) => Promise<number> =
   process.env.USER_TYPE === 'ant'
     ? async (homespace: string) => {
-        const { stdout, code } = await execFileNoThrow(
-          'ssh',
-          [
-            `${homespace}.coder`,
-            'find /root/.claude/projects -name "*.jsonl" 2>/dev/null | wc -l',
-          ],
-          { timeout: 30000 },
-        )
-        if (code !== 0) return 0
-        return parseInt(stdout.trim(), 10) || 0
-      }
+      const { stdout, code } = await execFileNoThrow(
+        'ssh',
+        [
+          `${homespace}.coder`,
+          'find /root/.omnicode/projects -name "*.jsonl" 2>/dev/null | wc -l',
+        ],
+        { timeout: 30000 },
+      )
+      if (code !== 0) return 0
+      return parseInt(stdout.trim(), 10) || 0
+    }
     : async () => 0
 
 const collectFromRemoteHost: (
@@ -102,85 +102,85 @@ const collectFromRemoteHost: (
 ) => Promise<{ copied: number; skipped: number }> =
   process.env.USER_TYPE === 'ant'
     ? async (homespace: string, destDir: string) => {
-        const result = { copied: 0, skipped: 0 }
+      const result = { copied: 0, skipped: 0 }
 
-        // Create temp directory
-        const tempDir = await mkdtemp(join(tmpdir(), 'claude-hs-'))
+      // Create temp directory
+      const tempDir = await mkdtemp(join(tmpdir(), 'omnicode-hs-'))
 
-        try {
-          // SCP the projects folder
-          const scpResult = await execFileNoThrow(
-            'scp',
-            ['-rq', `${homespace}.coder:/root/.claude/projects/`, tempDir],
-            { timeout: 300000 },
-          )
-          if (scpResult.code !== 0) {
-            // SCP failed
-            return result
-          }
-
-          const projectsDir = join(tempDir, 'projects')
-          let projectDirents: Awaited<ReturnType<typeof readdir>>
-          try {
-            projectDirents = await readdir(projectsDir, { withFileTypes: true })
-          } catch {
-            return result
-          }
-
-          // Merge into destination (parallel per project directory)
-          await Promise.all(
-            projectDirents.map(async dirent => {
-              const projectName = dirent.name
-              const projectPath = join(projectsDir, projectName)
-
-              // Skip if not a directory
-              if (!dirent.isDirectory()) return
-
-              const destProjectName = `${projectName}__${homespace}`
-              const destProjectPath = join(destDir, destProjectName)
-
-              try {
-                await mkdir(destProjectPath, { recursive: true })
-              } catch {
-                // Directory may already exist
-              }
-
-              // Copy session files (skip existing)
-              let files: Awaited<ReturnType<typeof readdir>>
-              try {
-                files = await readdir(projectPath, { withFileTypes: true })
-              } catch {
-                return
-              }
-              await Promise.all(
-                files.map(async fileDirent => {
-                  const fileName = fileDirent.name
-                  if (!fileName.endsWith('.jsonl')) return
-
-                  const srcFile = join(projectPath, fileName)
-                  const destFile = join(destProjectPath, fileName)
-
-                  try {
-                    await copyFile(srcFile, destFile, fsConstants.COPYFILE_EXCL)
-                    result.copied++
-                  } catch {
-                    // EEXIST from COPYFILE_EXCL means dest already exists
-                    result.skipped++
-                  }
-                }),
-              )
-            }),
-          )
-        } finally {
-          try {
-            await rm(tempDir, { recursive: true, force: true })
-          } catch {
-            // Ignore cleanup errors
-          }
+      try {
+        // SCP the projects folder
+        const scpResult = await execFileNoThrow(
+          'scp',
+          ['-rq', `${homespace}.coder:/root/.omnicode/projects/`, tempDir],
+          { timeout: 300000 },
+        )
+        if (scpResult.code !== 0) {
+          // SCP failed
+          return result
         }
 
-        return result
+        const projectsDir = join(tempDir, 'projects')
+        let projectDirents: Awaited<ReturnType<typeof readdir>>
+        try {
+          projectDirents = await readdir(projectsDir, { withFileTypes: true })
+        } catch {
+          return result
+        }
+
+        // Merge into destination (parallel per project directory)
+        await Promise.all(
+          projectDirents.map(async dirent => {
+            const projectName = dirent.name
+            const projectPath = join(projectsDir, projectName)
+
+            // Skip if not a directory
+            if (!dirent.isDirectory()) return
+
+            const destProjectName = `${projectName}__${homespace}`
+            const destProjectPath = join(destDir, destProjectName)
+
+            try {
+              await mkdir(destProjectPath, { recursive: true })
+            } catch {
+              // Directory may already exist
+            }
+
+            // Copy session files (skip existing)
+            let files: Awaited<ReturnType<typeof readdir>>
+            try {
+              files = await readdir(projectPath, { withFileTypes: true })
+            } catch {
+              return
+            }
+            await Promise.all(
+              files.map(async fileDirent => {
+                const fileName = fileDirent.name
+                if (!fileName.endsWith('.jsonl')) return
+
+                const srcFile = join(projectPath, fileName)
+                const destFile = join(destProjectPath, fileName)
+
+                try {
+                  await copyFile(srcFile, destFile, fsConstants.COPYFILE_EXCL)
+                  result.copied++
+                } catch {
+                  // EEXIST from COPYFILE_EXCL means dest already exists
+                  result.skipped++
+                }
+              }),
+            )
+          }),
+        )
+      } finally {
+        try {
+          await rm(tempDir, { recursive: true, force: true })
+        } catch {
+          // Ignore cleanup errors
+        }
       }
+
+      return result
+    }
     : async () => ({ copied: 0, skipped: 0 })
 
 const collectAllRemoteHostData: (destDir: string) => Promise<{
@@ -190,34 +190,34 @@ const collectAllRemoteHostData: (destDir: string) => Promise<{
 }> =
   process.env.USER_TYPE === 'ant'
     ? async (destDir: string) => {
-        const rHosts = await getRunningRemoteHosts()
-        const result: RemoteHostInfo[] = []
-        let totalCopied = 0
-        let totalSkipped = 0
+      const rHosts = await getRunningRemoteHosts()
+      const result: RemoteHostInfo[] = []
+      let totalCopied = 0
+      let totalSkipped = 0
 
-        // Collect from all hosts in parallel (SCP per host can take seconds)
-        const hostResults = await Promise.all(
-          rHosts.map(async hs => {
-            const sessionCount = await getRemoteHostSessionCount(hs)
-            if (sessionCount > 0) {
-              const { copied, skipped } = await collectFromRemoteHost(
-                hs,
-                destDir,
-              )
-              return { name: hs, sessionCount, copied, skipped }
-            }
-            return { name: hs, sessionCount, copied: 0, skipped: 0 }
-          }),
-        )
+      // Collect from all hosts in parallel (SCP per host can take seconds)
+      const hostResults = await Promise.all(
+        rHosts.map(async hs => {
+          const sessionCount = await getRemoteHostSessionCount(hs)
+          if (sessionCount > 0) {
+            const { copied, skipped } = await collectFromRemoteHost(
+              hs,
+              destDir,
+            )
+            return { name: hs, sessionCount, copied, skipped }
+          }
+          return { name: hs, sessionCount, copied: 0, skipped: 0 }
+        }),
+      )
 
-        for (const hr of hostResults) {
-          result.push({ name: hr.name, sessionCount: hr.sessionCount })
-          totalCopied += hr.copied
-          totalSkipped += hr.skipped
-        }
-
-        return { hosts: result, totalCopied, totalSkipped }
+      for (const hr of hostResults) {
+        result.push({ name: hr.name, sessionCount: hr.sessionCount })
+        totalCopied += hr.copied
+        totalSkipped += hr.skipped
       }
+
+      return { hosts: result, totalCopied, totalSkipped }
+    }
     : async () => ({ hosts: [], totalCopied: 0, totalSkipped: 0 })
 /* eslint-enable custom-rules/no-process-env-top-level */
 
@@ -263,13 +263,13 @@ type SessionFacets = {
   goal_categories: Record<string, number>
   outcome: string
   user_satisfaction_counts: Record<string, number>
-  claude_helpfulness: string
+  omnicode_helpfulness: string
   session_type: string
   friction_counts: Record<string, number>
   friction_detail: string
   primary_success: string
   brief_summary: string
-  user_instructions_to_claude?: string[]
+  user_instructions_to_omnicode?: string[]
 }
 
 type AggregatedData = {
@@ -377,7 +377,7 @@ const LABEL_MAP: Record<string, string> = {
   wrong_approach: 'Wrong Approach',
   buggy_code: 'Buggy Code',
   user_rejected_action: 'User Rejected Action',
-  claude_got_blocked: 'Claude Got Blocked',
+  omnicode_got_blocked: 'Omnicode Got Blocked',
   user_stopped_early: 'User Stopped Early',
   wrong_file_or_location: 'Wrong File/Location',
   excessive_changes: 'Excessive Changes',
@@ -414,11 +414,11 @@ const LABEL_MAP: Record<string, string> = {
   essential: 'Essential',
 }
 
-// Lazy getters: getClaudeConfigHomeDir() is memoized and reads process.env.
+// Lazy getters: getOmnicodeConfigHomeDir() is memoized and reads process.env.
 // Calling it at module scope would populate the memoize cache before
-// entrypoints can set CLAUDE_CONFIG_DIR, breaking all 150+ other callers.
+// entrypoints can set OMNICODE_CONFIG_DIR, breaking all 150+ other callers.
 function getDataDir(): string {
-  return join(getClaudeConfigHomeDir(), 'usage-data')
+  return join(getOmnicodeConfigHomeDir(), 'usage-data')
 }
 function getFacetsDir(): string {
   return join(getDataDir(), 'facets')
@@ -427,13 +427,13 @@ function getSessionMetaDir(): string {
   return join(getDataDir(), 'session-meta')
 }
 
-const FACET_EXTRACTION_PROMPT = `Analyze this Claude Code session and extract structured facets.
+const FACET_EXTRACTION_PROMPT = `Analyze this Omnicode Code session and extract structured facets.
 
 CRITICAL GUIDELINES:
 
 1. **goal_categories**: Count ONLY what the USER explicitly asked for.
-   - DO NOT count Claude's autonomous codebase exploration
-   - DO NOT count work Claude decided to do on its own
+   - DO NOT count Omnicode's autonomous codebase exploration
+   - DO NOT count work Omnicode decided to do on its own
    - ONLY count when user says "can you...", "please...", "I need...", "let's..."
 
 2. **user_satisfaction_counts**: Base ONLY on explicit user signals.
@@ -444,7 +444,7 @@ CRITICAL GUIDELINES:
    - "this is broken", "I give up" → frustrated
 
 3. **friction_counts**: Be specific about what went wrong.
-   - misunderstood_request: Claude interpreted incorrectly
+   - misunderstood_request: Omnicode interpreted incorrectly
    - wrong_approach: Right goal, wrong solution method
    - buggy_code: Code didn't work correctly
    - user_rejected_action: User said no/stop to a tool call
@@ -867,9 +867,9 @@ function formatTranscriptForFacets(log: LogOption): string {
   return lines.join('\n')
 }
 
-const SUMMARIZE_CHUNK_PROMPT = `Summarize this portion of a Claude Code session transcript. Focus on:
+const SUMMARIZE_CHUNK_PROMPT = `Summarize this portion of a Omnicode Code session transcript. Focus on:
 1. What the user asked for
-2. What Claude did (tools used, files modified)
+2. What Omnicode did (tools used, files modified)
 3. Any friction or issues
 4. The outcome
 
@@ -1015,7 +1015,7 @@ RESPOND WITH ONLY A VALID JSON OBJECT matching this schema:
   "goal_categories": {"category_name": count, ...},
   "outcome": "fully_achieved|mostly_achieved|partially_achieved|not_achieved|unclear_from_transcript",
   "user_satisfaction_counts": {"level": count, ...},
-  "claude_helpfulness": "unhelpful|slightly_helpful|moderately_helpful|very_helpful|essential",
+  "omnicode_helpfulness": "unhelpful|slightly_helpful|moderately_helpful|very_helpful|essential",
   "session_type": "single_task|multi_task|iterative_refinement|exploration|quick_question",
   "friction_counts": {"friction_type": count, ...},
   "friction_detail": "One sentence describing friction or empty",
@@ -1055,7 +1055,7 @@ RESPOND WITH ONLY A VALID JSON OBJECT matching this schema:
 }
 
 /**
- * Detects multi-clauding (using multiple Claude sessions concurrently).
+ * Detects multi-clauding (using multiple Omnicode sessions concurrently).
  * Uses a sliding window to find the pattern: session1 -> session2 -> session1
  * within a 30-minute window.
  */
@@ -1085,8 +1085,8 @@ export function detectMultiClauding(
 
   allSessionMessages.sort((a, b) => a.ts - b.ts)
 
-  const multiClaudeSessionPairs = new Set<string>()
-  const messagesDuringMulticlaude = new Set<string>()
+  const multiOmnicodeSessionPairs = new Set<string>()
+  const messagesDuringMultiomnicode = new Set<string>()
 
   // Sliding window: sessionLastIndex tracks the most recent index for each session
   let windowStart = 0
@@ -1114,12 +1114,12 @@ export function detectMultiClauding(
         const between = allSessionMessages[j]!
         if (between.sessionId !== msg.sessionId) {
           const pair = [msg.sessionId, between.sessionId].sort().join(':')
-          multiClaudeSessionPairs.add(pair)
-          messagesDuringMulticlaude.add(
+          multiOmnicodeSessionPairs.add(pair)
+          messagesDuringMultiomnicode.add(
             `${allSessionMessages[prevIndex]!.ts}:${msg.sessionId}`,
           )
-          messagesDuringMulticlaude.add(`${between.ts}:${between.sessionId}`)
-          messagesDuringMulticlaude.add(`${msg.ts}:${msg.sessionId}`)
+          messagesDuringMultiomnicode.add(`${between.ts}:${between.sessionId}`)
+          messagesDuringMultiomnicode.add(`${msg.ts}:${msg.sessionId}`)
           break
         }
       }
@@ -1129,16 +1129,16 @@ export function detectMultiClauding(
   }
 
   const sessionsWithOverlaps = new Set<string>()
-  for (const pair of multiClaudeSessionPairs) {
+  for (const pair of multiOmnicodeSessionPairs) {
     const [s1, s2] = pair.split(':')
     if (s1) sessionsWithOverlaps.add(s1)
     if (s2) sessionsWithOverlaps.add(s2)
   }
 
   return {
-    overlap_events: multiClaudeSessionPairs.size,
+    overlap_events: multiOmnicodeSessionPairs.size,
     sessions_involved: sessionsWithOverlaps.size,
-    user_messages_during: messagesDuringMulticlaude.size,
+    user_messages_during: messagesDuringMultiomnicode.size,
   }
 }
 
@@ -1262,8 +1262,8 @@ function aggregateData(
       }
 
       // Helpfulness
-      result.helpfulness[sessionFacets.claude_helpfulness] =
-        (result.helpfulness[sessionFacets.claude_helpfulness] || 0) + 1
+      result.helpfulness[sessionFacets.omnicode_helpfulness] =
+        (result.helpfulness[sessionFacets.omnicode_helpfulness] || 0) + 1
 
       // Session types
       result.session_types[sessionFacets.session_type] =
@@ -1336,12 +1336,12 @@ type InsightSection = {
 const INSIGHT_SECTIONS: InsightSection[] = [
   {
     name: 'project_areas',
-    prompt: `Analyze this Claude Code usage data and identify project areas.
+    prompt: `Analyze this Omnicode Code usage data and identify project areas.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
   "areas": [
-    {"name": "Area name", "session_count": N, "description": "2-3 sentences about what was worked on and how Claude Code was used."}
+    {"name": "Area name", "session_count": N, "description": "2-3 sentences about what was worked on and how Omnicode Code was used."}
   ]
 }
 
@@ -1350,18 +1350,18 @@ Include 4-5 areas. Skip internal CC operations.`,
   },
   {
     name: 'interaction_style',
-    prompt: `Analyze this Claude Code usage data and describe the user's interaction style.
+    prompt: `Analyze this Omnicode Code usage data and describe the user's interaction style.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
-  "narrative": "2-3 paragraphs analyzing HOW the user interacts with Claude Code. Use second person 'you'. Describe patterns: iterate quickly vs detailed upfront specs? Interrupt often or let Claude run? Include specific examples. Use **bold** for key insights.",
+  "narrative": "2-3 paragraphs analyzing HOW the user interacts with Omnicode Code. Use second person 'you'. Describe patterns: iterate quickly vs detailed upfront specs? Interrupt often or let Omnicode run? Include specific examples. Use **bold** for key insights.",
   "key_pattern": "One sentence summary of most distinctive interaction style"
 }`,
     maxTokens: 8192,
   },
   {
     name: 'what_works',
-    prompt: `Analyze this Claude Code usage data and identify what's working well for this user. Use second person ("you").
+    prompt: `Analyze this Omnicode Code usage data and identify what's working well for this user. Use second person ("you").
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1376,7 +1376,7 @@ Include 3 impressive workflows.`,
   },
   {
     name: 'friction_analysis',
-    prompt: `Analyze this Claude Code usage data and identify friction points for this user. Use second person ("you").
+    prompt: `Analyze this Omnicode Code usage data and identify friction points for this user. Use second person ("you").
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1391,33 +1391,33 @@ Include 3 friction categories with 2 examples each.`,
   },
   {
     name: 'suggestions',
-    prompt: `Analyze this Claude Code usage data and suggest improvements.
+    prompt: `Analyze this Omnicode Code usage data and suggest improvements.
 
 ## CC FEATURES REFERENCE (pick from these for features_to_try):
-1. **MCP Servers**: Connect Claude to external tools, databases, and APIs via Model Context Protocol.
-   - How to use: Run \`claude mcp add <server-name> -- <command>\`
+1. **MCP Servers**: Connect Omnicode to external tools, databases, and APIs via Model Context Protocol.
+   - How to use: Run \`omnicode mcp add <server-name> -- <command>\`
    - Good for: database queries, Slack integration, GitHub issue lookup, connecting to internal APIs
 
 2. **Custom Skills**: Reusable prompts you define as markdown files that run with a single /command.
-   - How to use: Create \`.claude/skills/commit/SKILL.md\` with instructions. Then type \`/commit\` to run it.
+   - How to use: Create \`.omnicode/skills/commit/SKILL.md\` with instructions. Then type \`/commit\` to run it.
    - Good for: repetitive workflows - /commit, /review, /test, /deploy, /pr, or complex multi-step workflows
 
 3. **Hooks**: Shell commands that auto-run at specific lifecycle events.
-   - How to use: Add to \`.claude/settings.json\` under "hooks" key.
+   - How to use: Add to \`.omnicode/settings.json\` under "hooks" key.
    - Good for: auto-formatting code, running type checks, enforcing conventions
 
-4. **Headless Mode**: Run Claude non-interactively from scripts and CI/CD.
-   - How to use: \`claude -p "fix lint errors" --allowedTools "Edit,Read,Bash"\`
+4. **Headless Mode**: Run Omnicode non-interactively from scripts and CI/CD.
+   - How to use: \`omnicode -p "fix lint errors" --allowedTools "Edit,Read,Bash"\`
    - Good for: CI/CD integration, batch code fixes, automated reviews
 
-5. **Task Agents**: Claude spawns focused sub-agents for complex exploration or parallel work.
-   - How to use: Claude auto-invokes when helpful, or ask "use an agent to explore X"
+5. **Task Agents**: Omnicode spawns focused sub-agents for complex exploration or parallel work.
+   - How to use: Omnicode auto-invokes when helpful, or ask "use an agent to explore X"
    - Good for: codebase exploration, understanding complex systems
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
-  "claude_md_additions": [
-    {"addition": "A specific line or block to add to CLAUDE.md based on workflow patterns. E.g., 'Always run tests after modifying auth-related files'", "why": "1 sentence explaining why this would help based on actual sessions", "prompt_scaffold": "Instructions for where to add this in CLAUDE.md. E.g., 'Add under ## Testing section'"}
+  "omnicode_md_additions": [
+    {"addition": "A specific line or block to add to OMNICODE.md based on workflow patterns. E.g., 'Always run tests after modifying auth-related files'", "why": "1 sentence explaining why this would help based on actual sessions", "prompt_scaffold": "Instructions for where to add this in OMNICODE.md. E.g., 'Add under ## Testing section'"}
   ],
   "features_to_try": [
     {"feature": "Feature name from CC FEATURES REFERENCE above", "one_liner": "What it does", "why_for_you": "Why this would help YOU based on your sessions", "example_code": "Actual command or config to copy"}
@@ -1427,14 +1427,14 @@ RESPOND WITH ONLY A VALID JSON OBJECT:
   ]
 }
 
-IMPORTANT for claude_md_additions: PRIORITIZE instructions that appear MULTIPLE TIMES in the user data. If user told Claude the same thing in 2+ sessions (e.g., 'always run tests', 'use TypeScript'), that's a PRIME candidate - they shouldn't have to repeat themselves.
+IMPORTANT for omnicode_md_additions: PRIORITIZE instructions that appear MULTIPLE TIMES in the user data. If user told Omnicode the same thing in 2+ sessions (e.g., 'always run tests', 'use TypeScript'), that's a PRIME candidate - they shouldn't have to repeat themselves.
 
 IMPORTANT for features_to_try: Pick 2-3 from the CC FEATURES REFERENCE above. Include 2-3 items for each category.`,
     maxTokens: 8192,
   },
   {
     name: 'on_the_horizon',
-    prompt: `Analyze this Claude Code usage data and identify future opportunities.
+    prompt: `Analyze this Omnicode Code usage data and identify future opportunities.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1449,9 +1449,9 @@ Include 3 opportunities. Think BIG - autonomous workflows, parallel agents, iter
   },
   ...(process.env.USER_TYPE === 'ant'
     ? [
-        {
-          name: 'cc_team_improvements',
-          prompt: `Analyze this Claude Code usage data and suggest product improvements for the CC team.
+      {
+        name: 'cc_team_improvements',
+        prompt: `Analyze this Omnicode Code usage data and suggest product improvements for the CC team.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1461,11 +1461,11 @@ RESPOND WITH ONLY A VALID JSON OBJECT:
 }
 
 Include 2-3 improvements based on friction patterns observed.`,
-          maxTokens: 8192,
-        },
-        {
-          name: 'model_behavior_improvements',
-          prompt: `Analyze this Claude Code usage data and suggest model behavior improvements.
+        maxTokens: 8192,
+      },
+      {
+        name: 'model_behavior_improvements',
+        prompt: `Analyze this Omnicode Code usage data and suggest model behavior improvements.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1475,13 +1475,13 @@ RESPOND WITH ONLY A VALID JSON OBJECT:
 }
 
 Include 2-3 improvements based on friction patterns observed.`,
-          maxTokens: 8192,
-        },
-      ]
+        maxTokens: 8192,
+      },
+    ]
     : []),
   {
     name: 'fun_ending',
-    prompt: `Analyze this Claude Code usage data and find a memorable moment.
+    prompt: `Analyze this Omnicode Code usage data and find a memorable moment.
 
 RESPOND WITH ONLY A VALID JSON OBJECT:
 {
@@ -1521,7 +1521,7 @@ type InsightResults = {
     }>
   }
   suggestions?: {
-    claude_md_additions?: Array<{
+    omnicode_md_additions?: Array<{
       addition: string
       why: string
       where?: string
@@ -1616,7 +1616,7 @@ async function generateParallelInsights(
   // Build data context string
   const facetSummaries = Array.from(facets.values())
     .slice(0, 50)
-    .map(f => `- ${f.brief_summary} (${f.outcome}, ${f.claude_helpfulness})`)
+    .map(f => `- ${f.brief_summary} (${f.outcome}, ${f.omnicode_helpfulness})`)
     .join('\n')
 
   const frictionDetails = Array.from(facets.values())
@@ -1626,7 +1626,7 @@ async function generateParallelInsights(
     .join('\n')
 
   const userInstructions = Array.from(facets.values())
-    .flatMap(f => f.user_instructions_to_claude || [])
+    .flatMap(f => f.user_instructions_to_omnicode || [])
     .slice(0, 15)
     .map(i => `- ${i}`)
     .join('\n')
@@ -1661,7 +1661,7 @@ async function generateParallelInsights(
     facetSummaries +
     '\n\nFRICTION DETAILS:\n' +
     frictionDetails +
-    '\n\nUSER INSTRUCTIONS TO CLAUDE:\n' +
+    '\n\nUSER INSTRUCTIONS TO OMNICODE:\n' +
     (userInstructions || 'None captured')
 
   // Run sections in parallel first (excluding at_a_glance)
@@ -1675,7 +1675,7 @@ async function generateParallelInsights(
   const insights: InsightResults = {}
   for (const { name, result } of results) {
     if (result) {
-      ;(insights as Record<string, unknown>)[name] = result
+      ; (insights as Record<string, unknown>)[name] = result
     }
   }
 
@@ -1735,15 +1735,15 @@ async function generateParallelInsights(
       .join('\n') || ''
 
   // Now generate "At a Glance" with access to other sections' outputs
-  const atAGlancePrompt = `You're writing an "At a Glance" summary for a Claude Code usage insights report for Claude Code users. The goal is to help them understand their usage and improve how they can use Claude better, especially as models improve.
+  const atAGlancePrompt = `You're writing an "At a Glance" summary for a Omnicode Code usage insights report for Omnicode Code users. The goal is to help them understand their usage and improve how they can use Omnicode better, especially as models improve.
 
 Use this 4-part structure:
 
-1. **What's working** - What is the user's unique style of interacting with Claude and what are some impactful things they've done? You can include one or two details, but keep it high level since things might not be fresh in the user's memory. Don't be fluffy or overly complimentary. Also, don't focus on the tool calls they use.
+1. **What's working** - What is the user's unique style of interacting with Omnicode and what are some impactful things they've done? You can include one or two details, but keep it high level since things might not be fresh in the user's memory. Don't be fluffy or overly complimentary. Also, don't focus on the tool calls they use.
 
-2. **What's hindering you** - Split into (a) Claude's fault (misunderstandings, wrong approaches, bugs) and (b) user-side friction (not providing enough context, environment issues -- ideally more general than just one project). Be honest but constructive.
+2. **What's hindering you** - Split into (a) Omnicode's fault (misunderstandings, wrong approaches, bugs) and (b) user-side friction (not providing enough context, environment issues -- ideally more general than just one project). Be honest but constructive.
 
-3. **Quick wins to try** - Specific Claude Code features they could try from the examples below, or a workflow technique if you think it's really compelling. (Avoid stuff like "Ask Claude to confirm before taking actions" or "Type out more context up front" which are less compelling.)
+3. **Quick wins to try** - Specific Omnicode Code features they could try from the examples below, or a workflow technique if you think it's really compelling. (Avoid stuff like "Ask Omnicode to confirm before taking actions" or "Type out more context up front" which are less compelling.)
 
 4. **Ambitious workflows for better models** - As we move to much more capable models over the next 3-6 months, what should they prepare for? What workflows that seem impossible now will become possible? Draw from the appropriate section below.
 
@@ -2006,7 +2006,7 @@ function generateHtmlReport(
   const interactionStyle = insights.interaction_style
   const interactionHtml = interactionStyle?.narrative
     ? `
-    <h2 id="section-usage">How You Use Claude Code</h2>
+    <h2 id="section-usage">How You Use Omnicode Code</h2>
     <div class="narrative">
       ${markdownToHtml(interactionStyle.narrative)}
       ${interactionStyle.key_pattern ? `<div class="key-insight"><strong>Key pattern:</strong> ${escapeHtml(interactionStyle.key_pattern)}</div>` : ''}
@@ -2063,22 +2063,21 @@ function generateHtmlReport(
   const suggestions = insights.suggestions
   const suggestionsHtml = suggestions
     ? `
-    ${
-      suggestions.claude_md_additions &&
-      suggestions.claude_md_additions.length > 0
-        ? `
+    ${suggestions.omnicode_md_additions &&
+      suggestions.omnicode_md_additions.length > 0
+      ? `
     <h2 id="section-features">Existing CC Features to Try</h2>
-    <div class="claude-md-section">
-      <h3>Suggested CLAUDE.md Additions</h3>
-      <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Just copy this into Claude Code to add it to your CLAUDE.md.</p>
-      <div class="claude-md-actions">
-        <button class="copy-all-btn" onclick="copyAllCheckedClaudeMd()">Copy All Checked</button>
+    <div class="omnicode-md-section">
+      <h3>Suggested OMNICODE.md Additions</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Just copy this into Omnicode Code to add it to your OMNICODE.md.</p>
+      <div class="omnicode-md-actions">
+        <button class="copy-all-btn" onclick="copyAllCheckedOmnicodeMd()">Copy All Checked</button>
       </div>
-      ${suggestions.claude_md_additions
+      ${suggestions.omnicode_md_additions
         .map(
           (add, i) => `
-        <div class="claude-md-item">
-          <input type="checkbox" id="cmd-${i}" class="cmd-checkbox" checked data-text="${escapeHtml(add.prompt_scaffold || add.where || 'Add to CLAUDE.md')}\\n\\n${escapeHtml(add.addition)}">
+        <div class="omnicode-md-item">
+          <input type="checkbox" id="cmd-${i}" class="cmd-checkbox" checked data-text="${escapeHtml(add.prompt_scaffold || add.where || 'Add to OMNICODE.md')}\\n\\n${escapeHtml(add.addition)}">
           <label for="cmd-${i}">
             <code class="cmd-code">${escapeHtml(add.addition)}</code>
             <button class="copy-btn" onclick="copyCmdItem(${i})">Copy</button>
@@ -2090,12 +2089,11 @@ function generateHtmlReport(
         .join('')}
     </div>
     `
-        : ''
+      : ''
     }
-    ${
-      suggestions.features_to_try && suggestions.features_to_try.length > 0
-        ? `
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Just copy this into Claude Code and it'll set it up for you.</p>
+    ${suggestions.features_to_try && suggestions.features_to_try.length > 0
+      ? `
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Just copy this into Omnicode Code and it'll set it up for you.</p>
     <div class="features-section">
       ${suggestions.features_to_try
         .map(
@@ -2104,8 +2102,7 @@ function generateHtmlReport(
           <div class="feature-title">${escapeHtml(feat.feature || '')}</div>
           <div class="feature-oneliner">${escapeHtml(feat.one_liner || '')}</div>
           <div class="feature-why"><strong>Why for you:</strong> ${escapeHtml(feat.why_for_you || '')}</div>
-          ${
-            feat.example_code
+          ${feat.example_code
               ? `
           <div class="feature-examples">
             <div class="feature-example">
@@ -2117,20 +2114,19 @@ function generateHtmlReport(
           </div>
           `
               : ''
-          }
+            }
         </div>
       `,
         )
         .join('')}
     </div>
     `
-        : ''
+      : ''
     }
-    ${
-      suggestions.usage_patterns && suggestions.usage_patterns.length > 0
-        ? `
-    <h2 id="section-patterns">New Ways to Use Claude Code</h2>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Just copy this into Claude Code and it'll walk you through it.</p>
+    ${suggestions.usage_patterns && suggestions.usage_patterns.length > 0
+      ? `
+    <h2 id="section-patterns">New Ways to Use Omnicode Code</h2>
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Just copy this into Omnicode Code and it'll walk you through it.</p>
     <div class="patterns-section">
       ${suggestions.usage_patterns
         .map(
@@ -2139,11 +2135,10 @@ function generateHtmlReport(
           <div class="pattern-title">${escapeHtml(pat.title || '')}</div>
           <div class="pattern-summary">${escapeHtml(pat.suggestion || '')}</div>
           ${pat.detail ? `<div class="pattern-detail">${escapeHtml(pat.detail)}</div>` : ''}
-          ${
-            pat.copyable_prompt
+          ${pat.copyable_prompt
               ? `
           <div class="copyable-prompt-section">
-            <div class="prompt-label">Paste into Claude Code:</div>
+            <div class="prompt-label">Paste into Omnicode Code:</div>
             <div class="copyable-prompt-row">
               <code class="copyable-prompt">${escapeHtml(pat.copyable_prompt)}</code>
               <button class="copy-btn" onclick="copyText(this)">Copy</button>
@@ -2151,14 +2146,14 @@ function generateHtmlReport(
           </div>
           `
               : ''
-          }
+            }
         </div>
       `,
         )
         .join('')}
     </div>
     `
-        : ''
+      : ''
     }
     `
     : ''
@@ -2178,7 +2173,7 @@ function generateHtmlReport(
           <div class="horizon-title">${escapeHtml(opp.title || '')}</div>
           <div class="horizon-possible">${escapeHtml(opp.whats_possible || '')}</div>
           ${opp.how_to_try ? `<div class="horizon-tip"><strong>Getting started:</strong> ${escapeHtml(opp.how_to_try)}</div>` : ''}
-          ${opp.copyable_prompt ? `<div class="pattern-prompt"><div class="prompt-label">Paste into Claude Code:</div><code>${escapeHtml(opp.copyable_prompt)}</code><button class="copy-btn" onclick="copyText(this)">Copy</button></div>` : ''}
+          ${opp.copyable_prompt ? `<div class="pattern-prompt"><div class="prompt-label">Paste into Omnicode Code:</div><code>${escapeHtml(opp.copyable_prompt)}</code><button class="copy-btn" onclick="copyText(this)">Copy</button></div>` : ''}
         </div>
       `,
         )
@@ -2201,8 +2196,7 @@ function generateHtmlReport(
       ? `
     <h2 id="section-feedback" class="feedback-header">Closing the Loop: Feedback for Other Teams</h2>
     <p class="feedback-intro">Suggestions for the CC product and model teams based on your usage patterns. Click to expand.</p>
-    ${
-      ccImprovements.length > 0
+    ${ccImprovements.length > 0
         ? `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleCollapsible(this)">
@@ -2212,24 +2206,23 @@ function generateHtmlReport(
       <div class="collapsible-content">
         <div class="suggestions-section">
           ${ccImprovements
-            .map(
-              imp => `
+          .map(
+            imp => `
             <div class="feedback-card team-card">
               <div class="feedback-title">${escapeHtml(imp.title || '')}</div>
               <div class="feedback-detail">${escapeHtml(imp.detail || '')}</div>
               ${imp.evidence ? `<div class="feedback-evidence"><em>Evidence:</em> ${escapeHtml(imp.evidence)}</div>` : ''}
             </div>
           `,
-            )
-            .join('')}
+          )
+          .join('')}
         </div>
       </div>
     </div>
     `
         : ''
-    }
-    ${
-      modelImprovements.length > 0
+      }
+    ${modelImprovements.length > 0
         ? `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleCollapsible(this)">
@@ -2239,22 +2232,22 @@ function generateHtmlReport(
       <div class="collapsible-content">
         <div class="suggestions-section">
           ${modelImprovements
-            .map(
-              imp => `
+          .map(
+            imp => `
             <div class="feedback-card model-card">
               <div class="feedback-title">${escapeHtml(imp.title || '')}</div>
               <div class="feedback-detail">${escapeHtml(imp.detail || '')}</div>
               ${imp.evidence ? `<div class="feedback-evidence"><em>Evidence:</em> ${escapeHtml(imp.evidence)}</div>` : ''}
             </div>
           `,
-            )
-            .join('')}
+          )
+          .join('')}
         </div>
       </div>
     </div>
     `
         : ''
-    }
+      }
     `
       : ''
 
@@ -2310,14 +2303,14 @@ function generateHtmlReport(
     .friction-desc { font-size: 13px; color: #7f1d1d; margin-bottom: 10px; }
     .friction-examples { margin: 0 0 0 20px; font-size: 13px; color: #334155; }
     .friction-examples li { margin-bottom: 4px; }
-    .claude-md-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
-    .claude-md-section h3 { font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px 0; }
-    .claude-md-actions { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; }
+    .omnicode-md-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .omnicode-md-section h3 { font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px 0; }
+    .omnicode-md-actions { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; }
     .copy-all-btn { background: #2563eb; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
     .copy-all-btn:hover { background: #1d4ed8; }
     .copy-all-btn.copied { background: #16a34a; }
-    .claude-md-item { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid #dbeafe; }
-    .claude-md-item:last-child { border-bottom: none; }
+    .omnicode-md-item { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid #dbeafe; }
+    .omnicode-md-item:last-child { border-bottom: none; }
     .cmd-checkbox { margin-top: 2px; }
     .cmd-code { background: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #1e40af; border: 1px solid #bfdbfe; font-family: monospace; display: block; white-space: pre-wrap; word-break: break-word; flex: 1; }
     .cmd-why { font-size: 12px; color: #64748b; width: 100%; padding-left: 24px; margin-top: 4px; }
@@ -2406,7 +2399,7 @@ function generateHtmlReport(
         });
       }
     }
-    function copyAllCheckedClaudeMd() {
+    function copyAllCheckedOmnicodeMd() {
       const checkboxes = document.querySelectorAll('.cmd-checkbox:checked');
       const texts = [];
       checkboxes.forEach(cb => {
@@ -2485,13 +2478,13 @@ function generateHtmlReport(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Claude Code Insights</title>
+  <title>Omnicode Code Insights</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>${css}</style>
 </head>
 <body>
   <div class="container">
-    <h1>Claude Code Insights</h1>
+    <h1>Omnicode Code Insights</h1>
     <p class="subtitle">${data.total_messages.toLocaleString()} messages across ${data.total_sessions} sessions${data.total_sessions_scanned && data.total_sessions_scanned > data.total_sessions ? ` (${data.total_sessions_scanned.toLocaleString()} total)` : ''} | ${data.date_range.start} to ${data.date_range.end}</p>
 
     ${atAGlanceHtml}
@@ -2553,14 +2546,13 @@ function generateHtmlReport(
     <!-- Multi-clauding Section (matching Python reference) -->
     <div class="chart-card" style="margin: 24px 0;">
       <div class="chart-title">Multi-Clauding (Parallel Sessions)</div>
-      ${
-        data.multi_clauding.overlap_events === 0
-          ? `
+      ${data.multi_clauding.overlap_events === 0
+      ? `
         <p style="font-size: 14px; color: #64748b; padding: 8px 0;">
-          No parallel session usage detected. You typically work with one Claude Code session at a time.
+          No parallel session usage detected. You typically work with one Omnicode Code session at a time.
         </p>
       `
-          : `
+      : `
         <div style="display: flex; gap: 24px; margin: 12px 0;">
           <div style="text-align: center;">
             <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">${data.multi_clauding.overlap_events}</div>
@@ -2576,11 +2568,11 @@ function generateHtmlReport(
           </div>
         </div>
         <p style="font-size: 13px; color: #475569; margin-top: 12px;">
-          You run multiple Claude Code sessions simultaneously. Multi-clauding is detected when sessions
+          You run multiple Omnicode Code sessions simultaneously. Multi-clauding is detected when sessions
           overlap in time, suggesting parallel workflows.
         </p>
       `
-      }
+    }
     </div>
 
     <!-- Time of Day & Tool Errors -->
@@ -2610,7 +2602,7 @@ function generateHtmlReport(
 
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-title">What Helped Most (Claude's Capabilities)</div>
+        <div class="chart-title">What Helped Most (Omnicode's Capabilities)</div>
         ${generateBarChart(data.success, '#16a34a')}
       </div>
       <div class="chart-card">
@@ -2650,13 +2642,13 @@ function generateHtmlReport(
 // ============================================================================
 
 /**
- * Structured export format for claudescope consumption
+ * Structured export format for omnicodescope consumption
  */
 export type InsightsExport = {
   metadata: {
     username: string
     generated_at: string
-    claude_code_version: string
+    omnicode_code_version: string
     date_range: { start: string; end: string }
     session_count: number
     remote_hosts_collected?: string[]
@@ -2722,13 +2714,13 @@ export function buildExportData(
     metadata: {
       username: process.env.SAFEUSER || process.env.USER || 'unknown',
       generated_at: new Date().toISOString(),
-      claude_code_version: version,
+      omnicode_code_version: version,
       date_range: data.date_range,
       session_count: data.total_sessions,
       ...(remote_hosts_collected &&
         remote_hosts_collected.length > 0 && {
-          remote_hosts_collected,
-        }),
+        remote_hosts_collected,
+      }),
     },
     aggregated_data: data,
     insights,
@@ -2806,7 +2798,7 @@ export async function generateUsageReport(options?: {
 
   // Optionally collect data from remote hosts first (internal-only)
   if (process.env.USER_TYPE === 'ant' && options?.collectRemote) {
-    const destDir = join(getClaudeConfigHomeDir(), 'projects')
+    const destDir = join(getOmnicodeConfigHomeDir(), 'projects')
     const { hosts, totalCopied } = await collectAllRemoteHostData(destDir)
     remoteStats = { hosts, totalCopied }
   }
@@ -2994,7 +2986,7 @@ export async function generateUsageReport(options?: {
   const aggregated = aggregateData(substantiveSessions, substantiveFacets)
   aggregated.total_sessions_scanned = totalSessionsScanned
 
-  // Generate parallel insights from Claude (6 sections)
+  // Generate parallel insights from Omnicode (6 sections)
   const insights = await generateParallelInsights(aggregated, facets)
 
   // Generate HTML report
@@ -3039,7 +3031,7 @@ function safeKeys(obj: Record<string, unknown> | undefined | null): string[] {
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: 'Generate a report analyzing your Omnicode Code sessions',
   contentLength: 0, // Dynamic content
   progressMessage: 'analyzing your sessions',
   source: 'builtin',
@@ -3075,7 +3067,7 @@ const usageReport: Command = {
     // Build header with stats
     const sessionLabel =
       data.total_sessions_scanned &&
-      data.total_sessions_scanned > data.total_sessions
+        data.total_sessions_scanned > data.total_sessions
         ? `${data.total_sessions_scanned.toLocaleString()} sessions total · ${data.total_sessions} analyzed`
         : `${data.total_sessions} sessions`
     const stats = [
@@ -3114,7 +3106,7 @@ ${atAGlance.quick_wins ? `**Quick wins to try:** ${atAGlance.quick_wins} See _Fe
 ${atAGlance.ambitious_workflows ? `**Ambitious workflows:** ${atAGlance.ambitious_workflows} See _On the Horizon_.` : ''}`
       : '_No insights generated_'
 
-    const header = `# Claude Code Insights
+    const header = `# Omnicode Code Insights
 
 ${stats}
 ${data.date_range.start} to ${data.date_range.end}
@@ -3125,11 +3117,11 @@ ${remoteInfo}
 
 Your full shareable insights report is ready: ${reportUrl}${uploadHint}`
 
-    // Return prompt for Claude to respond to
+    // Return prompt for Omnicode to respond to
     return [
       {
         type: 'text',
-        text: `The user just ran /insights to generate a usage report analyzing their Claude Code sessions.
+        text: `The user just ran /insights to generate a usage report analyzing their Omnicode Code sessions.
 
 Here is the full insights data:
 ${jsonStringify(insights, null, 2)}

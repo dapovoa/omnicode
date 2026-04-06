@@ -61,7 +61,7 @@ const result = await Bun.build({
     'MACRO.DISPLAY_VERSION': JSON.stringify(version),
     'MACRO.BUILD_TIME': JSON.stringify(new Date().toISOString()),
     'MACRO.ISSUES_EXPLAINER':
-      JSON.stringify('report the issue at https://github.com/anthropics/claude-code/issues'),
+      JSON.stringify('report the issue at https://github.com/anthropics/omnicode-code/issues'),
     'MACRO.PACKAGE_URL': JSON.stringify('omnicode'),
     'MACRO.NATIVE_PACKAGE_URL': 'undefined',
   },
@@ -160,7 +160,7 @@ export async function handleBgFlag() { throw new Error("Background sessions are 
           'url-handler-napi',
           'color-diff-napi',
           '@anthropic-ai/mcpb',
-          '@ant/claude-for-chrome-mcp',
+          '@ant/omnicode-for-chrome-mcp',
           '@anthropic-ai/sandbox-runtime',
           'asciichart',
           'plist',
@@ -204,7 +204,7 @@ export const ColorDiff = null;
 export const ColorFile = null;
 export const getSyntaxTheme = noop;
 export const plot = noop;
-export const createClaudeForChromeMcpServer = noop;
+export const createOmnicodeForChromeMcpServer = noop;
 // OpenTelemetry exports
 export const ExportResultCode = { SUCCESS: 0, FAILED: 1 };
 export const resourceFromAttributes = noop;

@@ -4,17 +4,17 @@ import { logEvent } from 'src/services/analytics/index.js'
 import { setHasUnknownModelCost } from '../bootstrap/state.js'
 import { isFastModeEnabled } from './fastMode.js'
 import {
-  CLAUDE_3_5_HAIKU_CONFIG,
-  CLAUDE_3_5_V2_SONNET_CONFIG,
-  CLAUDE_3_7_SONNET_CONFIG,
-  CLAUDE_HAIKU_4_5_CONFIG,
-  CLAUDE_OPUS_4_1_CONFIG,
-  CLAUDE_OPUS_4_5_CONFIG,
-  CLAUDE_OPUS_4_6_CONFIG,
-  CLAUDE_OPUS_4_CONFIG,
-  CLAUDE_SONNET_4_5_CONFIG,
-  CLAUDE_SONNET_4_6_CONFIG,
-  CLAUDE_SONNET_4_CONFIG,
+  OMNICODE_3_5_HAIKU_CONFIG,
+  OMNICODE_3_5_V2_SONNET_CONFIG,
+  OMNICODE_3_7_SONNET_CONFIG,
+  OMNICODE_HAIKU_4_5_CONFIG,
+  OMNICODE_OPUS_4_1_CONFIG,
+  OMNICODE_OPUS_4_5_CONFIG,
+  OMNICODE_OPUS_4_6_CONFIG,
+  OMNICODE_OPUS_4_CONFIG,
+  OMNICODE_SONNET_4_5_CONFIG,
+  OMNICODE_SONNET_4_6_CONFIG,
+  OMNICODE_SONNET_4_CONFIG,
 } from './model/configs.js'
 import {
   firstPartyNameToCanonical,
@@ -23,7 +23,7 @@ import {
   type ModelShortName,
 } from './model/model.js'
 
-// @see https://platform.claude.com/docs/en/about-claude/pricing
+// @see https://platform.omnicode.com/docs/en/about-omnicode/pricing
 export type ModelCosts = {
   inputTokens: number
   outputTokens: number
@@ -99,29 +99,29 @@ export function getOpus46CostTier(fastMode: boolean): ModelCosts {
 }
 
 // @[MODEL LAUNCH]: Add a pricing entry for the new model below.
-// Costs from https://platform.claude.com/docs/en/about-claude/pricing
+// Costs from https://platform.omnicode.com/docs/en/about-omnicode/pricing
 // Web search cost: $10 per 1000 requests = $0.01 per request
 export const MODEL_COSTS: Record<ModelShortName, ModelCosts> = {
-  [firstPartyNameToCanonical(CLAUDE_3_5_HAIKU_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_3_5_HAIKU_CONFIG.firstParty)]:
     COST_HAIKU_35,
-  [firstPartyNameToCanonical(CLAUDE_HAIKU_4_5_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_HAIKU_4_5_CONFIG.firstParty)]:
     COST_HAIKU_45,
-  [firstPartyNameToCanonical(CLAUDE_3_5_V2_SONNET_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_3_5_V2_SONNET_CONFIG.firstParty)]:
     COST_TIER_3_15,
-  [firstPartyNameToCanonical(CLAUDE_3_7_SONNET_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_3_7_SONNET_CONFIG.firstParty)]:
     COST_TIER_3_15,
-  [firstPartyNameToCanonical(CLAUDE_SONNET_4_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_SONNET_4_CONFIG.firstParty)]:
     COST_TIER_3_15,
-  [firstPartyNameToCanonical(CLAUDE_SONNET_4_5_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_SONNET_4_5_CONFIG.firstParty)]:
     COST_TIER_3_15,
-  [firstPartyNameToCanonical(CLAUDE_SONNET_4_6_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_SONNET_4_6_CONFIG.firstParty)]:
     COST_TIER_3_15,
-  [firstPartyNameToCanonical(CLAUDE_OPUS_4_CONFIG.firstParty)]: COST_TIER_15_75,
-  [firstPartyNameToCanonical(CLAUDE_OPUS_4_1_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_OPUS_4_CONFIG.firstParty)]: COST_TIER_15_75,
+  [firstPartyNameToCanonical(OMNICODE_OPUS_4_1_CONFIG.firstParty)]:
     COST_TIER_15_75,
-  [firstPartyNameToCanonical(CLAUDE_OPUS_4_5_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_OPUS_4_5_CONFIG.firstParty)]:
     COST_TIER_5_25,
-  [firstPartyNameToCanonical(CLAUDE_OPUS_4_6_CONFIG.firstParty)]:
+  [firstPartyNameToCanonical(OMNICODE_OPUS_4_6_CONFIG.firstParty)]:
     COST_TIER_5_25,
 }
 
@@ -133,11 +133,11 @@ function tokensToUSDCost(modelCosts: ModelCosts, usage: Usage): number {
     (usage.input_tokens / 1_000_000) * modelCosts.inputTokens +
     (usage.output_tokens / 1_000_000) * modelCosts.outputTokens +
     ((usage.cache_read_input_tokens ?? 0) / 1_000_000) *
-      modelCosts.promptCacheReadTokens +
+    modelCosts.promptCacheReadTokens +
     ((usage.cache_creation_input_tokens ?? 0) / 1_000_000) *
-      modelCosts.promptCacheWriteTokens +
+    modelCosts.promptCacheWriteTokens +
     (usage.server_tool_use?.web_search_requests ?? 0) *
-      modelCosts.webSearchRequests
+    modelCosts.webSearchRequests
   )
 }
 
@@ -146,7 +146,7 @@ export function getModelCosts(model: string, usage: Usage): ModelCosts {
 
   // Check if this is an Opus 4.6 model with fast mode active.
   if (
-    shortName === firstPartyNameToCanonical(CLAUDE_OPUS_4_6_CONFIG.firstParty)
+    shortName === firstPartyNameToCanonical(OMNICODE_OPUS_4_6_CONFIG.firstParty)
   ) {
     const isFastMode = usage.speed === 'fast'
     return getOpus46CostTier(isFastMode)

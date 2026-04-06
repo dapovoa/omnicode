@@ -3,7 +3,7 @@ import { join } from 'path'
 import { getSessionId } from '../../bootstrap/state.js'
 import { registerCleanup } from '../../utils/cleanupRegistry.js'
 import { logForDebugging } from '../../utils/debug.js'
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js'
+import { getOmnicodeConfigHomeDir } from '../../utils/envUtils.js'
 import { jsonParse, jsonStringify } from '../../utils/slowOperations.js'
 import { getErrnoCode } from '../errors.js'
 
@@ -42,7 +42,7 @@ function isComputerUseLock(value: unknown): value is ComputerUseLock {
 }
 
 function getLockPath(): string {
-  return join(getClaudeConfigHomeDir(), LOCK_FILENAME)
+  return join(getOmnicodeConfigHomeDir(), LOCK_FILENAME)
 }
 
 async function readLock(): Promise<ComputerUseLock | undefined> {
@@ -117,7 +117,7 @@ export async function checkComputerUseLock(): Promise<CheckResult> {
   logForDebugging(
     `Recovering stale computer-use lock from session ${existing.sessionId} (PID ${existing.pid})`,
   )
-  await unlink(getLockPath()).catch(() => {})
+  await unlink(getLockPath()).catch(() => { })
   return { kind: 'free' }
 }
 
@@ -153,7 +153,7 @@ export async function tryAcquireComputerUseLock(): Promise<AcquireResult> {
     acquiredAt: Date.now(),
   }
 
-  await mkdir(getClaudeConfigHomeDir(), { recursive: true })
+  await mkdir(getOmnicodeConfigHomeDir(), { recursive: true })
 
   // Fresh acquisition.
   if (await tryCreateExclusive(lock)) {
@@ -165,7 +165,7 @@ export async function tryAcquireComputerUseLock(): Promise<AcquireResult> {
 
   // Corrupt/unparseable — treat as stale (can't extract a blocking ID).
   if (!existing) {
-    await unlink(getLockPath()).catch(() => {})
+    await unlink(getLockPath()).catch(() => { })
     if (await tryCreateExclusive(lock)) {
       registerLockCleanup()
       return FRESH
@@ -186,7 +186,7 @@ export async function tryAcquireComputerUseLock(): Promise<AcquireResult> {
   logForDebugging(
     `Recovering stale computer-use lock from session ${existing.sessionId} (PID ${existing.pid})`,
   )
-  await unlink(getLockPath()).catch(() => {})
+  await unlink(getLockPath()).catch(() => { })
   if (await tryCreateExclusive(lock)) {
     registerLockCleanup()
     return FRESH

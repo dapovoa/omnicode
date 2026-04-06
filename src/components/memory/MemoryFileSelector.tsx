@@ -16,8 +16,8 @@ import { readLastConsolidatedAt } from '../../services/autoDream/consolidationLo
 import { useAppState } from '../../state/AppState.js';
 import { getAgentMemoryDir } from '../../tools/AgentTool/agentMemory.js';
 import { openPath } from '../../utils/browser.js';
-import { getMemoryFiles, type MemoryFileInfo } from '../../utils/claudemd.js';
-import { getClaudeConfigHomeDir } from '../../utils/envUtils.js';
+import { getMemoryFiles, type MemoryFileInfo } from '../../utils/omnicodemd.js';
+import { getOmnicodeConfigHomeDir } from '../../utils/envUtils.js';
 import { getDisplayPath } from '../../utils/file.js';
 import { formatRelativeTimeAgo } from '../../utils/format.js';
 import { projectIsInGitRepo } from '../../utils/memory/versions.js';
@@ -48,8 +48,8 @@ export function MemoryFileSelector(t0) {
     onCancel
   } = t0;
   const existingMemoryFiles = use(getMemoryFiles());
-  const userMemoryPath = join(getClaudeConfigHomeDir(), "CLAUDE.md");
-  const projectMemoryPath = join(getOriginalCwd(), "CLAUDE.md");
+  const userMemoryPath = join(getOmnicodeConfigHomeDir(), "OMNICODE.md");
+  const projectMemoryPath = join(getOriginalCwd(), "OMNICODE.md");
   const hasUserMemory = existingMemoryFiles.some(f => f.path === userMemoryPath);
   const hasProjectMemory = existingMemoryFiles.some(f_0 => f_0.path === projectMemoryPath);
   const allMemoryFiles = [...existingMemoryFiles.filter(_temp).map(_temp2), ...(hasUserMemory ? [] : [{
@@ -87,10 +87,10 @@ export function MemoryFileSelector(t0) {
     let description;
     const isGit = projectIsInGitRepo(getOriginalCwd());
     if (file.type === "User" && !file.isNested) {
-      description = "Saved in ~/.claude/CLAUDE.md";
+      description = "Saved in ~/.omnicode/OMNICODE.md";
     } else {
       if (file.type === "Project" && !file.isNested && file.path === projectMemoryPath) {
-        description = `${isGit ? "Checked in at" : "Saved in"} ./CLAUDE.md`;
+        description = `${isGit ? "Checked in at" : "Saved in"} ./OMNICODE.md`;
       } else {
         if (file.parent) {
           description = "@-imported";
@@ -410,7 +410,7 @@ export function MemoryFileSelector(t0) {
   }
   return t23;
 }
-function _temp8() {}
+function _temp8() { }
 function _temp7(prev_0) {
   return prev_0 !== null && prev_0 > 0 ? prev_0 - 1 : prev_0;
 }

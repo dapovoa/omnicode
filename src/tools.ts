@@ -20,7 +20,7 @@ const REPLTool =
 const SuggestBackgroundPRTool =
   process.env.USER_TYPE === 'ant'
     ? require('./tools/SuggestBackgroundPRTool/SuggestBackgroundPRTool.js')
-        .SuggestBackgroundPRTool
+      .SuggestBackgroundPRTool
     : null
 const SleepTool =
   feature('PROACTIVE') || feature('KAIROS')
@@ -28,10 +28,10 @@ const SleepTool =
     : null
 const cronTools = feature('AGENT_TRIGGERS')
   ? [
-      require('./tools/ScheduleCronTool/CronCreateTool.js').CronCreateTool,
-      require('./tools/ScheduleCronTool/CronDeleteTool.js').CronDeleteTool,
-      require('./tools/ScheduleCronTool/CronListTool.js').CronListTool,
-    ]
+    require('./tools/ScheduleCronTool/CronCreateTool.js').CronCreateTool,
+    require('./tools/ScheduleCronTool/CronDeleteTool.js').CronDeleteTool,
+    require('./tools/ScheduleCronTool/CronListTool.js').CronListTool,
+  ]
   : []
 const RemoteTriggerTool = feature('AGENT_TRIGGERS_REMOTE')
   ? require('./tools/RemoteTriggerTool/RemoteTriggerTool.js').RemoteTriggerTool
@@ -45,7 +45,7 @@ const SendUserFileTool = feature('KAIROS')
 const PushNotificationTool =
   feature('KAIROS') || feature('KAIROS_PUSH_NOTIFICATION')
     ? require('./tools/PushNotificationTool/PushNotificationTool.js')
-        .PushNotificationTool
+      .PushNotificationTool
     : null
 const SubscribePRTool = feature('KAIROS_GITHUB_WEBHOOKS')
   ? require('./tools/SubscribePRTool/SubscribePRTool.js').SubscribePRTool
@@ -86,12 +86,12 @@ import { TaskListTool } from './tools/TaskListTool/TaskListTool.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { isToolSearchEnabledOptimistic } from './utils/toolSearch.js'
 import { isTodoV2Enabled } from './utils/tasks.js'
-// Dead code elimination: conditional import for CLAUDE_CODE_VERIFY_PLAN
+// Dead code elimination: conditional import for OMNICODE_VERIFY_PLAN
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const VerifyPlanExecutionTool =
-  process.env.CLAUDE_CODE_VERIFY_PLAN === 'true'
+  process.env.OMNICODE_VERIFY_PLAN === 'true'
     ? require('./tools/VerifyPlanExecutionTool/VerifyPlanExecutionTool.js')
-        .VerifyPlanExecutionTool
+      .VerifyPlanExecutionTool
     : null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from './tools/SyntheticOutputTool/SyntheticOutputTool.js'
@@ -112,7 +112,7 @@ const CtxInspectTool = feature('CONTEXT_COLLAPSE')
   : null
 const TerminalCaptureTool = feature('TERMINAL_PANEL')
   ? require('./tools/TerminalCaptureTool/TerminalCaptureTool.js')
-      .TerminalCaptureTool
+    .TerminalCaptureTool
   : null
 const WebBrowserTool = feature('WEB_BROWSER_TOOL')
   ? require('./tools/WebBrowserTool/WebBrowserTool.js').WebBrowserTool
@@ -128,9 +128,9 @@ const ListPeersTool = feature('UDS_INBOX')
   : null
 const WorkflowTool = feature('WORKFLOW_SCRIPTS')
   ? (() => {
-      require('./tools/WorkflowTool/bundled/index.js').initBundledWorkflows()
-      return require('./tools/WorkflowTool/WorkflowTool.js').WorkflowTool
-    })()
+    require('./tools/WorkflowTool/bundled/index.js').initBundledWorkflows()
+    return require('./tools/WorkflowTool/WorkflowTool.js').WorkflowTool
+  })()
   : null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 import type { ToolPermissionContext } from './Tool.js'
@@ -188,7 +188,7 @@ export function getToolsForDefaultPreset(): string[] {
  * This is the source of truth for ALL tools.
  */
 /**
- * NOTE: This MUST stay in sync with https://console.statsig.com/4aF3Ewatb6xPVpCwxb5nA3/dynamic_configs/claude_code_global_system_caching, in order to cache the system prompt across users.
+ * NOTE: This MUST stay in sync with https://console.statsig.com/4aF3Ewatb6xPVpCwxb5nA3/dynamic_configs/omnicode_code_global_system_caching, in order to cache the system prompt across users.
  */
 export function getAllBaseTools(): Tools {
   return [
@@ -196,7 +196,7 @@ export function getAllBaseTools(): Tools {
     TaskOutputTool,
     BashTool,
     // Ant-native builds have bfs/ugrep embedded in the bun binary (same ARGV0
-    // trick as ripgrep). When available, find/grep in Claude's shell are aliased
+    // trick as ripgrep). When available, find/grep in Omnicode's shell are aliased
     // to these fast tools, so the dedicated Glob/Grep tools are unnecessary.
     ...(hasEmbeddedSearchTools() ? [] : [GlobTool, GrepTool]),
     ExitPlanModeV2Tool,
@@ -245,7 +245,7 @@ export function getAllBaseTools(): Tools {
     ListMcpResourcesTool,
     ReadMcpResourceTool,
     // Include ToolSearchTool when tool search might be enabled (optimistic check)
-    // The actual decision to defer tools happens at request time in claude.ts
+    // The actual decision to defer tools happens at request time in omnicode.ts
     ...(isToolSearchEnabledOptimistic() ? [ToolSearchTool] : []),
   ]
 }
@@ -270,7 +270,7 @@ export function filterToolsByDenyRules<
 
 export const getTools = (permissionContext: ToolPermissionContext): Tools => {
   // Simple mode: only Bash, Read, and Edit tools
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+  if (isEnvTruthy(process.env.OMNICODE_SIMPLE)) {
     // --bare + REPL mode: REPL wraps Bash/Read/Edit/etc inside the VM, so
     // return REPL instead of the raw primitives. Matches the non-bare path
     // below which also hides REPL_ONLY_TOOLS when REPL is enabled.
@@ -352,7 +352,7 @@ export function assembleToolPool(
   const allowedMcpTools = filterToolsByDenyRules(mcpTools, permissionContext)
 
   // Sort each partition for prompt-cache stability, keeping built-ins as a
-  // contiguous prefix. The server's claude_code_system_cache_policy places a
+  // contiguous prefix. The server's omnicode_code_system_cache_policy places a
   // global cache breakpoint after the last prefix-matched built-in tool; a flat
   // sort would interleave MCP tools into built-ins and invalidate all downstream
   // cache keys whenever an MCP tool sorts between existing built-ins. uniqBy

@@ -66,18 +66,18 @@ export function Onboarding({
 
   // Define all onboarding steps
   const themeStep = <Box marginX={1}>
-      <ThemePicker onThemeSelect={handleThemeSelection} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} // Skip exit handling as Onboarding already handles it
+    <ThemePicker onThemeSelect={handleThemeSelection} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} // Skip exit handling as Onboarding already handles it
     />
-    </Box>;
+  </Box>;
   const securityStep = <Box flexDirection="column" gap={1} paddingLeft={1}>
-      <PressEnterToContinue />
-    </Box>;
+    <PressEnterToContinue />
+  </Box>;
   const preflightStep = <PreflightStep onSuccess={goToNextStep} />;
   // Create the steps array - determine which steps to include based on reAuth and oauthEnabled
   const apiKeyNeedingApproval = useMemo(() => {
     // Add API key step if needed
     // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-    // processes but ignored by Claude Code itself (see auth.ts).
+    // processes but ignored by Omnicode Code itself (see auth.ts).
     if (!process.env.ANTHROPIC_API_KEY || isRunningOnHomespace() || !isAnthropicAuthEnabled()) {
       return '';
     }
@@ -113,8 +113,8 @@ export function Onboarding({
     steps.push({
       id: 'oauth',
       component: <SkippableStep skip={skipOAuth} onSkip={goToNextStep}>
-          <ConsoleOAuthFlow onDone={goToNextStep} />
-        </SkippableStep>
+        <ConsoleOAuthFlow onDone={goToNextStep} />
+      </SkippableStep>
     });
   }
   steps.push({
@@ -125,15 +125,15 @@ export function Onboarding({
     steps.push({
       id: 'terminal-setup',
       component: <Box flexDirection="column" gap={1} paddingLeft={1}>
-          <Text bold>Use Claude Code&apos;s terminal setup?</Text>
-          <Box flexDirection="column" width={70} gap={1}>
-            <Text>
-              For the optimal coding experience, enable the recommended settings
-              <Newline />
-              for your terminal:{' '}
-              {env.terminal === 'Apple_Terminal' ? 'Option+Enter for newlines and visual bell' : 'Shift+Enter for newlines'}
-            </Text>
-            <Select options={[{
+        <Text bold>Use Omnicode Code&apos;s terminal setup?</Text>
+        <Box flexDirection="column" width={70} gap={1}>
+          <Text>
+            For the optimal coding experience, enable the recommended settings
+            <Newline />
+            for your terminal:{' '}
+            {env.terminal === 'Apple_Terminal' ? 'Option+Enter for newlines and visual bell' : 'Shift+Enter for newlines'}
+          </Text>
+          <Select options={[{
             label: 'Yes, use recommended settings',
             value: 'install'
           }, {
@@ -142,16 +142,16 @@ export function Onboarding({
           }]} onChange={value => {
             if (value === 'install') {
               // Errors already logged in setupTerminal, just swallow and proceed
-              void setupTerminal(theme).catch(() => {}).finally(goToNextStep);
+              void setupTerminal(theme).catch(() => { }).finally(goToNextStep);
             } else {
               goToNextStep();
             }
           }} onCancel={() => goToNextStep()} />
-            <Text dimColor>
-              {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Enter to confirm · Esc to skip</>}
-            </Text>
-          </Box>
+          <Text dimColor>
+            {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Enter to confirm · Esc to skip</>}
+          </Text>
         </Box>
+      </Box>
     });
   }
   const currentStep = steps[currentStepIndex];
@@ -185,14 +185,14 @@ export function Onboarding({
     isActive: currentStep?.id === 'terminal-setup'
   });
   return <Box flexDirection="column">
-      <WelcomeV2 />
-      <Box flexDirection="column" marginTop={1}>
-        {currentStep?.component}
-        {exitState.pending && <Box padding={1}>
-            <Text dimColor>Press {exitState.keyName} again to exit</Text>
-          </Box>}
-      </Box>
-    </Box>;
+    <WelcomeV2 />
+    <Box flexDirection="column" marginTop={1}>
+      {currentStep?.component}
+      {exitState.pending && <Box padding={1}>
+        <Text dimColor>Press {exitState.keyName} again to exit</Text>
+      </Box>}
+    </Box>
+  </Box>;
 }
 export function SkippableStep(t0) {
   const $ = _c(4);

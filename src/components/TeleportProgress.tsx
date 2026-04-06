@@ -47,7 +47,7 @@ export function TeleportProgress(t0) {
   const t2 = SPINNER_FRAMES[frame];
   let t3;
   if ($[2] !== t2) {
-    t3 = <Box marginBottom={1}><Text bold={true} color="claude">{t2} Teleporting session…</Text></Box>;
+    t3 = <Box marginBottom={1}><Text bold={true} color="omnicode">{t2} Teleporting session…</Text></Box>;
     $[2] = t2;
     $[3] = t3;
   } else {
@@ -75,7 +75,7 @@ export function TeleportProgress(t0) {
       } else {
         if (isCurrent) {
           icon = SPINNER_FRAMES[frame];
-          color = "claude";
+          color = "omnicode";
         } else {
           icon = figures.circle;
           color = undefined;
@@ -117,15 +117,15 @@ export function TeleportProgress(t0) {
  */
 export async function teleportWithProgress(root: Root, sessionId: string): Promise<TeleportResult> {
   // Capture the setState function from the rendered component
-  let setStep: (step: TeleportProgressStep) => void = () => {};
+  let setStep: (step: TeleportProgressStep) => void = () => { };
   function TeleportProgressWrapper(): React.ReactNode {
     const [step, _setStep] = useState<TeleportProgressStep>('validating');
     setStep = _setStep;
     return <TeleportProgress currentStep={step} sessionId={sessionId} />;
   }
   root.render(<AppStateProvider>
-      <TeleportProgressWrapper />
-    </AppStateProvider>);
+    <TeleportProgressWrapper />
+  </AppStateProvider>);
   const result = await teleportResumeCodeSession(sessionId, setStep);
   setStep('checking_out');
   const {

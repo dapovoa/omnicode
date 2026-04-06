@@ -9,9 +9,9 @@ import { registerPendingLSPDiagnostic } from './LSPDiagnosticRegistry.js'
 import type { LSPServerManager } from './LSPServerManager.js'
 
 /**
- * Map LSP severity to Claude diagnostic severity
+ * Map LSP severity to Omnicode diagnostic severity
  *
- * Maps LSP severity numbers to Claude diagnostic severity strings.
+ * Maps LSP severity numbers to Omnicode diagnostic severity strings.
  * Accepts numeric severity values (1=Error, 2=Warning, 3=Information, 4=Hint)
  * or undefined, defaulting to 'Error' for invalid/missing values.
  */
@@ -35,10 +35,10 @@ function mapLSPSeverity(
 }
 
 /**
- * Convert LSP diagnostics to Claude diagnostic format
+ * Convert LSP diagnostics to Omnicode diagnostic format
  *
  * Converts LSP PublishDiagnosticsParams to DiagnosticFile[] format
- * used by Claude's attachment system.
+ * used by Omnicode's attachment system.
  */
 export function formatDiagnosticsForAttachment(
   params: PublishDiagnosticsParams,
@@ -117,7 +117,7 @@ export type HandlerRegistrationResult = {
  * Register LSP notification handlers on all servers
  *
  * Sets up handlers to listen for textDocument/publishDiagnostics notifications
- * from all LSP servers and routes them to Claude's diagnostic system.
+ * from all LSP servers and routes them to Omnicode's diagnostic system.
  * Uses public getAllServers() API for clean access to server instances.
  *
  * @returns Tracking data for registration status and runtime failures
@@ -187,7 +187,7 @@ export function registerLSPNotificationHandlers(
               `Received diagnostics from ${serverName}: ${diagnosticParams.diagnostics.length} diagnostic(s) for ${diagnosticParams.uri}`,
             )
 
-            // Convert LSP diagnostics to Claude format (can throw on invalid URIs)
+            // Convert LSP diagnostics to Omnicode format (can throw on invalid URIs)
             const diagnosticFiles =
               formatDiagnosticsForAttachment(diagnosticParams)
 
@@ -223,9 +223,9 @@ export function registerLSPNotificationHandlers(
               logError(err)
               logForDebugging(
                 `Error registering LSP diagnostics from ${serverName}: ` +
-                  `URI: ${diagnosticParams.uri}, ` +
-                  `Diagnostic count: ${firstFile.diagnostics.length}, ` +
-                  `Error: ${err.message}`,
+                `URI: ${diagnosticParams.uri}, ` +
+                `Diagnostic count: ${firstFile.diagnostics.length}, ` +
+                `Error: ${err.message}`,
               )
 
               // Track consecutive failures and warn after 3+
@@ -240,9 +240,9 @@ export function registerLSPNotificationHandlers(
               if (failures.count >= 3) {
                 logForDebugging(
                   `WARNING: LSP diagnostic handler for ${serverName} has failed ${failures.count} times consecutively. ` +
-                    `Last error: ${failures.lastError}. ` +
-                    `This may indicate a problem with the LSP server or diagnostic processing. ` +
-                    `Check logs for details.`,
+                  `Last error: ${failures.lastError}. ` +
+                  `This may indicate a problem with the LSP server or diagnostic processing. ` +
+                  `Check logs for details.`,
                 )
               }
             }
@@ -266,9 +266,9 @@ export function registerLSPNotificationHandlers(
             if (failures.count >= 3) {
               logForDebugging(
                 `WARNING: LSP diagnostic handler for ${serverName} has failed ${failures.count} times consecutively. ` +
-                  `Last error: ${failures.lastError}. ` +
-                  `This may indicate a problem with the LSP server or diagnostic processing. ` +
-                  `Check logs for details.`,
+                `Last error: ${failures.lastError}. ` +
+                `This may indicate a problem with the LSP server or diagnostic processing. ` +
+                `Check logs for details.`,
               )
             }
 
@@ -290,7 +290,7 @@ export function registerLSPNotificationHandlers(
       logError(err)
       logForDebugging(
         `Failed to register diagnostics handler for ${serverName}: ` +
-          `Error: ${err.message}`,
+        `Error: ${err.message}`,
       )
     }
   }
@@ -309,8 +309,8 @@ export function registerLSPNotificationHandlers(
     )
     logForDebugging(
       `LSP notification handler registration: ${successCount}/${totalServers} succeeded. ` +
-        `Failed servers: ${failedServers}. ` +
-        `Diagnostics from failed servers will not be delivered.`,
+      `Failed servers: ${failedServers}. ` +
+      `Diagnostics from failed servers will not be delivered.`,
     )
   } else {
     logForDebugging(

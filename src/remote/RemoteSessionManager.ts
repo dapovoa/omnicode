@@ -39,13 +39,13 @@ function isSDKMessage(
  */
 export type RemotePermissionResponse =
   | {
-      behavior: 'allow'
-      updatedInput: Record<string, unknown>
-    }
+    behavior: 'allow'
+    updatedInput: Record<string, unknown>
+  }
   | {
-      behavior: 'deny'
-      message: string
-    }
+    behavior: 'deny'
+    message: string
+  }
 
 export type RemoteSessionConfig = {
   sessionId: string
@@ -56,7 +56,7 @@ export type RemoteSessionConfig = {
   /**
    * When true, this client is a pure viewer. Ctrl+C/Escape do NOT send
    * interrupt to the remote agent; 60s reconnect timeout is disabled;
-   * session title is never updated. Used by `claude assistant`.
+   * session title is never updated. Used by `omnicode assistant`.
    */
   viewerOnly?: boolean
 }
@@ -100,7 +100,7 @@ export class RemoteSessionManager {
   constructor(
     private readonly config: RemoteSessionConfig,
     private readonly callbacks: RemoteSessionCallbacks,
-  ) {}
+  ) { }
 
   /**
    * Connect to the remote session via WebSocket

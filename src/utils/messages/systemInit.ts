@@ -71,7 +71,7 @@ export function buildSystemInitMessage(inputs: SystemInitInputs): SDKMessage {
       .map(c => c.name),
     apiKeySource: getAnthropicApiKeyWithSource().source as ApiKeySource,
     betas: getSdkBetas(),
-    claude_code_version: MACRO.VERSION,
+    omnicode_code_version: MACRO.VERSION,
     output_style: outputStyle,
     agents: inputs.agents.map(agent => agent.agentType),
     skills: inputs.skills
@@ -87,7 +87,7 @@ export function buildSystemInitMessage(inputs: SystemInitInputs): SDKMessage {
   // Hidden from public SDK types — internal-only UDS messaging socket path
   if (feature('UDS_INBOX')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    ;(initMessage as Record<string, unknown>).messaging_socket_path =
+    ; (initMessage as Record<string, unknown>).messaging_socket_path =
       require('../udsMessaging.js').getUdsMessagingSocketPath()
     /* eslint-enable @typescript-eslint/no-require-imports */
   }

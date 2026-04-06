@@ -26,40 +26,40 @@ type Props = {
   onDone(result?: ConsoleOAuthFlowResult): void;
   startingMessage?: string;
   mode?: 'login' | 'setup-token';
-  forceLoginMethod?: 'claudeai' | 'console';
+  forceLoginMethod?: 'omnicodeai' | 'console';
   initialStatus?: OAuthStatus;
 };
 type OAuthStatus = {
   state: 'platform_setup';
 } // Default provider setup flow
-| {
-  state: 'platform_setup_complete';
-  message: string;
-}
-| {
-  state: 'ready_to_start';
-} // Flow started, waiting for browser to open
-| {
-  state: 'waiting_for_login';
-  url: string;
-} // Browser opened, waiting for user to login
-| {
-  state: 'creating_api_key';
-} // Got access token, creating API key
-| {
-  state: 'about_to_retry';
-  nextState: OAuthStatus;
-} | {
-  state: 'success';
-  token?: string;
-} | {
-  state: 'error';
-  message: string;
-  toRetry?: OAuthStatus;
-};
+  | {
+    state: 'platform_setup_complete';
+    message: string;
+  }
+  | {
+    state: 'ready_to_start';
+  } // Flow started, waiting for browser to open
+  | {
+    state: 'waiting_for_login';
+    url: string;
+  } // Browser opened, waiting for user to login
+  | {
+    state: 'creating_api_key';
+  } // Got access token, creating API key
+  | {
+    state: 'about_to_retry';
+    nextState: OAuthStatus;
+  } | {
+    state: 'success';
+    token?: string;
+  } | {
+    state: 'error';
+    message: string;
+    toRetry?: OAuthStatus;
+  };
 const PASTE_HERE_MSG = 'Paste code here if prompted > ';
-function getDefaultOAuthStatus(mode: 'login' | 'setup-token', forceLoginMethod?: 'claudeai' | 'console'): OAuthStatus {
-  if (mode === 'setup-token' || forceLoginMethod === 'claudeai' || forceLoginMethod === 'console') {
+function getDefaultOAuthStatus(mode: 'login' | 'setup-token', forceLoginMethod?: 'omnicodeai' | 'console'): OAuthStatus {
+  if (mode === 'setup-token' || forceLoginMethod === 'omnicodeai' || forceLoginMethod === 'console') {
     return {
       state: 'ready_to_start'
     };
@@ -77,7 +77,7 @@ export function ConsoleOAuthFlow({
   const settings = getSettings_DEPRECATED() || {};
   const forceLoginMethod = forceLoginMethodProp ?? settings.forceLoginMethod;
   const orgUUID = settings.forceLoginOrgUUID;
-  const forcedMethodMessage = forceLoginMethod === 'claudeai' ? 'Login method pre-selected: Subscription Plan (Claude Pro/Max)' : forceLoginMethod === 'console' ? 'Login method pre-selected: API Usage Billing (Anthropic Console)' : null;
+  const forcedMethodMessage = forceLoginMethod === 'omnicodeai' ? 'Login method pre-selected: Subscription Plan (Omnicode Pro/Max)' : forceLoginMethod === 'console' ? 'Login method pre-selected: API Usage Billing (Anthropic Console)' : null;
   const terminal = useTerminalNotification();
   const [oauthStatus, setOAuthStatus] = useState<OAuthStatus>(() => {
     if (initialStatus) {
@@ -88,9 +88,9 @@ export function ConsoleOAuthFlow({
   const [pastedCode, setPastedCode] = useState('');
   const [cursorOffset, setCursorOffset] = useState(0);
   const [oauthService] = useState(() => new OAuthService());
-  const [loginWithClaudeAi] = useState(() => {
-    // Use Claude AI auth for setup-token mode to support user:inference scope
-    return mode === 'setup-token' || forceLoginMethod === 'claudeai';
+  const [loginWithOmnicodeAi] = useState(() => {
+    // Use Omnicode AI auth for setup-token mode to support user:inference scope
+    return mode === 'setup-token' || forceLoginMethod === 'omnicodeai';
   });
   // After a few seconds we suggest the user to copy/paste url if the
   // browser did not open automatically. In this flow we expect the user to
@@ -101,8 +101,8 @@ export function ConsoleOAuthFlow({
 
   // Log forced login method on mount
   useEffect(() => {
-    if (forceLoginMethod === 'claudeai') {
-      logEvent('tengu_oauth_claudeai_forced', {});
+    if (forceLoginMethod === 'omnicodeai') {
+      logEvent('tengu_oauth_omnicodeai_forced', {});
     } else if (forceLoginMethod === 'console') {
       logEvent('tengu_oauth_console_forced', {});
     }
@@ -119,7 +119,7 @@ export function ConsoleOAuthFlow({
   // Handle Enter to continue on success state
   useKeybinding('confirm:yes', () => {
     logEvent('tengu_oauth_success', {
-      loginWithClaudeAi
+      loginWithOmnicodeAi
     });
     onDone({
       type: 'oauth'
@@ -203,7 +203,7 @@ export function ConsoleOAuthFlow({
   const startOAuth = useCallback(async () => {
     try {
       logEvent('tengu_oauth_flow_start', {
-        loginWithClaudeAi
+        loginWithOmnicodeAi
       });
       const result = await oauthService.startOAuthFlow(async url_0 => {
         setOAuthStatus({
@@ -212,7 +212,7 @@ export function ConsoleOAuthFlow({
         });
         setTimeout(setShowPastePrompt, 3000, true);
       }, {
-        loginWithClaudeAi,
+        loginWithOmnicodeAi,
         inferenceOnly: mode === 'setup-token',
         expiresIn: mode === 'setup-token' ? 365 * 24 * 60 * 60 : undefined,
         // 1 year for setup-token
@@ -236,7 +236,7 @@ export function ConsoleOAuthFlow({
       });
       if (mode === 'setup-token') {
         // For setup-token mode, return the OAuth access token directly (it can be used as an API key)
-        // Don't save to keychain - the token is displayed for manual use with CLAUDE_CODE_OAUTH_TOKEN
+        // Don't save to keychain - the token is displayed for manual use with OMNICODE_OAUTH_TOKEN
         setOAuthStatus({
           state: 'success',
           token: result.accessToken
@@ -251,7 +251,7 @@ export function ConsoleOAuthFlow({
           state: 'success'
         });
         void sendNotification({
-          message: 'Claude Code login successful',
+          message: 'Omnicode Code login successful',
           notificationType: 'auth_success'
         }, terminal);
       }
@@ -268,7 +268,7 @@ export function ConsoleOAuthFlow({
         ssl_error: sslHint !== null
       });
     }
-  }, [oauthService, setShowPastePrompt, loginWithClaudeAi, mode, orgUUID, forceLoginMethod]);
+  }, [oauthService, setShowPastePrompt, loginWithOmnicodeAi, mode, orgUUID, forceLoginMethod]);
   const pendingOAuthStartRef = useRef(false);
   useEffect(() => {
     if (oauthStatus.state === 'ready_to_start' && !pendingOAuthStartRef.current) {
@@ -284,16 +284,16 @@ export function ConsoleOAuthFlow({
   useEffect(() => {
     if (mode === 'setup-token' && oauthStatus.state === 'success') {
       // Delay to ensure static content is fully rendered before exiting
-      const timer_0 = setTimeout((loginWithClaudeAi_0, onDone_0) => {
+      const timer_0 = setTimeout((loginWithOmnicodeAi_0, onDone_0) => {
         logEvent('tengu_oauth_success', {
-          loginWithClaudeAi: loginWithClaudeAi_0
+          loginWithOmnicodeAi: loginWithOmnicodeAi_0
         });
         // Don't clear terminal so the token remains visible
         onDone_0();
-      }, 500, loginWithClaudeAi, onDone);
+      }, 500, loginWithOmnicodeAi, onDone);
       return () => clearTimeout(timer_0);
     }
-  }, [mode, oauthStatus, loginWithClaudeAi, onDone]);
+  }, [mode, oauthStatus, loginWithOmnicodeAi, onDone]);
 
   // Cleanup OAuth service when component unmounts
   useEffect(() => {
@@ -302,40 +302,40 @@ export function ConsoleOAuthFlow({
     };
   }, [oauthService]);
   return <Box flexDirection="column" gap={1}>
-      {oauthStatus.state === 'waiting_for_login' && showPastePrompt && <Box flexDirection="column" key="urlToCopy" gap={1} paddingBottom={1}>
-          <Box paddingX={1}>
-            <Text dimColor>
-              Browser didn&apos;t open? Use the url below to sign in{' '}
-            </Text>
-            {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                <KeyboardShortcutHint shortcut="c" action="copy" parens />
-              </Text>}
-          </Box>
-          <Link url={oauthStatus.url}>
-            <Text dimColor>{oauthStatus.url}</Text>
-          </Link>
-        </Box>}
-      {mode === 'setup-token' && oauthStatus.state === 'success' && oauthStatus.token && <Box key="tokenOutput" flexDirection="column" gap={1} paddingTop={1}>
-            <Text color="success">
-              ✓ Long-lived authentication token created successfully!
-            </Text>
-            <Box flexDirection="column" gap={1}>
-              <Text>Your OAuth token (valid for 1 year):</Text>
-              <Text color="warning">{oauthStatus.token}</Text>
-              <Text dimColor>
-                Store this token securely. You won&apos;t be able to see it
-                again.
-              </Text>
-              <Text dimColor>
-                Use this token by setting: export
-                CLAUDE_CODE_OAUTH_TOKEN=&lt;token&gt;
-              </Text>
-            </Box>
-          </Box>}
-      <Box paddingLeft={1} flexDirection="column" gap={1}>
-        <OAuthStatusMessage oauthStatus={oauthStatus} mode={mode} forcedMethodMessage={forcedMethodMessage} showPastePrompt={showPastePrompt} pastedCode={pastedCode} setPastedCode={setPastedCode} cursorOffset={cursorOffset} setCursorOffset={setCursorOffset} textInputColumns={textInputColumns} handleSubmitCode={handleSubmitCode} setOAuthStatus={setOAuthStatus} onDone={onDone} />
+    {oauthStatus.state === 'waiting_for_login' && showPastePrompt && <Box flexDirection="column" key="urlToCopy" gap={1} paddingBottom={1}>
+      <Box paddingX={1}>
+        <Text dimColor>
+          Browser didn&apos;t open? Use the url below to sign in{' '}
+        </Text>
+        {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+          <KeyboardShortcutHint shortcut="c" action="copy" parens />
+        </Text>}
       </Box>
-    </Box>;
+      <Link url={oauthStatus.url}>
+        <Text dimColor>{oauthStatus.url}</Text>
+      </Link>
+    </Box>}
+    {mode === 'setup-token' && oauthStatus.state === 'success' && oauthStatus.token && <Box key="tokenOutput" flexDirection="column" gap={1} paddingTop={1}>
+      <Text color="success">
+        ✓ Long-lived authentication token created successfully!
+      </Text>
+      <Box flexDirection="column" gap={1}>
+        <Text>Your OAuth token (valid for 1 year):</Text>
+        <Text color="warning">{oauthStatus.token}</Text>
+        <Text dimColor>
+          Store this token securely. You won&apos;t be able to see it
+          again.
+        </Text>
+        <Text dimColor>
+          Use this token by setting: export
+          OMNICODE_OAUTH_TOKEN=&lt;token&gt;
+        </Text>
+      </Box>
+    </Box>}
+    <Box paddingLeft={1} flexDirection="column" gap={1}>
+      <OAuthStatusMessage oauthStatus={oauthStatus} mode={mode} forcedMethodMessage={forcedMethodMessage} showPastePrompt={showPastePrompt} pastedCode={pastedCode} setPastedCode={setPastedCode} cursorOffset={cursorOffset} setCursorOffset={setCursorOffset} textInputColumns={textInputColumns} handleSubmitCode={handleSubmitCode} setOAuthStatus={setOAuthStatus} onDone={onDone} />
+    </Box>
+  </Box>;
 }
 type OAuthStatusMessageProps = {
   oauthStatus: OAuthStatus;
@@ -429,7 +429,7 @@ function OAuthStatusMessage({
         <Box flexDirection="column" gap={1}>
           <Box>
             <Spinner />
-            <Text>Creating API key for Claude Code…</Text>
+            <Text>Creating API key for Omnicode Code…</Text>
           </Box>
         </Box>
       )

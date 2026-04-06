@@ -17,23 +17,23 @@ export type Step = {
 }
 
 export function getSteps(): Step[] {
-  const hasClaudeMd = getFsImplementation().existsSync(
-    join(getCwd(), 'CLAUDE.md'),
+  const hasOmnicodeMd = getFsImplementation().existsSync(
+    join(getCwd(), 'OMNICODE.md'),
   )
   const isWorkspaceDirEmpty = isDirEmpty(getCwd())
 
   return [
     {
       key: 'workspace',
-      text: 'Ask Claude to create a new app or clone a repository',
+      text: 'Ask Omnicode to create a new app or clone a repository',
       isComplete: false,
       isCompletable: true,
       isEnabled: isWorkspaceDirEmpty,
     },
     {
-      key: 'claudemd',
-      text: 'Run /init to create a CLAUDE.md file with instructions for Claude',
-      isComplete: hasClaudeMd,
+      key: 'omnicodemd',
+      text: 'Run /init to create a OMNICODE.md file with instructions for Omnicode',
+      isComplete: hasOmnicodeMd,
       isCompletable: true,
       isEnabled: !isWorkspaceDirEmpty,
     },

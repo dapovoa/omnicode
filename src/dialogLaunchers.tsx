@@ -65,7 +65,7 @@ export async function launchAssistantSessionChooser(root: Root, props: {
 }
 
 /**
- * `claude assistant` found zero sessions — show the same install wizard
+ * `omnicode assistant` found zero sessions — show the same install wizard
  * as `/assistant` when daemon.json is empty. Resolves to the installed dir on
  * success, null on cancel. Rejects on install failure so the caller can
  * distinguish errors from user cancellation.
@@ -125,8 +125,8 @@ export async function launchResumeChooser(root: Root, appProps: {
     App
   }] = await Promise.all([worktreePathsPromise, import('./screens/ResumeConversation.js'), import('./components/App.js')]);
   await renderAndRun(root, <App getFpsMetrics={appProps.getFpsMetrics} stats={appProps.stats} initialState={appProps.initialState}>
-      <KeybindingSetup>
-        <ResumeConversation {...resumeProps} worktreePaths={worktreePaths} />
-      </KeybindingSetup>
-    </App>);
+    <KeybindingSetup>
+      <ResumeConversation {...resumeProps} worktreePaths={worktreePaths} />
+    </KeybindingSetup>
+  </App>);
 }

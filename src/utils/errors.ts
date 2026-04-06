@@ -1,13 +1,13 @@
 import { APIUserAbortError } from '@anthropic-ai/sdk'
 
-export class ClaudeError extends Error {
+export class OmnicodeError extends Error {
   constructor(message: string) {
     super(message)
     this.name = this.constructor.name
   }
 }
 
-export class MalformedCommandError extends Error {}
+export class MalformedCommandError extends Error { }
 
 export class AbortError extends Error {
   constructor(message?: string) {
@@ -180,7 +180,7 @@ export function shortErrorStack(e: unknown, maxFrames = 5): string {
  *  EACCES    — permission denied
  *  EPERM     — operation not permitted
  *  ENOTDIR   — a path component is not a directory (e.g. a file named
- *              `.claude` exists where a directory is expected)
+ *              `.omnicode` exists where a directory is expected)
  *  ELOOP     — too many symlink levels (circular symlinks)
  */
 export function isFsInaccessible(e: unknown): e is NodeJS.ErrnoException {

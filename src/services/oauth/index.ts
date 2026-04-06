@@ -32,7 +32,7 @@ export class OAuthService {
   async startOAuthFlow(
     authURLHandler: (url: string, automaticUrl?: string) => Promise<void>,
     options?: {
-      loginWithClaudeAi?: boolean
+      loginWithOmnicodeAi?: boolean
       inferenceOnly?: boolean
       expiresIn?: number
       orgUUID?: string
@@ -41,7 +41,7 @@ export class OAuthService {
       /**
        * Don't call openBrowser(). Caller takes both URLs via authURLHandler
        * and decides how/where to open them. Used by the SDK control protocol
-       * (claude_authenticate) where the SDK client owns the user's display,
+       * (omnicode_authenticate) where the SDK client owns the user's display,
        * not this process.
        */
       skipBrowserOpen?: boolean
@@ -60,7 +60,7 @@ export class OAuthService {
       codeChallenge,
       state,
       port: this.port,
-      loginWithClaudeAi: options?.loginWithClaudeAi,
+      loginWithOmnicodeAi: options?.loginWithOmnicodeAi,
       inferenceOnly: options?.inferenceOnly,
       orgUUID: options?.orgUUID,
       loginHint: options?.loginHint,
@@ -182,10 +182,10 @@ export class OAuthService {
       profile,
       tokenAccount: response.account
         ? {
-            uuid: response.account.uuid,
-            emailAddress: response.account.email_address,
-            organizationUuid: response.organization?.uuid,
-          }
+          uuid: response.account.uuid,
+          emailAddress: response.account.email_address,
+          organizationUuid: response.organization?.uuid,
+        }
         : undefined,
     }
   }

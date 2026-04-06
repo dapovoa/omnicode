@@ -1,5 +1,5 @@
 /**
- * OpenAI-compatible API shim for Claude Code.
+ * OpenAI-compatible API shim for Omnicode Code.
  *
  * Translates Anthropic SDK calls (anthropic.beta.messages.create) into
  * OpenAI-compatible chat completion requests and streams back events
@@ -9,14 +9,14 @@
  * Together, Groq, Fireworks, DeepSeek, Mistral, and any OpenAI-compatible API.
  *
  * Environment variables:
- *   CLAUDE_CODE_USE_OPENAI=1          — enable this provider
+ *   OMNICODE_USE_OPENAI=1          — enable this provider
  *   OPENAI_API_KEY=sk-...             — API key (optional for local models)
  *   OPENAI_BASE_URL=http://...        — base URL (default: https://api.openai.com/v1)
  *   OPENAI_MODEL=gpt-4o              — default model override
  *   CODEX_API_KEY / ~/.codex/auth.json — Codex auth for codexplan/codexspark
  *
  * GitHub Models (models.github.ai), OpenAI-compatible:
- *   CLAUDE_CODE_USE_GITHUB=1         — enable GitHub inference (no need for USE_OPENAI)
+ *   OMNICODE_USE_GITHUB=1         — enable GitHub inference (no need for USE_OPENAI)
  *   GITHUB_TOKEN or GH_TOKEN         — PAT with models access (mapped to Bearer auth)
  *   OPENAI_MODEL                     — optional; use github:copilot or openai/gpt-4.1 style IDs
  */
@@ -58,7 +58,7 @@ const GITHUB_429_BASE_DELAY_SEC = 1
 const GITHUB_429_MAX_DELAY_SEC = 32
 
 function isGithubModelsMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+  return isEnvTruthy(process.env.OMNICODE_USE_GITHUB)
 }
 
 function formatRetryAfterHint(response: Response): string {
@@ -210,7 +210,7 @@ function convertMessages(
   }
 
   for (const msg of messages) {
-    // Claude Code wraps messages in { role, message: { role, content } }
+    // Omnicode Code wraps messages in { role, message: { role, content } }
     const inner = msg.message ?? msg
     const role = (inner as { role?: string }).role ?? msg.role
     const content = (inner as { content?: unknown }).content
@@ -363,7 +363,7 @@ function normalizeSchemaForOpenAI(
 function convertTools(
   tools: Array<{ name: string; description?: string; input_schema?: Record<string, unknown> }>,
 ): OpenAITool[] {
-  const isGemini = isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI)
+  const isGemini = isEnvTruthy(process.env.OMNICODE_USE_GEMINI)
 
   return tools
     .filter(t => t.name !== 'ToolSearchTool') // Not relevant for OpenAI
@@ -494,162 +494,25 @@ async function* openaiStreamToAnthropic(
       buffer = lines.pop() ?? ''
 
       for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed || trimmed === 'data: [DONE]') continue
-      if (!trimmed.startsWith('data: ')) continue
+        const trimmed = line.trim()
+        if (!trimmed || trimmed === 'data: [DONE]') continue
+        if (!trimmed.startsWith('data: ')) continue
 
-      let chunk: OpenAIStreamChunk
-      try {
-        chunk = JSON.parse(trimmed.slice(6))
-      } catch {
-        continue
-      }
-
-      const chunkUsage = convertChunkUsage(chunk.usage)
-
-      for (const choice of chunk.choices ?? []) {
-        const delta = choice.delta
-
-        // Text content — use != null to distinguish absent field from empty string,
-        // some providers send "" as first delta to signal streaming start
-        if (delta.content != null) {
-          if (!hasEmittedContentStart) {
-            yield {
-              type: 'content_block_start',
-              index: contentBlockIndex,
-              content_block: { type: 'text', text: '' },
-            }
-            hasEmittedContentStart = true
-          }
-          yield {
-            type: 'content_block_delta',
-            index: contentBlockIndex,
-            delta: { type: 'text_delta', text: delta.content },
-          }
+        let chunk: OpenAIStreamChunk
+        try {
+          chunk = JSON.parse(trimmed.slice(6))
+        } catch {
+          continue
         }
 
-        // Tool calls
-        if (delta.tool_calls) {
-          for (const tc of delta.tool_calls) {
-            if (tc.id && tc.function?.name) {
-              // New tool call starting
-              if (hasEmittedContentStart) {
-                yield {
-                  type: 'content_block_stop',
-                  index: contentBlockIndex,
-                }
-                contentBlockIndex++
-                hasEmittedContentStart = false
-              }
+        const chunkUsage = convertChunkUsage(chunk.usage)
 
-              const toolBlockIndex = contentBlockIndex
-              activeToolCalls.set(tc.index, {
-                id: tc.id,
-                name: tc.function.name,
-                index: toolBlockIndex,
-                jsonBuffer: tc.function.arguments ?? '',
-              })
+        for (const choice of chunk.choices ?? []) {
+          const delta = choice.delta
 
-              yield {
-                type: 'content_block_start',
-                index: toolBlockIndex,
-                content_block: {
-                  type: 'tool_use',
-                  id: tc.id,
-                  name: tc.function.name,
-                  input: {},
-                  ...(tc.extra_content ? { extra_content: tc.extra_content } : {}),
-                },
-              }
-              contentBlockIndex++
-
-              // Emit any initial arguments
-              if (tc.function.arguments) {
-                yield {
-                  type: 'content_block_delta',
-                  index: toolBlockIndex,
-                  delta: {
-                    type: 'input_json_delta',
-                    partial_json: tc.function.arguments,
-                  },
-                }
-              }
-            } else if (tc.function?.arguments) {
-              // Continuation of existing tool call
-              const active = activeToolCalls.get(tc.index)
-              if (active) {
-                if (tc.function.arguments) {
-                  active.jsonBuffer += tc.function.arguments
-                }
-                yield {
-                  type: 'content_block_delta',
-                  index: active.index,
-                  delta: {
-                    type: 'input_json_delta',
-                    partial_json: tc.function.arguments,
-                  },
-                }
-              }
-            }
-          }
-        }
-
-        // Finish — guard ensures we only process finish_reason once even if
-        // multiple chunks arrive with finish_reason set (some providers do this)
-        if (choice.finish_reason && !hasProcessedFinishReason) {
-          hasProcessedFinishReason = true
-
-          // Close any open content blocks
-          if (hasEmittedContentStart) {
-            yield {
-              type: 'content_block_stop',
-              index: contentBlockIndex,
-            }
-          }
-          // Close active tool calls
-          for (const [, tc] of activeToolCalls) {
-            let suffixToAdd = ''
-            if (tc.jsonBuffer) {
-              try {
-                JSON.parse(tc.jsonBuffer)
-              } catch {
-                const str = tc.jsonBuffer.trimEnd()
-                const combinations = [
-                  '}', '"}', ']}', '"]}', '}}', '"}}', ']}}', '"]}}', '"]}]}', '}]}'
-                ]
-                for (const combo of combinations) {
-                  try {
-                    JSON.parse(str + combo)
-                    suffixToAdd = combo
-                    break
-                  } catch {}
-                }
-              }
-            }
-
-            if (suffixToAdd) {
-              yield {
-                type: 'content_block_delta',
-                index: tc.index,
-                delta: {
-                  type: 'input_json_delta',
-                  partial_json: suffixToAdd,
-                },
-              }
-            }
-
-            yield { type: 'content_block_stop', index: tc.index }
-          }
-
-          const stopReason =
-            choice.finish_reason === 'tool_calls'
-              ? 'tool_use'
-              : choice.finish_reason === 'length'
-                ? 'max_tokens'
-                : 'end_turn'
-          if (choice.finish_reason === 'content_filter' || choice.finish_reason === 'safety') {
-            // Gemini/Azure content safety filter blocked the response.
-            // Emit a visible text block so the user knows why output was truncated.
+          // Text content — use != null to distinguish absent field from empty string,
+          // some providers send "" as first delta to signal streaming start
+          if (delta.content != null) {
             if (!hasEmittedContentStart) {
               yield {
                 type: 'content_block_start',
@@ -661,36 +524,173 @@ async function* openaiStreamToAnthropic(
             yield {
               type: 'content_block_delta',
               index: contentBlockIndex,
-              delta: { type: 'text_delta', text: '\n\n[Content blocked by provider safety filter]' },
+              delta: { type: 'text_delta', text: delta.content },
             }
           }
-          lastStopReason = stopReason
 
+          // Tool calls
+          if (delta.tool_calls) {
+            for (const tc of delta.tool_calls) {
+              if (tc.id && tc.function?.name) {
+                // New tool call starting
+                if (hasEmittedContentStart) {
+                  yield {
+                    type: 'content_block_stop',
+                    index: contentBlockIndex,
+                  }
+                  contentBlockIndex++
+                  hasEmittedContentStart = false
+                }
+
+                const toolBlockIndex = contentBlockIndex
+                activeToolCalls.set(tc.index, {
+                  id: tc.id,
+                  name: tc.function.name,
+                  index: toolBlockIndex,
+                  jsonBuffer: tc.function.arguments ?? '',
+                })
+
+                yield {
+                  type: 'content_block_start',
+                  index: toolBlockIndex,
+                  content_block: {
+                    type: 'tool_use',
+                    id: tc.id,
+                    name: tc.function.name,
+                    input: {},
+                    ...(tc.extra_content ? { extra_content: tc.extra_content } : {}),
+                  },
+                }
+                contentBlockIndex++
+
+                // Emit any initial arguments
+                if (tc.function.arguments) {
+                  yield {
+                    type: 'content_block_delta',
+                    index: toolBlockIndex,
+                    delta: {
+                      type: 'input_json_delta',
+                      partial_json: tc.function.arguments,
+                    },
+                  }
+                }
+              } else if (tc.function?.arguments) {
+                // Continuation of existing tool call
+                const active = activeToolCalls.get(tc.index)
+                if (active) {
+                  if (tc.function.arguments) {
+                    active.jsonBuffer += tc.function.arguments
+                  }
+                  yield {
+                    type: 'content_block_delta',
+                    index: active.index,
+                    delta: {
+                      type: 'input_json_delta',
+                      partial_json: tc.function.arguments,
+                    },
+                  }
+                }
+              }
+            }
+          }
+
+          // Finish — guard ensures we only process finish_reason once even if
+          // multiple chunks arrive with finish_reason set (some providers do this)
+          if (choice.finish_reason && !hasProcessedFinishReason) {
+            hasProcessedFinishReason = true
+
+            // Close any open content blocks
+            if (hasEmittedContentStart) {
+              yield {
+                type: 'content_block_stop',
+                index: contentBlockIndex,
+              }
+            }
+            // Close active tool calls
+            for (const [, tc] of activeToolCalls) {
+              let suffixToAdd = ''
+              if (tc.jsonBuffer) {
+                try {
+                  JSON.parse(tc.jsonBuffer)
+                } catch {
+                  const str = tc.jsonBuffer.trimEnd()
+                  const combinations = [
+                    '}', '"}', ']}', '"]}', '}}', '"}}', ']}}', '"]}}', '"]}]}', '}]}'
+                  ]
+                  for (const combo of combinations) {
+                    try {
+                      JSON.parse(str + combo)
+                      suffixToAdd = combo
+                      break
+                    } catch { }
+                  }
+                }
+              }
+
+              if (suffixToAdd) {
+                yield {
+                  type: 'content_block_delta',
+                  index: tc.index,
+                  delta: {
+                    type: 'input_json_delta',
+                    partial_json: suffixToAdd,
+                  },
+                }
+              }
+
+              yield { type: 'content_block_stop', index: tc.index }
+            }
+
+            const stopReason =
+              choice.finish_reason === 'tool_calls'
+                ? 'tool_use'
+                : choice.finish_reason === 'length'
+                  ? 'max_tokens'
+                  : 'end_turn'
+            if (choice.finish_reason === 'content_filter' || choice.finish_reason === 'safety') {
+              // Gemini/Azure content safety filter blocked the response.
+              // Emit a visible text block so the user knows why output was truncated.
+              if (!hasEmittedContentStart) {
+                yield {
+                  type: 'content_block_start',
+                  index: contentBlockIndex,
+                  content_block: { type: 'text', text: '' },
+                }
+                hasEmittedContentStart = true
+              }
+              yield {
+                type: 'content_block_delta',
+                index: contentBlockIndex,
+                delta: { type: 'text_delta', text: '\n\n[Content blocked by provider safety filter]' },
+              }
+            }
+            lastStopReason = stopReason
+
+            yield {
+              type: 'message_delta',
+              delta: { stop_reason: stopReason, stop_sequence: null },
+              ...(chunkUsage ? { usage: chunkUsage } : {}),
+            }
+            if (chunkUsage) {
+              hasEmittedFinalUsage = true
+            }
+          }
+        }
+
+        if (
+          !hasEmittedFinalUsage &&
+          chunkUsage &&
+          (chunk.choices?.length ?? 0) === 0 &&
+          lastStopReason !== null
+        ) {
           yield {
             type: 'message_delta',
-            delta: { stop_reason: stopReason, stop_sequence: null },
-            ...(chunkUsage ? { usage: chunkUsage } : {}),
+            delta: { stop_reason: lastStopReason, stop_sequence: null },
+            usage: chunkUsage,
           }
-          if (chunkUsage) {
-            hasEmittedFinalUsage = true
-          }
+          hasEmittedFinalUsage = true
         }
       }
-
-      if (
-        !hasEmittedFinalUsage &&
-        chunkUsage &&
-        (chunk.choices?.length ?? 0) === 0 &&
-        lastStopReason !== null
-      ) {
-        yield {
-          type: 'message_delta',
-          delta: { stop_reason: lastStopReason, stop_sequence: null },
-          usage: chunkUsage,
-        }
-        hasEmittedFinalUsage = true
-      }
-    }
     }
   } finally {
     reader.releaseLock()
@@ -705,7 +705,7 @@ async function* openaiStreamToAnthropic(
 
 class OpenAIShimStream {
   private generator: AsyncGenerator<AnthropicStreamEvent>
-  // The controller property is checked by claude.ts to distinguish streams from error messages
+  // The controller property is checked by omnicode.ts to distinguish streams from error messages
   controller = new AbortController()
 
   constructor(generator: AsyncGenerator<AnthropicStreamEvent>) {
@@ -896,7 +896,7 @@ class OpenAIShimMessages {
       ...(options?.headers ?? {}),
     }
 
-    const isGemini = isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI)
+    const isGemini = isEnvTruthy(process.env.OMNICODE_USE_GEMINI)
     const apiKey =
       this.providerOverride?.apiKey ?? process.env.OPENAI_API_KEY ?? ''
     // Detect Azure endpoints by hostname (not raw URL) to prevent bypass via
@@ -971,7 +971,7 @@ class OpenAIShimMessages {
         response.status === 429 &&
         attempt < maxAttempts - 1
       ) {
-        await response.text().catch(() => {})
+        await response.text().catch(() => { })
         const delaySec = Math.min(
           GITHUB_429_BASE_DELAY_SEC * 2 ** attempt,
           GITHUB_429_MAX_DELAY_SEC,
@@ -1006,9 +1006,9 @@ class OpenAIShimMessages {
         message?: {
           role?: string
           content?:
-            | string
-            | null
-            | Array<{ type?: string; text?: string }>
+          | string
+          | null
+          | Array<{ type?: string; text?: string }>
           tool_calls?: Array<{
             id: string
             function: { name: string; arguments: string }
@@ -1123,7 +1123,7 @@ export function createOpenAIShimClient(options: {
 
   // When Gemini provider is active, map Gemini env vars to OpenAI-compatible ones
   // so the existing providerConfig.ts infrastructure picks them up correctly.
-  if (isEnvTruthy(process.env.CLAUDE_CODE_USE_GEMINI)) {
+  if (isEnvTruthy(process.env.OMNICODE_USE_GEMINI)) {
     process.env.OPENAI_BASE_URL ??=
       process.env.GEMINI_BASE_URL ??
       'https://generativelanguage.googleapis.com/v1beta/openai'
@@ -1135,7 +1135,7 @@ export function createOpenAIShimClient(options: {
     if (process.env.GEMINI_MODEL && !process.env.OPENAI_MODEL) {
       process.env.OPENAI_MODEL = process.env.GEMINI_MODEL
     }
-  } else if (isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)) {
+  } else if (isEnvTruthy(process.env.OMNICODE_USE_GITHUB)) {
     process.env.OPENAI_BASE_URL ??= GITHUB_MODELS_DEFAULT_BASE
     process.env.OPENAI_API_KEY ??=
       process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN ?? ''

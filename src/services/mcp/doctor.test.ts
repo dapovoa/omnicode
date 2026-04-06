@@ -27,13 +27,13 @@ function makeDependencies(overrides: Partial<McpDoctorDependencies> = {}): McpDo
     getProjectMcpServerStatus: () => 'approved',
     isMcpServerDisabled: () => false,
     describeMcpConfigFilePath: scope => `scope://${scope}`,
-    clearServerCache: async () => {},
+    clearServerCache: async () => { },
     connectToServer: async (name, config) => ({
       name,
       type: 'connected',
       capabilities: {},
       config,
-      cleanup: async () => {},
+      cleanup: async () => { },
     }),
     ...overrides,
   }
@@ -96,7 +96,7 @@ test('findingsFromValidationErrors maps Windows npx warnings into doctor finding
       path: 'mcpServers.node-tools',
       message: "Windows requires 'cmd /c' wrapper to execute npx",
       suggestion:
-        'Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers',
+        'Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.omnicode.com/docs/en/mcp#configure-mcp-servers',
       mcpErrorMetadata: {
         scope: 'project',
         serverName: 'node-tools',
@@ -146,20 +146,20 @@ test('doctorAllServers reports global validation findings once without duplicati
     getMcpConfigsByScope: scope =>
       scope === 'project'
         ? {
-            servers: {},
-            errors: [
-              {
-                file: '.mcp.json',
-                path: '',
-                message: 'MCP config is not a valid JSON',
-                suggestion: 'Fix the JSON syntax errors in the file',
-                mcpErrorMetadata: {
-                  scope: 'project',
-                  severity: 'fatal',
-                },
+          servers: {},
+          errors: [
+            {
+              file: '.mcp.json',
+              path: '',
+              message: 'MCP config is not a valid JSON',
+              suggestion: 'Fix the JSON syntax errors in the file',
+              mcpErrorMetadata: {
+                scope: 'project',
+                severity: 'fatal',
               },
-            ],
-          }
+            },
+          ],
+        }
         : scope === 'local'
           ? { servers: { filesystem: localConfig }, errors: [] }
           : { servers: {}, errors: [] },
@@ -286,7 +286,7 @@ test('doctorAllServers skips live checks in config-only mode', async () => {
         type: 'connected',
         capabilities: {},
         config,
-        cleanup: async () => {},
+        cleanup: async () => { },
       }
     },
   })
@@ -514,7 +514,7 @@ test('doctorServer with scopeFilter does not leak runtime definition from anothe
         type: 'connected',
         capabilities: {},
         config,
-        cleanup: async () => {},
+        cleanup: async () => { },
       }
     },
   })

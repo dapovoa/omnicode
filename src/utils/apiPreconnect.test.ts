@@ -18,7 +18,7 @@ afterEach(() => {
 
 describe('preconnectAnthropicApi', () => {
   test('does not fetch when OpenAI mode is enabled', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 200 })))
     globalThis.fetch = fetchMock as typeof globalThis.fetch
 
@@ -29,7 +29,7 @@ describe('preconnectAnthropicApi', () => {
   })
 
   test('does not fetch when Gemini mode is enabled', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.OMNICODE_USE_GEMINI = '1'
     const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 200 })))
     globalThis.fetch = fetchMock as typeof globalThis.fetch
 
@@ -40,7 +40,7 @@ describe('preconnectAnthropicApi', () => {
   })
 
   test('does not fetch when GitHub mode is enabled', async () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.OMNICODE_USE_GITHUB = '1'
     const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 200 })))
     globalThis.fetch = fetchMock as typeof globalThis.fetch
 
@@ -51,12 +51,12 @@ describe('preconnectAnthropicApi', () => {
   })
 
   test('fetches in first-party mode', async () => {
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
-    delete process.env.CLAUDE_CODE_USE_BEDROCK
-    delete process.env.CLAUDE_CODE_USE_VERTEX
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
+    delete process.env.OMNICODE_USE_OPENAI
+    delete process.env.OMNICODE_USE_GEMINI
+    delete process.env.OMNICODE_USE_GITHUB
+    delete process.env.OMNICODE_USE_BEDROCK
+    delete process.env.OMNICODE_USE_VERTEX
+    delete process.env.OMNICODE_USE_FOUNDRY
 
     const fetchMock = mock(() => Promise.resolve(new Response(null, { status: 200 })))
     globalThis.fetch = fetchMock as typeof globalThis.fetch

@@ -69,7 +69,7 @@ export function BackgroundHint(t0) {
   useKeybinding("task:background", handleBackground, t3);
   const baseShortcut = useShortcutDisplay("task:background", "Task", "ctrl+b");
   const shortcut = env.terminal === "tmux" && baseShortcut === "ctrl+b" ? "ctrl+b ctrl+b (twice)" : baseShortcut;
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)) {
+  if (isEnvTruthy(process.env.OMNICODE_DISABLE_BACKGROUND_TASKS)) {
     return null;
   }
   let t4;
@@ -145,16 +145,16 @@ export function renderToolUseProgressMessage(progressMessagesForMessage: Progres
   const lastProgress = progressMessagesForMessage.at(-1);
   if (!lastProgress || !lastProgress.data) {
     return <MessageResponse height={1}>
-        <Text dimColor>Running…</Text>
-      </MessageResponse>;
+      <Text dimColor>Running…</Text>
+    </MessageResponse>;
   }
   const data = lastProgress.data;
   return <ShellProgressMessage fullOutput={data.fullOutput} output={data.output} elapsedTimeSeconds={data.elapsedTimeSeconds} totalLines={data.totalLines} totalBytes={data.totalBytes} timeoutMs={data.timeoutMs} taskId={data.taskId} verbose={verbose} />;
 }
 export function renderToolUseQueuedMessage(): React.ReactNode {
   return <MessageResponse height={1}>
-      <Text dimColor>Waiting…</Text>
-    </MessageResponse>;
+    <Text dimColor>Waiting…</Text>
+  </MessageResponse>;
 }
 export function renderToolResultMessage(content: Out, progressMessagesForMessage: ProgressMessage<BashProgress>[], {
   verbose,

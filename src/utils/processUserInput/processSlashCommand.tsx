@@ -93,7 +93,7 @@ async function executeForkedSlashCommand(command: CommandBase & PromptCommand, a
   // agent turn) cycles blocking user input. With this, N subagents run in
   // parallel and results trickle into the queue as they finish.
   //
-  // Gated on kairosEnabled (not CLAUDE_CODE_BRIEF) because the closed loop
+  // Gated on kairosEnabled (not OMNICODE_BRIEF) because the closed loop
   // depends on assistant-mode invariants: scheduled_tasks.json exists,
   // the main agent knows to pipe results through SendUserMessage, and
   // isMeta prompts are hidden. Outside assistant mode, context:fork commands
@@ -540,7 +540,7 @@ async function getMessagesForSlashCommand(commandName: string, args: string, set
           precedingInputBlocks
         })
       }), createUserMessage({
-        content: `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${commandName}" skill for you.`
+        content: `This skill can only be invoked by Omnicode, not directly by users. Ask Omnicode to use the "${commandName}" skill for you.`
       })],
       shouldQuery: false,
       command
@@ -830,11 +830,11 @@ async function getMessagesForPromptSlashCommand(command: CommandBase & PromptCom
   // skill content and allowedTools are useless. Instead, send a brief summary
   // telling the coordinator how to delegate this skill to a worker.
   //
-  // Workers run in-process and inherit CLAUDE_CODE_COORDINATOR_MODE from the
+  // Workers run in-process and inherit OMNICODE_COORDINATOR_MODE from the
   // parent env, so we also check !context.agentId: agentId is only set for
   // subagents, letting workers fall through to getPromptForCommand and receive
   // the real skill content when they invoke the Skill tool.
-  if (feature('COORDINATOR_MODE') && isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE) && !context.agentId) {
+  if (feature('COORDINATOR_MODE') && isEnvTruthy(process.env.OMNICODE_COORDINATOR_MODE) && !context.agentId) {
     const metadata = formatCommandLoadingMetadata(command, args);
     const parts: string[] = [`Skill "/${command.name}" is available for workers.`];
     if (command.description) {
@@ -895,8 +895,8 @@ async function getMessagesForPromptSlashCommand(command: CommandBase & PromptCom
   // intent, and a large SKILL.md (e.g. 110KB) would fire chunked AKI queries
   // adding seconds of latency to every skill invocation.
   const attachmentMessages = await toArray(getAttachmentMessages(result.filter((block): block is TextBlockParam => block.type === 'text').map(block => block.text).join(' '), context, null, [],
-  // queuedCommands - handled by query.ts for mid-turn attachments
-  context.messages, 'repl_main_thread', {
+    // queuedCommands - handled by query.ts for mid-turn attachments
+    context.messages, 'repl_main_thread', {
     skipSkillDiscovery: true
   }));
   const messages = [createUserMessage({

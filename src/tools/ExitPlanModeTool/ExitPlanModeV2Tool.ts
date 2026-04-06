@@ -59,7 +59,7 @@ const permissionSetupModule = feature('TRANSCRIPT_CLASSIFIER')
 
 /**
  * Schema for prompt-based permission requests.
- * Used by Claude to request semantic permissions when exiting plan mode.
+ * Used by Omnicode to request semantic permissions when exiting plan mode.
  */
 const allowedPromptSchema = lazySchema(() =>
   z.object({
@@ -339,7 +339,7 @@ export const ExitPlanModeV2Tool: Tool<InputSchema, Output> = buildTool({
           'auto mode unavailable'
         logForDebugging(
           `[auto-mode gate @ ExitPlanModeV2Tool] prePlanMode=${prePlanRaw} ` +
-            `but gate is off (reason=${reason}) — falling back to default on plan exit`,
+          `but gate is off (reason=${reason}) — falling back to default on plan exit`,
           { level: 'warn' },
         )
       }

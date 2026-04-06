@@ -15,7 +15,7 @@ import {
 } from '../../utils/file.js'
 import type { EditInput, FileEdit } from './types.js'
 
-// Claude can't output curly quotes, so we define them as constants here for Claude to use
+// Omnicode can't output curly quotes, so we define them as constants here for Omnicode to use
 // in the code. We do this because we normalize curly quotes to straight quotes
 // when applying edits.
 export const LEFT_SINGLE_CURLY_QUOTE = '‘'
@@ -211,9 +211,9 @@ export function applyEditToFile(
 ): string {
   const f = replaceAll
     ? (content: string, search: string, replace: string) =>
-        content.replaceAll(search, () => replace)
+      content.replaceAll(search, () => replace)
     : (content: string, search: string, replace: string) =>
-        content.replace(search, () => replace)
+      content.replace(search, () => replace)
 
   if (newString !== '') {
     return f(originalContent, oldString, newString)
@@ -315,11 +315,11 @@ export function getPatchForEdits({
       edit.old_string === ''
         ? edit.new_string
         : applyEditToFile(
-            updatedFile,
-            edit.old_string,
-            edit.new_string,
-            edit.replace_all,
-          )
+          updatedFile,
+          edit.old_string,
+          edit.new_string,
+          edit.replace_all,
+        )
 
     // If this edit didn't change anything, throw an error
     if (updatedFile === previousContent) {
@@ -524,8 +524,8 @@ export function getEditsForPatch(patch: StructuredPatchHunk[]): FileEdit[] {
 }
 
 /**
- * Contains replacements to de-sanitize strings from Claude
- * Since Claude can't see any of these strings (sanitized in the API)
+ * Contains replacements to de-sanitize strings from Omnicode
+ * Since Omnicode can't see any of these strings (sanitized in the API)
  * It'll output the sanitized versions in the edit response
  */
 const DESANITIZATIONS: Record<string, string> = {

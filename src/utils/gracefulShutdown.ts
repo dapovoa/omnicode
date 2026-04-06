@@ -125,9 +125,9 @@ function cleanupTerminalModes(skipUnmount: boolean = false): void {
     // Clear tab status (OSC 21337) so a stale dot doesn't linger
     if (supportsTabStatus()) writeSync(1, wrapForMultiplexer(CLEAR_TAB_STATUS))
     // Clear terminal title so the tab doesn't show stale session info.
-    // Respect CLAUDE_CODE_DISABLE_TERMINAL_TITLE — if the user opted out of
+    // Respect OMNICODE_DISABLE_TERMINAL_TITLE — if the user opted out of
     // title changes, don't clear their existing title on exit either.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.OMNICODE_DISABLE_TERMINAL_TITLE)) {
       if (process.platform === 'win32') {
         process.title = ''
       } else {
@@ -159,7 +159,7 @@ function printResumeHint(): void {
   ) {
     try {
       const sessionId = getSessionId()
-      // Don't show resume hint if no session file exists (e.g., subcommands like `claude update`)
+      // Don't show resume hint if no session file exists (e.g., subcommands like `omnicode update`)
       if (!sessionIdExists(sessionId)) {
         return
       }
@@ -256,7 +256,7 @@ export const setupGracefulShutdown = memoize(() => {
   // unload() never runs and removeListener is never called. Harmless under
   // Node.js — the pin also ensures signal-exit's process.exit hook stays
   // active for Ink cleanup.
-  onExit(() => {})
+  onExit(() => { })
 
   process.on('SIGINT', () => {
     // In print mode, print.ts registers its own SIGINT handler that aborts
@@ -325,10 +325,10 @@ export const setupGracefulShutdown = memoize(() => {
     const errorInfo =
       reason instanceof Error
         ? {
-            error_name: reason.name,
-            error_message: reason.message.slice(0, 2000),
-            error_stack: reason.stack?.slice(0, 4000),
-          }
+          error_name: reason.name,
+          error_message: reason.message.slice(0, 2000),
+          error_stack: reason.stack?.slice(0, 4000),
+        }
         : { error_message: String(reason).slice(0, 2000) }
     logForDiagnosticsNoPII('error', 'unhandled_rejection', errorInfo)
     logEvent('tengu_unhandled_rejection', {
@@ -360,7 +360,7 @@ export function gracefulShutdownSync(
     })
     // Prevent unhandled rejection: forceExit re-throws in test mode,
     // which would escape the .catch() handler above as a new rejection.
-    .catch(() => {})
+    .catch(() => { })
 }
 
 let shutdownInProgress = false
@@ -477,7 +477,7 @@ export async function gracefulShutdown(
   }
 
   // Execute SessionEnd hooks. Bound both the per-hook default timeout and the
-  // overall execution via a single budget (CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS,
+  // overall execution via a single budget (OMNICODE_SESSIONEND_HOOKS_TIMEOUT_MS,
   // default 1.5s). hook.timeout in settings is respected up to this cap.
   try {
     await executeSessionEndHooks(reason, {

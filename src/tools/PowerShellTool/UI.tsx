@@ -64,16 +64,16 @@ export function renderToolUseProgressMessage(progressMessagesForMessage: Progres
   const lastProgress = progressMessagesForMessage.at(-1);
   if (!lastProgress || !lastProgress.data) {
     return <MessageResponse height={1}>
-        <Text dimColor>Running…</Text>
-      </MessageResponse>;
+      <Text dimColor>Running…</Text>
+    </MessageResponse>;
   }
   const data = lastProgress.data;
   return <ShellProgressMessage fullOutput={data.fullOutput} output={data.output} elapsedTimeSeconds={data.elapsedTimeSeconds} totalLines={data.totalLines} totalBytes={data.totalBytes} timeoutMs={data.timeoutMs} taskId={data.taskId} verbose={verbose} />;
 }
 export function renderToolUseQueuedMessage(): React.ReactNode {
   return <MessageResponse height={1}>
-      <Text dimColor>Waiting…</Text>
-    </MessageResponse>;
+    <Text dimColor>Waiting…</Text>
+  </MessageResponse>;
 }
 export function renderToolResultMessage(content: Out, progressMessagesForMessage: ProgressMessage<PowerShellProgress>[], {
   verbose,
@@ -98,24 +98,24 @@ export function renderToolResultMessage(content: Out, progressMessagesForMessage
   } = content;
   if (isImage) {
     return <MessageResponse height={1}>
-        <Text dimColor>[Image data detected and sent to Claude]</Text>
-      </MessageResponse>;
+      <Text dimColor>[Image data detected and sent to Omnicode]</Text>
+    </MessageResponse>;
   }
   return <Box flexDirection="column">
-      {stdout !== '' ? <OutputLine content={stdout} verbose={verbose} /> : null}
-      {stderr.trim() !== '' ? <OutputLine content={stderr} verbose={verbose} isError /> : null}
-      {stdout === '' && stderr.trim() === '' ? <MessageResponse height={1}>
-          <Text dimColor>
-            {backgroundTaskId ? <>
-                Running in the background{' '}
-                <KeyboardShortcutHint shortcut="↓" action="manage" parens />
-              </> : interrupted ? 'Interrupted' : returnCodeInterpretation || '(No output)'}
-          </Text>
-        </MessageResponse> : null}
-      {timeoutMs ? <MessageResponse>
-          <ShellTimeDisplay timeoutMs={timeoutMs} />
-        </MessageResponse> : null}
-    </Box>;
+    {stdout !== '' ? <OutputLine content={stdout} verbose={verbose} /> : null}
+    {stderr.trim() !== '' ? <OutputLine content={stderr} verbose={verbose} isError /> : null}
+    {stdout === '' && stderr.trim() === '' ? <MessageResponse height={1}>
+      <Text dimColor>
+        {backgroundTaskId ? <>
+          Running in the background{' '}
+          <KeyboardShortcutHint shortcut="↓" action="manage" parens />
+        </> : interrupted ? 'Interrupted' : returnCodeInterpretation || '(No output)'}
+      </Text>
+    </MessageResponse> : null}
+    {timeoutMs ? <MessageResponse>
+      <ShellTimeDisplay timeoutMs={timeoutMs} />
+    </MessageResponse> : null}
+  </Box>;
 }
 export function renderToolUseErrorMessage(result: ToolResultBlockParam['content'], {
   verbose,

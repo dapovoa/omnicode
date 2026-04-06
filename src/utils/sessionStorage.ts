@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import type { UUID } from 'crypto'
 import type { Dirent } from 'fs'
 // Sync fs primitives for readFileTailSync — separate from fs/promises
-// imports above. Named (not wildcard) per CLAUDE.md style; no collisions
+// imports above. Named (not wildcard) per OMNICODE.md style; no collisions
 // with the async-suffixed names.
 import { closeSync, fstatSync, openSync, readSync } from 'fs'
 import {
@@ -69,7 +69,7 @@ import { updateSessionName } from './concurrentSessions.js'
 import { getCwd } from './cwd.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
+import { getOmnicodeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { isFsInaccessible } from './errors.js'
 import type { FileHistorySnapshot } from './fileHistory.js'
 import { formatFileSize } from './format.js'
@@ -196,7 +196,7 @@ export function isEphemeralToolProgress(dataType: unknown): boolean {
 }
 
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getOmnicodeConfigHomeDir(), 'projects')
 }
 
 export function getTranscriptPath(): string {
@@ -421,7 +421,7 @@ export function getUserType(): string {
 }
 
 function getEntrypoint(): string | undefined {
-  return process.env.CLAUDE_CODE_ENTRYPOINT
+  return process.env.OMNICODE_ENTRYPOINT
 }
 
 export function isCustomTitleEnabled(): boolean {
@@ -476,7 +476,7 @@ export function resetProjectFlushStateForTesting(): void {
 
 /**
  * Reset the entire Project singleton for testing.
- * This ensures tests with different CLAUDE_CONFIG_DIR values
+ * This ensures tests with different OMNICODE_CONFIG_DIR values
  * don't share stale sessionFile paths.
  */
 export function resetProjectForTesting(): void {
@@ -567,7 +567,7 @@ class Project {
   private FLUSH_INTERVAL_MS = 100
   private readonly MAX_CHUNK_BYTES = 100 * 1024 * 1024
 
-  constructor() {}
+  constructor() { }
 
   /** @internal Reset flush/queue state for testing. */
   _resetFlushState(): void {
@@ -952,7 +952,7 @@ class Project {
 
   /**
    * True when test env / cleanupPeriodDays=0 / --no-session-persistence /
-   * CLAUDE_CODE_SKIP_PROMPT_HISTORY should suppress all transcript writes.
+   * OMNICODE_SKIP_PROMPT_HISTORY should suppress all transcript writes.
    * Shared guard for appendEntry and materializeSessionFile so both skip
    * consistently. The env var is set by tmuxSocket.ts so Tungsten-spawned
    * test sessions don't pollute the user's --resume list.
@@ -965,7 +965,7 @@ class Project {
       (getNodeEnv() === 'test' && !allowTestPersistence) ||
       getSettings_DEPRECATED()?.cleanupPeriodDays === 0 ||
       isSessionPersistenceDisabled() ||
-      isEnvTruthy(process.env.CLAUDE_CODE_SKIP_PROMPT_HISTORY)
+      isEnvTruthy(process.env.OMNICODE_SKIP_PROMPT_HISTORY)
     )
   }
 
@@ -2348,7 +2348,7 @@ export function buildConversationChain(
  * Post-pass for buildConversationChain: recover sibling assistant blocks and
  * tool_results that the single-parent walk orphaned.
  *
- * Streaming (claude.ts:~2024) emits one AssistantMessage per content_block_stop
+ * Streaming (omnicode.ts:~2024) emits one AssistantMessage per content_block_stop
  * — N parallel tool_uses → N messages, distinct uuid, same message.id. Each
  * tool_result's sourceToolAssistantUUID points to its own one-block assistant,
  * so insertMessageChain's override (line ~894) writes each TR's parentUuid to a
@@ -2924,7 +2924,7 @@ export function saveAiGeneratedTitle(sessionId: UUID, aiTitle: string): void {
 }
 
 /**
- * Append a periodic task summary for `claude ps`. Unlike ai-title this is
+ * Append a periodic task summary for `omnicode ps`. Unlike ai-title this is
  * not re-appended by reAppendSessionMetadata — it's a rolling snapshot of
  * what the agent is doing *now*, so staleness is fine; ps reads the most
  * recent one from the tail.
@@ -3145,16 +3145,16 @@ export function saveWorktreeState(
   // allows this, but we don't want them serialized to the transcript.
   const stripped: PersistedWorktreeSession | null = worktreeSession
     ? {
-        originalCwd: worktreeSession.originalCwd,
-        worktreePath: worktreeSession.worktreePath,
-        worktreeName: worktreeSession.worktreeName,
-        worktreeBranch: worktreeSession.worktreeBranch,
-        originalBranch: worktreeSession.originalBranch,
-        originalHeadCommit: worktreeSession.originalHeadCommit,
-        sessionId: worktreeSession.sessionId,
-        tmuxSessionName: worktreeSession.tmuxSessionName,
-        hookBased: worktreeSession.hookBased,
-      }
+      originalCwd: worktreeSession.originalCwd,
+      worktreePath: worktreeSession.worktreePath,
+      worktreeName: worktreeSession.worktreeName,
+      worktreeBranch: worktreeSession.worktreeBranch,
+      originalBranch: worktreeSession.originalBranch,
+      originalHeadCommit: worktreeSession.originalHeadCommit,
+      sessionId: worktreeSession.sessionId,
+      tmuxSessionName: worktreeSession.tmuxSessionName,
+      hookBased: worktreeSession.hookBased,
+    }
     : null
   const project = getProject()
   project.currentSessionWorktree = stripped
@@ -3607,7 +3607,7 @@ function walkChainBeforeParse(buf: Buffer): Buffer {
       let suffix0 = -1
       let suffixN: number[] | undefined
       let from = pos
-      for (;;) {
+      for (; ;) {
         const next = buf.indexOf(UUID_KEY, from)
         if (next < 0 || next >= lineEnd) break
         if (firstAny < 0) firstAny = next
@@ -3784,7 +3784,7 @@ export async function loadTranscriptFile(
     let buf: Buffer | null = null
     let metadataLines: string[] | null = null
     let hasPreservedSegment = false
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP)) {
+    if (!isEnvTruthy(process.env.OMNICODE_DISABLE_PRECOMPACT_SKIP)) {
       const { size } = await stat(filePath)
       if (size > SKIP_PRECOMPACT_THRESHOLD) {
         const scan = await readTranscriptForLoad(filePath, size)
@@ -3816,14 +3816,14 @@ export async function loadTranscriptFile(
     // preservedSegment (those messages keep their pre-compact parentUuid on
     // disk -- applyPreservedSegmentRelinks splices them in-memory AFTER
     // parse, so a pre-parse chain walk would drop them as orphans), and when
-    // CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP is set (that kill switch means
+    // OMNICODE_DISABLE_PRECOMPACT_SKIP is set (that kill switch means
     // "load everything, skip nothing"; this is another skip-before-parse
     // optimization and the scan it depends on for hasPreservedSegment did
     // not run).
     if (
       !opts?.keepAllLeaves &&
       !hasPreservedSegment &&
-      !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP) &&
+      !isEnvTruthy(process.env.OMNICODE_DISABLE_PRECOMPACT_SKIP) &&
       buf.length > SKIP_PRECOMPACT_THRESHOLD
     ) {
       buf = walkChainBeforeParse(buf)
@@ -3842,28 +3842,28 @@ export async function loadTranscriptFile(
       forEachParsedJSONLBufferEntry<Entry>(
         Buffer.from(metadataLines.join('\n')),
         entry => {
-        if (entry.type === 'summary' && entry.leafUuid) {
-          summaries.set(entry.leafUuid, entry.summary)
-        } else if (entry.type === 'custom-title' && entry.sessionId) {
-          customTitles.set(entry.sessionId, entry.customTitle)
-        } else if (entry.type === 'tag' && entry.sessionId) {
-          tags.set(entry.sessionId, entry.tag)
-        } else if (entry.type === 'agent-name' && entry.sessionId) {
-          agentNames.set(entry.sessionId, entry.agentName)
-        } else if (entry.type === 'agent-color' && entry.sessionId) {
-          agentColors.set(entry.sessionId, entry.agentColor)
-        } else if (entry.type === 'agent-setting' && entry.sessionId) {
-          agentSettings.set(entry.sessionId, entry.agentSetting)
-        } else if (entry.type === 'mode' && entry.sessionId) {
-          modes.set(entry.sessionId, entry.mode)
-        } else if (entry.type === 'worktree-state' && entry.sessionId) {
-          worktreeStates.set(entry.sessionId, entry.worktreeSession)
-        } else if (entry.type === 'pr-link' && entry.sessionId) {
-          prNumbers.set(entry.sessionId, entry.prNumber)
-          prUrls.set(entry.sessionId, entry.prUrl)
-          prRepositories.set(entry.sessionId, entry.prRepository)
-        }
-      })
+          if (entry.type === 'summary' && entry.leafUuid) {
+            summaries.set(entry.leafUuid, entry.summary)
+          } else if (entry.type === 'custom-title' && entry.sessionId) {
+            customTitles.set(entry.sessionId, entry.customTitle)
+          } else if (entry.type === 'tag' && entry.sessionId) {
+            tags.set(entry.sessionId, entry.tag)
+          } else if (entry.type === 'agent-name' && entry.sessionId) {
+            agentNames.set(entry.sessionId, entry.agentName)
+          } else if (entry.type === 'agent-color' && entry.sessionId) {
+            agentColors.set(entry.sessionId, entry.agentColor)
+          } else if (entry.type === 'agent-setting' && entry.sessionId) {
+            agentSettings.set(entry.sessionId, entry.agentSetting)
+          } else if (entry.type === 'mode' && entry.sessionId) {
+            modes.set(entry.sessionId, entry.mode)
+          } else if (entry.type === 'worktree-state' && entry.sessionId) {
+            worktreeStates.set(entry.sessionId, entry.worktreeSession)
+          } else if (entry.type === 'pr-link' && entry.sessionId) {
+            prNumbers.set(entry.sessionId, entry.prNumber)
+            prUrls.set(entry.sessionId, entry.prUrl)
+            prRepositories.set(entry.sessionId, entry.prRepository)
+          }
+        })
     }
 
     // Bridge map for legacy progress entries: progress_uuid → progress_parent_uuid.
@@ -4613,7 +4613,7 @@ export function isLoggableMessage(m: Message): boolean {
   if (m.type === 'attachment' && getUserType() !== 'ant') {
     if (
       m.attachment.type === 'hook_additional_context' &&
-      isEnvTruthy(process.env.CLAUDE_CODE_SAVE_HOOK_ADDITIONAL_CONTEXT)
+      isEnvTruthy(process.env.OMNICODE_SAVE_HOOK_ADDITIONAL_CONTEXT)
     ) {
       return true
     }
@@ -4661,8 +4661,8 @@ function transformMessagesForExternalTranscript(
       )
       const filtered = hasRepl
         ? content.filter(
-            b => !(b.type === 'tool_use' && b.name === REPL_TOOL_NAME),
-          )
+          b => !(b.type === 'tool_use' && b.name === REPL_TOOL_NAME),
+        )
         : content
       if (filtered.length === 0) return []
       if (m.isVirtual) {
@@ -4681,8 +4681,8 @@ function transformMessagesForExternalTranscript(
       )
       const filtered = hasRepl
         ? content.filter(
-            b => !(b.type === 'tool_result' && replIds.has(b.tool_use_id)),
-          )
+          b => !(b.type === 'tool_result' && replIds.has(b.tool_use_id)),
+        )
         : content
       if (filtered.length === 0) return []
       if (m.isVirtual) {
@@ -4710,9 +4710,9 @@ export function cleanMessagesForLogging(
   const filtered = messages.filter(isLoggableMessage) as Transcript
   return getUserType() !== 'ant'
     ? transformMessagesForExternalTranscript(
-        filtered,
-        collectReplIds(allMessages),
-      )
+      filtered,
+      collectReplIds(allMessages),
+    )
     : filtered
 }
 

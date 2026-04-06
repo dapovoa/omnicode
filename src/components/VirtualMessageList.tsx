@@ -33,12 +33,12 @@ export type StickyPrompt = {
   text: string;
   scrollTo: () => void;
 }
-// Click sets this — header HIDES but padding stays collapsed (0) so
-// the content ❯ lands at screen row 0 instead of row 1. Cleared on
-// the next sticky-prompt compute (user scrolls again).
-| 'clicked';
+  // Click sets this — header HIDES but padding stays collapsed (0) so
+  // the content ❯ lands at screen row 0 instead of row 1. Cleared on
+  // the next sticky-prompt compute (user scrolls again).
+  | 'clicked';
 
-/** Huge pasted prompts (cat file | claude) can be MBs. Header wraps into
+/** Huge pasted prompts (cat file | omnicode) can be MBs. Header wraps into
  *  2 rows via overflow:hidden — this just bounds the React prop size. */
 const STICKY_TEXT_CAP = 500;
 
@@ -124,7 +124,7 @@ type Props = {
  * in the UI so both should stick.
  *
  * Leading <system-reminder> blocks are stripped before checking — they get
- * prepended to the stored text for Claude's context (memory updates, auto
+ * prepended to the stored text for Omnicode's context (memory updates, auto
  * mode reminders) but aren't what the user typed. Without stripping, any
  * prompt that happened to get a reminder is rejected by the startsWith('<')
  * check. Shows up on `cc -c` resumes where memory-update reminders are dense.
@@ -444,8 +444,8 @@ export function VirtualMessageList({
   const pendingStepRef = useRef<1 | -1 | 0>(0);
   // step + highlight via ref so the seek effect reads latest without
   // closure-capture or deps churn.
-  const stepRef = useRef<(d: 1 | -1) => void>(() => {});
-  const highlightRef = useRef<(ord: number) => void>(() => {});
+  const stepRef = useRef<(d: 1 | -1) => void>(() => { });
+  const highlightRef = useRef<(ord: number) => void>(() => { });
   const searchState = useRef({
     matches: [] as number[],
     // deduplicated msg indices
@@ -815,10 +815,10 @@ export function VirtualMessageList({
       return Math.round(workMs);
     }
   }),
-  // Closures over refs + callbacks. scrollRef stable; others are
-  // useCallback([]) or prop-drilled from REPL (stable).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [scrollRef]);
+    // Closures over refs + callbacks. scrollRef stable; others are
+    // useCallback([]) or prop-drilled from REPL (stable).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scrollRef]);
 
   // StickyTracker goes AFTER the list content. It returns null (no DOM node)
   // so order shouldn't matter for layout — but putting it first means every
@@ -855,8 +855,8 @@ export function VirtualMessageList({
     handlersRef.current.setHoveredKey(prev => prev === k ? null : prev);
   }, []);
   return <>
-      <Box ref={spacerRef} height={topSpacer} flexShrink={0} />
-      {messages.slice(start, end).map((msg, i) => {
+    <Box ref={spacerRef} height={topSpacer} flexShrink={0} />
+    {messages.slice(start, end).map((msg, i) => {
       const idx = start + i;
       const k = keys[idx]!;
       const clickable = !!onItemClick && (isItemClickable?.(msg) ?? true);
@@ -864,11 +864,11 @@ export function VirtualMessageList({
       const expanded = isItemExpanded?.(msg);
       return <VirtualItem key={k} itemKey={k} msg={msg} idx={idx} measureRef={measureRef} expanded={expanded} hovered={hovered} clickable={clickable} onClickK={onClickK} onEnterK={onEnterK} onLeaveK={onLeaveK} renderItem={renderItem} />;
     })}
-      {bottomSpacer > 0 && <Box height={bottomSpacer} flexShrink={0} />}
-      {trackStickyPrompt && <StickyTracker messages={messages} start={start} end={end} offsets={offsets} getItemTop={getItemTop} getItemElement={getItemElement} scrollRef={scrollRef} />}
-    </>;
+    {bottomSpacer > 0 && <Box height={bottomSpacer} flexShrink={0} />}
+    {trackStickyPrompt && <StickyTracker messages={messages} start={start} end={end} offsets={offsets} getItemTop={getItemTop} getItemElement={getItemElement} scrollRef={scrollRef} />}
+  </>;
 }
-const NOOP_UNSUB = () => {};
+const NOOP_UNSUB = () => { };
 
 /**
  * Effect-only child that tracks the last user-prompt scrolled above the

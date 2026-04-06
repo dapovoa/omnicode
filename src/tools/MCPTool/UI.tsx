@@ -58,8 +58,8 @@ export function renderToolUseProgressMessage(progressMessagesForMessage: Progres
   const lastProgress = progressMessagesForMessage.at(-1);
   if (!lastProgress?.data) {
     return <MessageResponse height={1}>
-        <Text dimColor>Running…</Text>
-      </MessageResponse>;
+      <Text dimColor>Running…</Text>
+    </MessageResponse>;
   }
   const {
     progress,
@@ -68,25 +68,25 @@ export function renderToolUseProgressMessage(progressMessagesForMessage: Progres
   } = lastProgress.data;
   if (progress === undefined) {
     return <MessageResponse height={1}>
-        <Text dimColor>Running…</Text>
-      </MessageResponse>;
+      <Text dimColor>Running…</Text>
+    </MessageResponse>;
   }
   if (total !== undefined && total > 0) {
     const ratio = Math.min(1, Math.max(0, progress / total));
     const percentage = Math.round(ratio * 100);
     return <MessageResponse>
-        <Box flexDirection="column">
-          {progressMessage && <Text dimColor>{progressMessage}</Text>}
-          <Box flexDirection="row" gap={1}>
-            <ProgressBar ratio={ratio} width={20} />
-            <Text dimColor>{percentage}%</Text>
-          </Box>
+      <Box flexDirection="column">
+        {progressMessage && <Text dimColor>{progressMessage}</Text>}
+        <Box flexDirection="row" gap={1}>
+          <ProgressBar ratio={ratio} width={20} />
+          <Text dimColor>{percentage}%</Text>
         </Box>
-      </MessageResponse>;
+      </Box>
+    </MessageResponse>;
   }
   return <MessageResponse height={1}>
-      <Text dimColor>{progressMessage ?? `Processing… ${progress}`}</Text>
-    </MessageResponse>;
+    <Text dimColor>{progressMessage ?? `Processing… ${progress}`}</Text>
+  </MessageResponse>;
 }
 export function renderToolResultMessage(output: string | MCPToolResult, _progressMessagesForMessage: ProgressMessage<ToolProgressData>[], {
   verbose,
@@ -100,11 +100,11 @@ export function renderToolResultMessage(output: string | MCPToolResult, _progres
     const slackSend = trySlackSendCompact(mcpOutput, input);
     if (slackSend !== null) {
       return <MessageResponse height={1}>
-          <Text>
-            Sent a message to{' '}
-            <Ansi>{createHyperlink(slackSend.url, slackSend.channel)}</Ansi>
-          </Text>
-        </MessageResponse>;
+        <Text>
+          Sent a message to{' '}
+          <Ansi>{createHyperlink(slackSend.url, slackSend.channel)}</Ansi>
+        </Text>
+      </MessageResponse>;
     }
   }
   const estimatedTokens = getContentSizeEstimate(mcpOutput);
@@ -115,10 +115,10 @@ export function renderToolResultMessage(output: string | MCPToolResult, _progres
     const contentBlocks = mcpOutput.map((item, i) => {
       if (item.type === 'image') {
         return <Box key={i} justifyContent="space-between" overflowX="hidden" width="100%">
-            <MessageResponse height={1}>
-              <Text>[Image]</Text>
-            </MessageResponse>
-          </Box>;
+          <MessageResponse height={1}>
+            <Text>[Image]</Text>
+          </MessageResponse>
+        </Box>;
       }
       // For text blocks and any other block types, extract text if available
       const textContent = item.type === 'text' && 'text' in item && item.text !== null && item.text !== undefined ? String(item.text) : '';
@@ -127,24 +127,24 @@ export function renderToolResultMessage(output: string | MCPToolResult, _progres
 
     // Wrap array content in a column layout
     contentElement = <Box flexDirection="column" width="100%">
-        {contentBlocks}
-      </Box>;
+      {contentBlocks}
+    </Box>;
   } else if (!mcpOutput) {
     contentElement = <Box justifyContent="space-between" overflowX="hidden" width="100%">
-        <MessageResponse height={1}>
-          <Text dimColor>(No content)</Text>
-        </MessageResponse>
-      </Box>;
+      <MessageResponse height={1}>
+        <Text dimColor>(No content)</Text>
+      </MessageResponse>
+    </Box>;
   } else {
     contentElement = feature('MCP_RICH_OUTPUT') ? <MCPTextOutput content={mcpOutput} verbose={verbose} /> : <OutputLine content={mcpOutput} verbose={verbose} />;
   }
   if (warningMessage) {
     return <Box flexDirection="column">
-        <MessageResponse height={1}>
-          <Text color="warning">{warningMessage}</Text>
-        </MessageResponse>
-        {contentElement}
-      </Box>;
+      <MessageResponse height={1}>
+        <Text color="warning">{warningMessage}</Text>
+      </MessageResponse>
+      {contentElement}
+    </Box>;
   }
   return contentElement;
 }
@@ -364,7 +364,7 @@ const SLACK_ARCHIVES_RE = /^https:\/\/[a-z0-9-]+\.slack\.com\/archives\/([A-Z0-9
 
 /**
  * Detect a Slack send-message result and return a compact {channel, url} pair.
- * Matches both hosted (claude.ai Slack) and community MCP server shapes —
+ * Matches both hosted (omnicode.ai Slack) and community MCP server shapes —
  * both return `message_link` in the result. The channel label prefers the
  * tool input (may be a name like "#foo" or an ID like "C09EVDAN1NK") and
  * falls back to the ID parsed from the archives URL.

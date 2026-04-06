@@ -43,7 +43,7 @@ const inputSchema = lazySchema(() =>
       .optional()
       .describe(
         'Type/role of the team lead (e.g., "researcher", "test-runner"). ' +
-          'Used for team file and inter-agent coordination.',
+        'Used for team file and inter-agent coordination.',
       ),
   }),
 )
@@ -148,8 +148,8 @@ export const TeamCreateTool: Tool<InputSchema, Output> = buildTool({
     // Get the team lead's current model from AppState (handles session model, settings, CLI override)
     const leadModel = parseUserSpecifiedModel(
       appState.mainLoopModelForSession ??
-        appState.mainLoopModel ??
-        getDefaultMainLoopModel(),
+      appState.mainLoopModel ??
+      getDefaultMainLoopModel(),
     )
 
     const teamFilePath = getTeamFilePath(finalTeamName)
@@ -221,7 +221,7 @@ export const TeamCreateTool: Tool<InputSchema, Output> = buildTool({
         getResolvedTeammateMode() as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
 
-    // Note: We intentionally don't set CLAUDE_CODE_AGENT_ID for the team lead because:
+    // Note: We intentionally don't set OMNICODE_AGENT_ID for the team lead because:
     // 1. The lead is not a "teammate" - isTeammate() should return false for them
     // 2. Their ID is deterministic (team-lead@teamName) and can be derived when needed
     // 3. Setting it would cause isTeammate() to return true, breaking inbox polling

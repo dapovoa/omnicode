@@ -213,11 +213,11 @@ export function useManagePlugins({
         ant_enabled_names:
           process.env.USER_TYPE === 'ant' && enabled.length > 0
             ? (enabled
-                .map(p => p.name)
-                .sort()
-                .join(
-                  ',',
-                ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
+              .map(p => p.name)
+              .sort()
+              .join(
+                ',',
+              ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
             : undefined,
       }
     } catch (error) {
@@ -272,7 +272,7 @@ export function useManagePlugins({
       const { ant_enabled_names, ...baseMetrics } = metrics
       const allMetrics = {
         ...baseMetrics,
-        has_custom_plugin_cache_dir: !!process.env.CLAUDE_CODE_PLUGIN_CACHE_DIR,
+        has_custom_plugin_cache_dir: !!process.env.OMNICODE_PLUGIN_CACHE_DIR,
       }
       logEvent('tengu_plugins_loaded', {
         ...allMetrics,

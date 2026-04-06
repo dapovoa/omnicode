@@ -37,7 +37,7 @@ export function SessionBackgroundHint(t0) {
   let t1;
   if ($[0] !== appStateStore || $[1] !== handleDoublePress || $[2] !== isLoading || $[3] !== setAppState) {
     t1 = () => {
-      if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)) {
+      if (isEnvTruthy(process.env.OMNICODE_DISABLE_BACKGROUND_TASKS)) {
         return;
       }
       const state = appStateStore.getState();
@@ -104,4 +104,4 @@ function _temp2(c) {
     hasUsedBackgroundTask: true
   };
 }
-function _temp() {}
+function _temp() { }

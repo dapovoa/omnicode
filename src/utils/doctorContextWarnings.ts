@@ -6,7 +6,7 @@ import {
   getLargeMemoryFiles,
   getMemoryFiles,
   MAX_MEMORY_CHARACTER_COUNT,
-} from './claudemd.js'
+} from './omnicodemd.js'
 import { getMainLoopModel } from './model/model.js'
 import { permissionRuleValueToString } from './permissions/permissionRuleParser.js'
 import { detectUnreachableRules } from './permissions/shadowedRuleDetection.js'
@@ -22,10 +22,10 @@ const MCP_TOOLS_THRESHOLD = 25_000 // 15k tokens
 
 export type ContextWarning = {
   type:
-    | 'claudemd_files'
-    | 'agent_descriptions'
-    | 'mcp_tools'
-    | 'unreachable_rules'
+  | 'omnicodemd_files'
+  | 'agent_descriptions'
+  | 'mcp_tools'
+  | 'unreachable_rules'
   severity: 'warning' | 'error'
   message: string
   details: string[]
@@ -34,13 +34,13 @@ export type ContextWarning = {
 }
 
 export type ContextWarnings = {
-  claudeMdWarning: ContextWarning | null
+  omnicodeMdWarning: ContextWarning | null
   agentWarning: ContextWarning | null
   mcpWarning: ContextWarning | null
   unreachableRulesWarning: ContextWarning | null
 }
 
-async function checkClaudeMdFiles(): Promise<ContextWarning | null> {
+async function checkOmnicodeMdFiles(): Promise<ContextWarning | null> {
   const largeFiles = getLargeMemoryFiles(await getMemoryFiles())
 
   // This already filters for files > 40k chars each
@@ -54,11 +54,11 @@ async function checkClaudeMdFiles(): Promise<ContextWarning | null> {
 
   const message =
     largeFiles.length === 1
-      ? `Large CLAUDE.md file detected (${largeFiles[0]!.content.length.toLocaleString()} chars > ${MAX_MEMORY_CHARACTER_COUNT.toLocaleString()})`
-      : `${largeFiles.length} large CLAUDE.md files detected (each > ${MAX_MEMORY_CHARACTER_COUNT.toLocaleString()} chars)`
+      ? `Large OMNICODE.md file detected (${largeFiles[0]!.content.length.toLocaleString()} chars > ${MAX_MEMORY_CHARACTER_COUNT.toLocaleString()})`
+      : `${largeFiles.length} large OMNICODE.md files detected (each > ${MAX_MEMORY_CHARACTER_COUNT.toLocaleString()} chars)`
 
   return {
-    type: 'claudemd_files',
+    type: 'omnicodemd_files',
     severity: 'warning',
     message,
     details,
@@ -248,16 +248,16 @@ export async function checkContextWarnings(
   agentInfo: AgentDefinitionsResult | null,
   getToolPermissionContext: () => Promise<ToolPermissionContext>,
 ): Promise<ContextWarnings> {
-  const [claudeMdWarning, agentWarning, mcpWarning, unreachableRulesWarning] =
+  const [omnicodeMdWarning, agentWarning, mcpWarning, unreachableRulesWarning] =
     await Promise.all([
-      checkClaudeMdFiles(),
+      checkOmnicodeMdFiles(),
       checkAgentDescriptions(agentInfo),
       checkMcpTools(tools, getToolPermissionContext, agentInfo),
       checkUnreachableRules(getToolPermissionContext),
     ])
 
   return {
-    claudeMdWarning,
+    omnicodeMdWarning,
     agentWarning,
     mcpWarning,
     unreachableRulesWarning,

@@ -100,10 +100,10 @@ function handleInteractivePermission(
     permissionPromptStartTimeMs,
     ...(feature('BASH_CLASSIFIER')
       ? {
-          classifierCheckInProgress:
-            !!result.pendingClassifierCheck &&
-            !awaitAutomatedChecksBeforeDialog,
-        }
+        classifierCheckInProgress:
+          !!result.pendingClassifierCheck &&
+          !awaitAutomatedChecksBeforeDialog,
+      }
       : {}),
     onUserInteraction() {
       // Called when user starts interacting with the permission dialog
@@ -231,7 +231,7 @@ function handleInteractivePermission(
     },
   })
 
-  // Race 4: Bridge permission response from CCR (claude.ai)
+  // Race 4: Bridge permission response from CCR (omnicode.ai)
   // When the bridge is connected, send the permission request to CCR and
   // subscribe for a response. Whichever side (CLI or CCR) responds first
   // wins via claim().
@@ -302,7 +302,7 @@ function handleInteractivePermission(
   // its MCP send_message tool, then race the reply against local/bridge/hook/
   // classifier. The inbound "yes abc123" is intercepted in the notification
   // handler (useManageMCPConnections.ts) BEFORE enqueue, so it never reaches
-  // Claude as a conversation turn.
+  // Omnicode as a conversation turn.
   //
   // Unlike the bridge block, this still guards on `requiresUserInteraction` —
   // channel replies are pure yes/no with no `updatedInput` path. In practice
@@ -462,8 +462,8 @@ function handleInteractivePermission(
           const matchedRule =
             decisionReason.type === 'classifier'
               ? (decisionReason.reason.match(
-                  /^Allowed by prompt rule: "(.+)"$/,
-                )?.[1] ?? decisionReason.reason)
+                /^Allowed by prompt rule: "(.+)"$/,
+              )?.[1] ?? decisionReason.reason)
               : undefined
 
           // Show auto-approved transition with dimmed options

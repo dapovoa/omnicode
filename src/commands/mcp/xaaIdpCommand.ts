@@ -1,5 +1,5 @@
 /**
- * `claude mcp xaa` — manage the XAA (SEP-990) IdP connection.
+ * `omnicode mcp xaa` — manage the XAA (SEP-990) IdP connection.
  *
  * The IdP connection is user-level: configure once, all XAA-enabled MCP
  * servers reuse it. Lives in settings.xaaIdp (non-secret) + a keychain slot
@@ -32,7 +32,7 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
       'Configure the IdP connection (one-time setup for all XAA-enabled servers)',
     )
     .requiredOption('--issuer <url>', 'IdP issuer URL (OIDC discovery)')
-    .requiredOption('--client-id <id>', "Claude Code's client_id at the IdP")
+    .requiredOption('--client-id <id>', "Omnicode Code's client_id at the IdP")
     .option(
       '--client-secret',
       'Read IdP client secret from MCP_XAA_IDP_CLIENT_SECRET env var',
@@ -139,7 +139,7 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
         if (!success) {
           return cliError(
             `Error: settings written but keychain save failed${warning ? ` — ${warning}` : ''}. ` +
-              `Re-run with --client-secret once keychain is available.`,
+            `Re-run with --client-secret once keychain is available.`,
           )
         }
       }
@@ -151,9 +151,9 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
     .command('login')
     .description(
       'Cache an IdP id_token so XAA-enabled MCP servers authenticate ' +
-        'silently. Default: run the OIDC browser login. With --id-token: ' +
-        'write a pre-obtained JWT directly (used by conformance/e2e tests ' +
-        'where the mock IdP does not serve /authorize).',
+      'silently. Default: run the OIDC browser login. With --id-token: ' +
+      'write a pre-obtained JWT directly (used by conformance/e2e tests ' +
+      'where the mock IdP does not serve /authorize).',
     )
     .option(
       '--force',
@@ -170,7 +170,7 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
       const idp = getXaaIdpSettings()
       if (!idp) {
         return cliError(
-          "Error: no XAA IdP connection. Run 'claude mcp xaa setup' first.",
+          "Error: no XAA IdP connection. Run 'omnicode mcp xaa setup' first.",
         )
       }
 
@@ -235,7 +235,7 @@ export function registerMcpXaaIdpCommand(mcp: Command): void {
         `Client secret: ${hasSecret ? '(stored in keychain)' : '(not set — PKCE-only)'}\n`,
       )
       process.stdout.write(
-        `Logged in:     ${hasIdToken ? 'yes (id_token cached)' : "no — run 'claude mcp xaa login'"}\n`,
+        `Logged in:     ${hasIdToken ? 'yes (id_token cached)' : "no — run 'omnicode mcp xaa login'"}\n`,
       )
       cliOk()
     })

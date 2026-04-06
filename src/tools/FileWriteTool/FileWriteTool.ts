@@ -238,7 +238,7 @@ export const FileWriteTool = buildTool({
         dynamicSkillDirTriggers?.add(dir)
       }
       // Don't await - let skill loading happen in the background
-      addSkillDirectories(newSkillDirs).catch(() => {})
+      addSkillDirectories(newSkillDirs).catch(() => { })
     }
 
     // Activate conditional skills whose path patterns match this file
@@ -336,14 +336,14 @@ export const FileWriteTool = buildTool({
       limit: undefined,
     })
 
-    // Log when writing to CLAUDE.md
-    if (fullFilePath.endsWith(`${sep}CLAUDE.md`)) {
-      logEvent('tengu_write_claudemd', {})
+    // Log when writing to OMNICODE.md
+    if (fullFilePath.endsWith(`${sep}OMNICODE.md`)) {
+      logEvent('tengu_write_omnicodemd', {})
     }
 
     let gitDiff: ToolUseDiff | undefined
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
+      isEnvTruthy(process.env.OMNICODE_REMOTE) &&
       getFeatureValue_CACHED_MAY_BE_STALE('tengu_quartz_lantern', false)
     ) {
       const startTime = Date.now()

@@ -15,10 +15,10 @@ const PLATFORMS: Record<Platform, {
   url: string;
 }> = {
   ios: {
-    url: 'https://apps.apple.com/app/claude-by-anthropic/id6473753684'
+    url: 'https://apps.apple.com/app/omnicode-by-anthropic/id6473753684'
   },
   android: {
-    url: 'https://play.google.com/store/apps/details?id=com.anthropic.claude'
+    url: 'https://play.google.com/store/apps/details?id=com.anthropic.omnicode'
   }
 };
 function MobileQRCode(t0) {
@@ -267,7 +267,7 @@ function _temp3(line) {
 function _temp2(prev) {
   return prev === "ios" ? "android" : "ios";
 }
-function _temp() {}
+function _temp() { }
 export async function call(onDone: LocalJSXCommandOnDone): Promise<React.ReactNode> {
   return <MobileQRCode onDone={onDone} />;
 }

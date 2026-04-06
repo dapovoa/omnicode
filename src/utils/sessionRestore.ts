@@ -29,7 +29,7 @@ import type {
 } from '../types/logs.js'
 import type { Message } from '../types/message.js'
 import { renameRecordingForSession } from './asciicast.js'
-import { clearMemoryFileCaches } from './claudemd.js'
+import { clearMemoryFileCaches } from './omnicodemd.js'
 import {
   type AttributionState,
   attributionRestoreStateFromLog,
@@ -126,7 +126,7 @@ export function restoreSessionStateFromLog(
   // commits would leave the prior session's stale commit log intact.
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    ;(
+    ; (
       require('../services/contextCollapse/persist.js') as typeof import('../services/contextCollapse/persist.js')
     ).restoreFromEntries(
       result.contextCollapseCommits ?? [],
@@ -169,7 +169,7 @@ export function computeRestoredAttributionState(
 
 /**
  * Compute standalone agent context (name/color) for session resume.
- * Used for computing initial state before render (per CLAUDE.md guidelines).
+ * Used for computing initial state before render (per OMNICODE.md guidelines).
  * Returns undefined if no name/color is set on the session.
  */
 export function computeStandaloneAgentContext(
@@ -454,7 +454,7 @@ export async function processResumedConversation(
     // copy source messages into the new JSONL via recordTranscript, but
     // content-replacement entries are a separate entry type only written by
     // recordContentReplacement (which query.ts calls for newlyReplaced, never
-    // the pre-loaded records). Without this seed, `claude -r {newSessionId}`
+    // the pre-loaded records). Without this seed, `omnicode -r {newSessionId}`
     // finds source tool_use_ids in messages but no matching replacement records
     // → they're classified as FROZEN → full content sent (cache miss, permanent
     // overage). insertContentReplacement stamps sessionId = getSessionId() =
@@ -493,7 +493,7 @@ export async function processResumedConversation(
   // — see the restoreSessionStateFromLog callsite above for why.
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    ;(
+    ; (
       require('../services/contextCollapse/persist.js') as typeof import('../services/contextCollapse/persist.js')
     ).restoreFromEntries(
       result.contextCollapseCommits ?? [],
@@ -515,7 +515,7 @@ export async function processResumedConversation(
     saveMode(context.modeApi?.isCoordinatorMode() ? 'coordinator' : 'normal')
   }
 
-  // Compute initial state before render (per CLAUDE.md guidelines)
+  // Compute initial state before render (per OMNICODE.md guidelines)
   const restoredAttribution = opts.includeAttribution
     ? computeRestoredAttributionState(result)
     : undefined

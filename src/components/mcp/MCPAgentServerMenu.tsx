@@ -82,25 +82,25 @@ export function MCPAgentServerMenu({
   const capitalizedServerName = capitalize(String(agentServer.name));
   if (isAuthenticating) {
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Authenticating with {agentServer.name}…</Text>
-        <Box>
-          <Spinner />
-          <Text> A browser window will open for authentication</Text>
-        </Box>
-        {authorizationUrl && <Box flexDirection="column">
-            <Text dimColor>
-              If your browser doesn&apos;t open automatically, copy this URL
-              manually:
-            </Text>
-            <Link url={authorizationUrl} />
-          </Box>}
-        <Box marginLeft={3}>
-          <Text dimColor>
-            Return here after authenticating in your browser.{' '}
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
-          </Text>
-        </Box>
-      </Box>;
+      <Text color="omnicode">Authenticating with {agentServer.name}…</Text>
+      <Box>
+        <Spinner />
+        <Text> A browser window will open for authentication</Text>
+      </Box>
+      {authorizationUrl && <Box flexDirection="column">
+        <Text dimColor>
+          If your browser doesn&apos;t open automatically, copy this URL
+          manually:
+        </Text>
+        <Link url={authorizationUrl} />
+      </Box>}
+      <Box marginLeft={3}>
+        <Text dimColor>
+          Return here after authenticating in your browser.{' '}
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
+        </Text>
+      </Box>
+    </Box>;
   }
   const menuOptions = [];
 
@@ -116,58 +116,58 @@ export function MCPAgentServerMenu({
     value: 'back'
   });
   return <Dialog title={`${capitalizedServerName} MCP Server`} subtitle="agent-only" onCancel={onCancel} inputGuide={exitState => exitState.pending ? <Text>Press {exitState.keyName} again to exit</Text> : <Byline>
-            <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
-            <KeyboardShortcutHint shortcut="Enter" action="confirm" />
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
-          </Byline>}>
-      <Box flexDirection="column" gap={0}>
-        <Box>
-          <Text bold>Type: </Text>
-          <Text dimColor>{agentServer.transport}</Text>
-        </Box>
-
-        {agentServer.url && <Box>
-            <Text bold>URL: </Text>
-            <Text dimColor>{agentServer.url}</Text>
-          </Box>}
-
-        {agentServer.command && <Box>
-            <Text bold>Command: </Text>
-            <Text dimColor>{agentServer.command}</Text>
-          </Box>}
-
-        <Box>
-          <Text bold>Used by: </Text>
-          <Text dimColor>{agentServer.sourceAgents.join(', ')}</Text>
-        </Box>
-
-        <Box marginTop={1}>
-          <Text bold>Status: </Text>
-          <Text>
-            {color('inactive', theme)(figures.radioOff)} not connected
-            (agent-only)
-          </Text>
-        </Box>
-
-        {agentServer.needsAuth && <Box>
-            <Text bold>Auth: </Text>
-            {agentServer.isAuthenticated ? <Text>{color('success', theme)(figures.tick)} authenticated</Text> : <Text>
-                {color('warning', theme)(figures.triangleUpOutline)} may need
-                authentication
-              </Text>}
-          </Box>}
+    <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
+    <KeyboardShortcutHint shortcut="Enter" action="confirm" />
+    <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
+  </Byline>}>
+    <Box flexDirection="column" gap={0}>
+      <Box>
+        <Text bold>Type: </Text>
+        <Text dimColor>{agentServer.transport}</Text>
       </Box>
 
+      {agentServer.url && <Box>
+        <Text bold>URL: </Text>
+        <Text dimColor>{agentServer.url}</Text>
+      </Box>}
+
+      {agentServer.command && <Box>
+        <Text bold>Command: </Text>
+        <Text dimColor>{agentServer.command}</Text>
+      </Box>}
+
       <Box>
-        <Text dimColor>This server connects only when running the agent.</Text>
+        <Text bold>Used by: </Text>
+        <Text dimColor>{agentServer.sourceAgents.join(', ')}</Text>
       </Box>
 
-      {error && <Box>
-          <Text color="error">Error: {error}</Text>
-        </Box>}
+      <Box marginTop={1}>
+        <Text bold>Status: </Text>
+        <Text>
+          {color('inactive', theme)(figures.radioOff)} not connected
+          (agent-only)
+        </Text>
+      </Box>
 
-      <Box>
-        <Select options={menuOptions} onChange={async value => {
+      {agentServer.needsAuth && <Box>
+        <Text bold>Auth: </Text>
+        {agentServer.isAuthenticated ? <Text>{color('success', theme)(figures.tick)} authenticated</Text> : <Text>
+          {color('warning', theme)(figures.triangleUpOutline)} may need
+          authentication
+        </Text>}
+      </Box>}
+    </Box>
+
+    <Box>
+      <Text dimColor>This server connects only when running the agent.</Text>
+    </Box>
+
+    {error && <Box>
+      <Text color="error">Error: {error}</Text>
+    </Box>}
+
+    <Box>
+      <Select options={menuOptions} onChange={async value => {
         switch (value) {
           case 'auth':
             await handleAuthenticate();
@@ -177,6 +177,6 @@ export function MCPAgentServerMenu({
             break;
         }
       }} onCancel={onCancel} />
-      </Box>
-    </Dialog>;
+    </Box>
+  </Dialog>;
 }

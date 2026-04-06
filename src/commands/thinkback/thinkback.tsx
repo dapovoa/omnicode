@@ -25,9 +25,9 @@ import { loadAllPlugins } from '../../utils/plugins/pluginLoader.js';
 import { installSelectedPlugins } from '../../utils/plugins/pluginStartupCheck.js';
 
 // Marketplace and plugin identifiers - varies by user type
-const INTERNAL_MARKETPLACE_NAME = 'claude-code-marketplace';
-const INTERNAL_MARKETPLACE_REPO = 'anthropics/claude-code-marketplace';
-const OFFICIAL_MARKETPLACE_REPO = 'anthropics/claude-plugins-official';
+const INTERNAL_MARKETPLACE_NAME = 'omnicode-code-marketplace';
+const INTERNAL_MARKETPLACE_REPO = 'anthropics/omnicode-code-marketplace';
+const OFFICIAL_MARKETPLACE_REPO = 'anthropics/omnicode-plugins-official';
 function getMarketplaceName(): string {
   return "external" === 'ant' ? INTERNAL_MARKETPLACE_NAME : OFFICIAL_MARKETPLACE_NAME;
 }
@@ -66,7 +66,7 @@ export async function playAnimation(skillDir: string): Promise<{
   // Both files are prerequisites for the node subprocess. Read them here
   // (not at call sites) so all callers get consistent error messaging. The
   // subprocess runs with reject: false, so a missing file would otherwise
-  // silently return success. Using readFile (not access) per CLAUDE.md.
+  // silently return success. Using readFile (not access) per OMNICODE.md.
   //
   // Non-ENOENT errors (EACCES etc) are logged and returned as failures rather
   // than thrown — the old pathExists-based code never threw, and one caller
@@ -252,19 +252,19 @@ function ThinkbackInstaller({
   }, [onReady, onError]);
   if (state.phase === 'error') {
     return <Box flexDirection="column">
-        <Text color="error">Error: {state.message}</Text>
-      </Box>;
+      <Text color="error">Error: {state.message}</Text>
+    </Box>;
   }
   if (state.phase === 'ready') {
     return null;
   }
   const statusMessage = state.phase === 'checking' ? 'Checking thinkback installation…' : state.phase === 'installing-marketplace' ? 'Installing marketplace…' : state.phase === 'enabling-plugin' ? 'Enabling thinkback plugin…' : 'Installing thinkback plugin…';
   return <Box flexDirection="column">
-      <Box>
-        <Spinner />
-        <Text>{progressMessage || statusMessage}</Text>
-      </Box>
-    </Box>;
+    <Box>
+      <Spinner />
+      <Text>{progressMessage || statusMessage}</Text>
+    </Box>
+  </Box>;
 }
 type MenuAction = 'play' | 'edit' | 'fix' | 'regenerate';
 type GenerativeAction = Exclude<MenuAction, 'play'>;
@@ -346,7 +346,7 @@ function ThinkbackMenu(t0) {
   }
   let t4;
   if ($[8] !== hasGenerated) {
-    t4 = !hasGenerated && <Box flexDirection="column"><Text>Relive your year of coding with Claude.</Text><Text dimColor={true}>{"We'll create a personalized ASCII animation celebrating your journey."}</Text></Box>;
+    t4 = !hasGenerated && <Box flexDirection="column"><Text>Relive your year of coding with Omnicode.</Text><Text dimColor={true}>{"We'll create a personalized ASCII animation celebrating your journey."}</Text></Box>;
     $[8] = hasGenerated;
     $[9] = t4;
   } else {
@@ -372,7 +372,7 @@ function ThinkbackMenu(t0) {
   }
   let t7;
   if ($[16] !== handleCancel || $[17] !== t6) {
-    t7 = <Dialog title="Think Back on 2025 with Claude Code" subtitle="Generate your 2025 Claude Code Think Back (takes a few minutes to run)" onCancel={handleCancel} color="claude">{t6}</Dialog>;
+    t7 = <Dialog title="Think Back on 2025 with Omnicode Code" subtitle="Generate your 2025 Omnicode Code Think Back (takes a few minutes to run)" onCancel={handleCancel} color="omnicode">{t6}</Dialog>;
     $[16] = handleCancel;
     $[17] = t6;
     $[18] = t7;
@@ -381,9 +381,9 @@ function ThinkbackMenu(t0) {
   }
   return t7;
 }
-const EDIT_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=edit to modify my existing Claude Code year in review animation. Ask me what I want to change. When the animation is ready, tell the user to run /think-back again to play it.';
-const FIX_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=fix to fix validation or rendering errors in my existing Claude Code year in review animation. Run the validator, identify errors, and fix them. When the animation is ready, tell the user to run /think-back again to play it.';
-const REGENERATE_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=regenerate to create a completely new Claude Code year in review animation from scratch. Delete the existing animation and start fresh. When the animation is ready, tell the user to run /think-back again to play it.';
+const EDIT_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=edit to modify my existing Omnicode Code year in review animation. Ask me what I want to change. When the animation is ready, tell the user to run /think-back again to play it.';
+const FIX_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=fix to fix validation or rendering errors in my existing Omnicode Code year in review animation. Run the validator, identify errors, and fix them. When the animation is ready, tell the user to run /think-back again to play it.';
+const REGENERATE_PROMPT = 'Use the Skill tool to invoke the "thinkback" skill with mode=regenerate to create a completely new Omnicode Code year in review animation from scratch. Delete the existing animation and start fresh. When the animation is ready, tell the user to run /think-back again to play it.';
 function ThinkbackFlow(t0) {
   const $ = _c(27);
   const {

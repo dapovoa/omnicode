@@ -11,7 +11,7 @@
  *   - GrowthBook remote feature flags (api.anthropic.com)
  *   - Datadog event intake
  *   - 1P event logging (api.anthropic.com/api/event_logging/batch)
- *   - BigQuery metrics exporter (api.anthropic.com/api/claude_code/metrics)
+ *   - BigQuery metrics exporter (api.anthropic.com/api/omnicode_code/metrics)
  *   - Perfetto / OpenTelemetry session tracing
  *   - Auto-updater (storage.googleapis.com, npm registry)
  *   - Plugin fetch telemetry
@@ -223,8 +223,8 @@ export function getUndercoverInstructions() { return ''; }
 export function shouldShowUndercoverAutoNotice() { return false; }
 `,
 
-	'types/generated/events_mono/claude_code/v1/claude_code_internal_event': `
-export const ClaudeCodeInternalEvent = {
+	'types/generated/events_mono/omnicode_code/v1/omnicode_code_internal_event': `
+export const OmnicodeCodeInternalEvent = {
   fromJSON: value => value,
   toJSON: value => value,
   create: value => value ?? {},

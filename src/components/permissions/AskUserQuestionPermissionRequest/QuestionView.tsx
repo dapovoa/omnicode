@@ -34,7 +34,7 @@ type Props = {
   onSubmit: () => void;
   onTabPrev?: () => void;
   onTabNext?: () => void;
-  onRespondToClaude: () => void;
+  onRespondToOmnicode: () => void;
   onFinishPlanInterview: () => void;
   onImagePaste?: (base64Image: string, mediaType?: string, filename?: string, dimensions?: ImageDimensions, sourcePath?: string) => void;
   onRemoveImage?: (id: number) => void;
@@ -58,7 +58,7 @@ export function QuestionView(t0) {
     onSubmit,
     onTabPrev,
     onTabNext,
-    onRespondToClaude,
+    onRespondToOmnicode,
     onFinishPlanInterview,
     onImagePaste,
     pastedContents,
@@ -140,7 +140,7 @@ export function QuestionView(t0) {
       if (key.return) {
         event.stopImmediatePropagation();
         if (footerIndex === 0) {
-          onRespondToClaude();
+          onRespondToOmnicode();
         } else {
           onFinishPlanInterview();
         }
@@ -231,8 +231,8 @@ export function QuestionView(t0) {
   const hasAnyPreview = !question.multiSelect && question.options.some(_temp3);
   if (hasAnyPreview) {
     let t8;
-    if ($[30] !== answers || $[31] !== currentQuestionIndex || $[32] !== hideSubmitTab || $[33] !== minContentHeight || $[34] !== minContentWidth || $[35] !== onAnswer || $[36] !== onCancel || $[37] !== onFinishPlanInterview || $[38] !== onRespondToClaude || $[39] !== onTabNext || $[40] !== onTabPrev || $[41] !== onTextInputFocus || $[42] !== onUpdateQuestionState || $[43] !== question || $[44] !== questionStates || $[45] !== questions) {
-      t8 = <PreviewQuestionView question={question} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={minContentHeight} minContentWidth={minContentWidth} onUpdateQuestionState={onUpdateQuestionState} onAnswer={onAnswer} onTextInputFocus={onTextInputFocus} onCancel={onCancel} onTabPrev={onTabPrev} onTabNext={onTabNext} onRespondToClaude={onRespondToClaude} onFinishPlanInterview={onFinishPlanInterview} />;
+    if ($[30] !== answers || $[31] !== currentQuestionIndex || $[32] !== hideSubmitTab || $[33] !== minContentHeight || $[34] !== minContentWidth || $[35] !== onAnswer || $[36] !== onCancel || $[37] !== onFinishPlanInterview || $[38] !== onRespondToOmnicode || $[39] !== onTabNext || $[40] !== onTabPrev || $[41] !== onTextInputFocus || $[42] !== onUpdateQuestionState || $[43] !== question || $[44] !== questionStates || $[45] !== questions) {
+      t8 = <PreviewQuestionView question={question} questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} questionStates={questionStates} hideSubmitTab={hideSubmitTab} minContentHeight={minContentHeight} minContentWidth={minContentWidth} onUpdateQuestionState={onUpdateQuestionState} onAnswer={onAnswer} onTextInputFocus={onTextInputFocus} onCancel={onCancel} onTabPrev={onTabPrev} onTabNext={onTabNext} onRespondToOmnicode={onRespondToOmnicode} onFinishPlanInterview={onFinishPlanInterview} />;
       $[30] = answers;
       $[31] = currentQuestionIndex;
       $[32] = hideSubmitTab;
@@ -241,7 +241,7 @@ export function QuestionView(t0) {
       $[35] = onAnswer;
       $[36] = onCancel;
       $[37] = onFinishPlanInterview;
-      $[38] = onRespondToClaude;
+      $[38] = onRespondToOmnicode;
       $[39] = onTabNext;
       $[40] = onTabPrev;
       $[41] = onTextInputFocus;
@@ -293,19 +293,19 @@ export function QuestionView(t0) {
   let t12;
   if ($[58] !== currentQuestionIndex || $[59] !== handleFocus || $[60] !== handleOpenEditor || $[61] !== isFooterFocused || $[62] !== onAnswer || $[63] !== onCancel || $[64] !== onImagePaste || $[65] !== onRemoveImage || $[66] !== onSubmit || $[67] !== onUpdateQuestionState || $[68] !== options || $[69] !== pastedContents || $[70] !== question.multiSelect || $[71] !== question.question || $[72] !== questionStates || $[73] !== questionText || $[74] !== questions.length) {
     t12 = <Box marginTop={1}>{question.multiSelect ? <SelectMulti key={question.question} options={options} defaultValue={questionStates[question.question]?.selectedValue as string[] | undefined} onChange={values => {
-        onUpdateQuestionState(questionText, {
-          selectedValue: values
-        }, true);
-        const textInput = values.includes("__other__") ? questionStates[questionText]?.textInputValue : undefined;
-        const finalValues = values.filter(_temp4).concat(textInput ? [textInput] : []);
-        onAnswer(questionText, finalValues, undefined, false);
-      }} onFocus={handleFocus} onCancel={onCancel} submitButtonText={currentQuestionIndex === questions.length - 1 ? "Submit" : "Next"} onSubmit={onSubmit} onDownFromLastItem={handleDownFromLastItem} isDisabled={isFooterFocused} onOpenEditor={handleOpenEditor} onImagePaste={onImagePaste} pastedContents={pastedContents} onRemoveImage={onRemoveImage} /> : <Select key={question.question} options={options} defaultValue={questionStates[question.question]?.selectedValue as string | undefined} onChange={value_1 => {
-        onUpdateQuestionState(questionText, {
-          selectedValue: value_1
-        }, false);
-        const textInput_0 = value_1 === "__other__" ? questionStates[questionText]?.textInputValue : undefined;
-        onAnswer(questionText, value_1, textInput_0);
-      }} onFocus={handleFocus} onCancel={onCancel} onDownFromLastItem={handleDownFromLastItem} isDisabled={isFooterFocused} layout="compact-vertical" onOpenEditor={handleOpenEditor} onImagePaste={onImagePaste} pastedContents={pastedContents} onRemoveImage={onRemoveImage} />}</Box>;
+      onUpdateQuestionState(questionText, {
+        selectedValue: values
+      }, true);
+      const textInput = values.includes("__other__") ? questionStates[questionText]?.textInputValue : undefined;
+      const finalValues = values.filter(_temp4).concat(textInput ? [textInput] : []);
+      onAnswer(questionText, finalValues, undefined, false);
+    }} onFocus={handleFocus} onCancel={onCancel} submitButtonText={currentQuestionIndex === questions.length - 1 ? "Submit" : "Next"} onSubmit={onSubmit} onDownFromLastItem={handleDownFromLastItem} isDisabled={isFooterFocused} onOpenEditor={handleOpenEditor} onImagePaste={onImagePaste} pastedContents={pastedContents} onRemoveImage={onRemoveImage} /> : <Select key={question.question} options={options} defaultValue={questionStates[question.question]?.selectedValue as string | undefined} onChange={value_1 => {
+      onUpdateQuestionState(questionText, {
+        selectedValue: value_1
+      }, false);
+      const textInput_0 = value_1 === "__other__" ? questionStates[questionText]?.textInputValue : undefined;
+      onAnswer(questionText, value_1, textInput_0);
+    }} onFocus={handleFocus} onCancel={onCancel} onDownFromLastItem={handleDownFromLastItem} isDisabled={isFooterFocused} layout="compact-vertical" onOpenEditor={handleOpenEditor} onImagePaste={onImagePaste} pastedContents={pastedContents} onRemoveImage={onRemoveImage} />}</Box>;
     $[58] = currentQuestionIndex;
     $[59] = handleFocus;
     $[60] = handleOpenEditor;

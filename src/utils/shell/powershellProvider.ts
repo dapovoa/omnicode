@@ -49,8 +49,8 @@ export function createPowerShellProvider(shellPath: string): ShellProvider {
       // on Windows native, sandbox is never enabled so this branch is dead.
       const cwdFilePath =
         opts.useSandbox && opts.sandboxTmpDir
-          ? posixJoin(opts.sandboxTmpDir, `claude-pwd-ps-${opts.id}`)
-          : join(tmpdir(), `claude-pwd-ps-${opts.id}`)
+          ? posixJoin(opts.sandboxTmpDir, `omnicode-pwd-ps-${opts.id}`)
+          : join(tmpdir(), `omnicode-pwd-ps-${opts.id}`)
       const escapedCwdFilePath = cwdFilePath.replace(/'/g, "''")
       // Exit-code capture: prefer $LASTEXITCODE when a native exe ran.
       // On PS 5.1, a native command that writes to stderr while the stream
@@ -85,12 +85,12 @@ export function createPowerShellProvider(shellPath: string): ShellProvider {
       // Flags and base64 are [A-Za-z0-9+/=-] only — no quoting needed.
       const commandString = opts.useSandbox
         ? [
-            `'${shellPath.replace(/'/g, `'\\''`)}'`,
-            '-NoProfile',
-            '-NonInteractive',
-            '-EncodedCommand',
-            encodePowerShellCommand(psCommand),
-          ].join(' ')
+          `'${shellPath.replace(/'/g, `'\\''`)}'`,
+          '-NoProfile',
+          '-NonInteractive',
+          '-EncodedCommand',
+          encodePowerShellCommand(psCommand),
+        ].join(' ')
         : psCommand
 
       return { commandString, cwdFilePath }
@@ -115,7 +115,7 @@ export function createPowerShellProvider(shellPath: string): ShellProvider {
       if (currentSandboxTmpDir) {
         // PowerShell on Linux/macOS honors TMPDIR for [System.IO.Path]::GetTempPath()
         env.TMPDIR = currentSandboxTmpDir
-        env.CLAUDE_CODE_TMPDIR = currentSandboxTmpDir
+        env.OMNICODE_TMPDIR = currentSandboxTmpDir
       }
       return env
     },

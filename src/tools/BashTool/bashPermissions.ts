@@ -475,7 +475,7 @@ const ANT_ONLY_SAFE_ENV_VARS = new Set([
 
 /**
  * Strips full-line comments from a command.
- * This handles cases where Claude adds comments in bash commands, e.g.:
+ * This handles cases where Omnicode adds comments in bash commands, e.g.:
  *   "# Check the logs directory\nls /home/user/logs"
  * Should be stripped to: "ls /home/user/logs"
  *
@@ -657,7 +657,7 @@ export function stripWrappersFromArgv(argv: string[]): string[] {
   // wrapper does. Otherwise `['nohup','--','rm','--','-/../foo']` yields `--`
   // as baseCmd and skips path validation. See SAFE_WRAPPER_PATTERNS comment.
   let a = argv
-  for (;;) {
+  for (; ;) {
     if (a[0] === 'time' || a[0] === 'nohup') {
       a = a.slice(a[1] === '--' ? 2 : 1)
     } else if (a[0] === 'timeout') {
@@ -688,9 +688,9 @@ export const BINARY_HIJACK_VARS = /^(LD_|DYLD_|PATH$)/
  * Strip ALL leading env var prefixes from a command, regardless of whether the
  * var name is in the safe-list.
  *
- * Used for deny/ask rule matching: when a user denies `claude` or `rm`, the
+ * Used for deny/ask rule matching: when a user denies `omnicode` or `rm`, the
  * command should stay blocked even if prefixed with arbitrary env vars like
- * `FOO=bar claude`. The safe-list restriction in stripSafeWrappers is correct
+ * `FOO=bar omnicode`. The safe-list restriction in stripSafeWrappers is correct
  * for allow rules (prevents `DOCKER_HOST=evil docker ps` from auto-matching
  * `Bash(docker ps:*)`), but deny rules must be harder to circumvent.
  *
@@ -794,10 +794,10 @@ function filterRulesByContentsMatchingInput(
   //
   // We iteratively apply both stripping operations to all candidates until no
   // new candidates are produced (fixed-point). This handles interleaved patterns
-  // like `nohup FOO=bar timeout 5 claude` where:
-  //   1. stripSafeWrappers strips `nohup` → `FOO=bar timeout 5 claude`
-  //   2. stripAllLeadingEnvVars strips `FOO=bar` → `timeout 5 claude`
-  //   3. stripSafeWrappers strips `timeout 5` → `claude` (deny match)
+  // like `nohup FOO=bar timeout 5 omnicode` where:
+  //   1. stripSafeWrappers strips `nohup` → `FOO=bar timeout 5 omnicode`
+  //   2. stripAllLeadingEnvVars strips `FOO=bar` → `timeout 5 omnicode`
+  //   3. stripSafeWrappers strips `timeout 5` → `omnicode` (deny match)
   //
   // Without iteration, single-pass compositions miss multi-layer interleaving.
   if (stripAllEnvVars) {
@@ -1193,7 +1193,7 @@ export async function checkCommandAndSuggestRules(
   // validators (backslash-escaped operators, etc.) would only add FPs.
   if (
     !astParseSucceeded &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.OMNICODE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     const safetyResult = await bashCommandIsSafeAsync(input.command)
 
@@ -1498,7 +1498,7 @@ export function startSpeculativeClassifierCheck(
   )
   // Prevent unhandled rejection if the signal aborts before this promise is consumed.
   // The original promise (which may reject) is still stored in the Map for consumers to await.
-  promise.catch(() => {})
+  promise.catch(() => { })
   speculativeChecks.set(command, promise)
   return true
 }
@@ -1539,13 +1539,13 @@ export async function awaitClassifierAutoApproval(
   const classifierResult = speculativeResult
     ? await speculativeResult
     : await classifyBashCommand(
-        command,
-        cwd,
-        descriptions,
-        'allow',
-        signal,
-        isNonInteractiveSession,
-      )
+      command,
+      cwd,
+      descriptions,
+      'allow',
+      signal,
+      isNonInteractiveSession,
+    )
 
   logClassifierResultForAnts(command, 'allow', descriptions, classifierResult)
 
@@ -1593,13 +1593,13 @@ export async function executeAsyncClassifierCheck(
     classifierResult = speculativeResult
       ? await speculativeResult
       : await classifyBashCommand(
-          command,
-          cwd,
-          descriptions,
-          'allow',
-          signal,
-          isNonInteractiveSession,
-        )
+        command,
+        cwd,
+        descriptions,
+        'allow',
+        signal,
+        isNonInteractiveSession,
+      )
   } catch (error: unknown) {
     // When the coordinator session is cancelled, the abort signal fires and the
     // classifier API call rejects with APIUserAbortError. This is expected and
@@ -1653,7 +1653,7 @@ export async function bashToolHasPermission(
   // When tree-sitter WASM is unavailable OR the injection check is disabled
   // via env var, we fall back to the old path (legacy gate at ~1370 runs).
   const injectionCheckDisabled = isEnvTruthy(
-    process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK,
+    process.env.OMNICODE_DISABLE_COMMAND_INJECTION_CHECK,
   )
   // GrowthBook killswitch for shadow mode — when off, skip the native parse
   // entirely. Computed once; feature() must stay inline in the ternary below.
@@ -1736,11 +1736,11 @@ export async function bashToolHasPermission(
       suggestions: [],
       ...(feature('BASH_CLASSIFIER')
         ? {
-            pendingClassifierCheck: buildPendingClassifierCheck(
-              input.command,
-              appState.toolPermissionContext,
-            ),
-          }
+          pendingClassifierCheck: buildPendingClassifierCheck(
+            input.command,
+            appState.toolPermissionContext,
+          ),
+        }
         : {}),
     }
   }
@@ -1853,23 +1853,23 @@ export async function bashToolHasPermission(
       const [denyResult, askResult] = await Promise.all([
         hasDeny
           ? classifyBashCommand(
-              input.command,
-              getCwd(),
-              denyDescriptions,
-              'deny',
-              context.abortController.signal,
-              context.options.isNonInteractiveSession,
-            )
+            input.command,
+            getCwd(),
+            denyDescriptions,
+            'deny',
+            context.abortController.signal,
+            context.options.isNonInteractiveSession,
+          )
           : null,
         hasAsk
           ? classifyBashCommand(
-              input.command,
-              getCwd(),
-              askDescriptions,
-              'ask',
-              context.abortController.signal,
-              context.options.isNonInteractiveSession,
-            )
+            input.command,
+            getCwd(),
+            askDescriptions,
+            'ask',
+            context.abortController.signal,
+            context.options.isNonInteractiveSession,
+          )
           : null,
       ])
 
@@ -1936,11 +1936,11 @@ export async function bashToolHasPermission(
           suggestions,
           ...(feature('BASH_CLASSIFIER')
             ? {
-                pendingClassifierCheck: buildPendingClassifierCheck(
-                  input.command,
-                  appState.toolPermissionContext,
-                ),
-              }
+              pendingClassifierCheck: buildPendingClassifierCheck(
+                input.command,
+                appState.toolPermissionContext,
+              ),
+            }
             : {}),
         }
       }
@@ -2003,11 +2003,11 @@ export async function bashToolHasPermission(
           },
           ...(feature('BASH_CLASSIFIER')
             ? {
-                pendingClassifierCheck: buildPendingClassifierCheck(
-                  input.command,
-                  appState.toolPermissionContext,
-                ),
-              }
+              pendingClassifierCheck: buildPendingClassifierCheck(
+                input.command,
+                appState.toolPermissionContext,
+              ),
+            }
             : {}),
         }
       }
@@ -2016,9 +2016,9 @@ export async function bashToolHasPermission(
       // SECURITY: Compute compoundCommandHasCd from the full command, NOT
       // hardcode false. The pipe-handling path previously passed `false` here,
       // disabling the cd+redirect check at pathValidation.ts:821. Appending
-      // `| echo done` to `cd .claude && echo x > settings.json` routed through
+      // `| echo done` to `cd .omnicode && echo x > settings.json` routed through
       // this path with compoundCommandHasCd=false, letting the redirect write
-      // to .claude/settings.json without the cd+redirect block firing.
+      // to .omnicode/settings.json without the cd+redirect block firing.
       const pathResult = checkPathConstraints(
         input,
         getCwd(),
@@ -2040,11 +2040,11 @@ export async function bashToolHasPermission(
         ...commandOperatorResult,
         ...(feature('BASH_CLASSIFIER')
           ? {
-              pendingClassifierCheck: buildPendingClassifierCheck(
-                input.command,
-                appState.toolPermissionContext,
-              ),
-            }
+            pendingClassifierCheck: buildPendingClassifierCheck(
+              input.command,
+              appState.toolPermissionContext,
+            ),
+          }
           : {}),
       }
     }
@@ -2061,7 +2061,7 @@ export async function bashToolHasPermission(
   // same question: "can splitCommand be trusted on this input?"
   if (
     astSubcommands === null &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.OMNICODE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     const originalCommandSafetyResult = await bashCommandIsSafeAsync(
       input.command,
@@ -2107,11 +2107,11 @@ export async function bashToolHasPermission(
           suggestions: [], // Don't suggest saving a potentially dangerous command
           ...(feature('BASH_CLASSIFIER')
             ? {
-                pendingClassifierCheck: buildPendingClassifierCheck(
-                  input.command,
-                  appState.toolPermissionContext,
-                ),
-              }
+              pendingClassifierCheck: buildPendingClassifierCheck(
+                input.command,
+                appState.toolPermissionContext,
+              ),
+            }
             : {}),
         }
       }
@@ -2173,7 +2173,7 @@ export async function bashToolHasPermission(
   }
 
   // Track if compound command contains cd for security validation
-  // This prevents bypassing path checks via: cd .claude/ && mv test.txt settings.json
+  // This prevents bypassing path checks via: cd .omnicode/ && mv test.txt settings.json
   const compoundCommandHasCd = cdCommands.length > 0
 
   // SECURITY: Block compound commands that have both cd AND git
@@ -2298,11 +2298,11 @@ export async function bashToolHasPermission(
       ...askSubresult,
       ...(feature('BASH_CLASSIFIER')
         ? {
-            pendingClassifierCheck: buildPendingClassifierCheck(
-              input.command,
-              appState.toolPermissionContext,
-            ),
-          }
+          pendingClassifierCheck: buildPendingClassifierCheck(
+            input.command,
+            appState.toolPermissionContext,
+          ),
+        }
         : {}),
     }
   }
@@ -2320,7 +2320,7 @@ export async function bashToolHasPermission(
   let hasPossibleCommandInjection = false
   if (
     astSubcommands === null &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_COMMAND_INJECTION_CHECK)
+    !isEnvTruthy(process.env.OMNICODE_DISABLE_COMMAND_INJECTION_CHECK)
   ) {
     // CC-643: Batch divergence telemetry into a single logEvent. The per-sub
     // logEvent was the hot-path syscall driver (each call → /proc/self/stat
@@ -2397,11 +2397,11 @@ export async function bashToolHasPermission(
         ...result,
         ...(feature('BASH_CLASSIFIER')
           ? {
-              pendingClassifierCheck: buildPendingClassifierCheck(
-                input.command,
-                appState.toolPermissionContext,
-              ),
-            }
+            pendingClassifierCheck: buildPendingClassifierCheck(
+              input.command,
+              appState.toolPermissionContext,
+            ),
+          }
           : {}),
       }
     }
@@ -2504,13 +2504,13 @@ export async function bashToolHasPermission(
   const suggestedUpdates: PermissionUpdate[] | undefined =
     cappedRules.length > 0
       ? [
-          {
-            type: 'addRules',
-            rules: cappedRules,
-            behavior: 'allow',
-            destination: 'localSettings',
-          },
-        ]
+        {
+          type: 'addRules',
+          rules: cappedRules,
+          behavior: 'allow',
+          destination: 'localSettings',
+        },
+      ]
       : undefined
 
   // Attach pending classifier check - may auto-approve before user responds.
@@ -2524,11 +2524,11 @@ export async function bashToolHasPermission(
     suggestions: suggestedUpdates,
     ...(feature('BASH_CLASSIFIER')
       ? {
-          pendingClassifierCheck: buildPendingClassifierCheck(
-            input.command,
-            appState.toolPermissionContext,
-          ),
-        }
+        pendingClassifierCheck: buildPendingClassifierCheck(
+          input.command,
+          appState.toolPermissionContext,
+        ),
+      }
       : {}),
   }
 }

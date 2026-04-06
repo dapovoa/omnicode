@@ -24,7 +24,7 @@ export const TeamMemoryContentSchema = lazySchema(() =>
 )
 
 /**
- * Full response from GET /api/claude_code/team_memory
+ * Full response from GET /api/omnicode_code/team_memory
  */
 export const TeamMemoryDataSchema = lazySchema(() =>
   z.object({
@@ -113,13 +113,13 @@ export type TeamMemorySyncPushResult = {
   /** Files skipped because they contain detected secrets (PSR M22174). */
   skippedSecrets?: SkippedSecretFile[]
   errorType?:
-    | 'auth'
-    | 'timeout'
-    | 'network'
-    | 'conflict'
-    | 'unknown'
-    | 'no_oauth'
-    | 'no_repo'
+  | 'auth'
+  | 'timeout'
+  | 'network'
+  | 'conflict'
+  | 'unknown'
+  | 'no_oauth'
+  | 'no_repo'
   httpStatus?: number
 }
 

@@ -50,7 +50,7 @@ export type SessionStats = {
   timestamp: string
 }
 
-export type ClaudeCodeStats = {
+export type OmnicodeCodeStats = {
   // Activity overview
   totalSessions: number
   totalMessages: number
@@ -435,12 +435,12 @@ async function getAllSessionFiles(): Promise<string[]> {
 }
 
 /**
- * Convert a PersistedStatsCache to ClaudeCodeStats by computing derived fields.
+ * Convert a PersistedStatsCache to OmnicodeCodeStats by computing derived fields.
  */
 function cacheToStats(
   cache: PersistedStatsCache,
   todayStats: ProcessedStats | null,
-): ClaudeCodeStats {
+): OmnicodeCodeStats {
   // Merge cache with today's stats
   const dailyActivityMap = new Map<string, DailyActivity>()
   for (const day of cache.dailyActivity) {
@@ -566,31 +566,31 @@ function cacheToStats(
   const peakActivityDay =
     dailyActivityArray.length > 0
       ? dailyActivityArray.reduce((max, d) =>
-          d.messageCount > max.messageCount ? d : max,
-        ).date
+        d.messageCount > max.messageCount ? d : max,
+      ).date
       : null
 
   const peakActivityHour =
     hourCountsMap.size > 0
       ? Array.from(hourCountsMap.entries()).reduce((max, [hour, count]) =>
-          count > max[1] ? [hour, count] : max,
-        )[0]
+        count > max[1] ? [hour, count] : max,
+      )[0]
       : null
 
   const totalDays =
     firstSessionDate && lastSessionDate
       ? Math.ceil(
-          (new Date(lastSessionDate).getTime() -
-            new Date(firstSessionDate).getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1
+        (new Date(lastSessionDate).getTime() -
+          new Date(firstSessionDate).getTime()) /
+        (1000 * 60 * 60 * 24),
+      ) + 1
       : 0
 
   const totalSpeculationTimeSavedMs =
     cache.totalSpeculationTimeSavedMs +
     (todayStats?.totalSpeculationTimeSavedMs || 0)
 
-  const result: ClaudeCodeStats = {
+  const result: OmnicodeCodeStats = {
     totalSessions,
     totalMessages,
     totalDays,
@@ -634,10 +634,10 @@ function cacheToStats(
 }
 
 /**
- * Aggregates stats from all Claude Code sessions across all projects.
+ * Aggregates stats from all Omnicode Code sessions across all projects.
  * Uses a disk cache to avoid reprocessing historical data.
  */
-export async function aggregateClaudeCodeStats(): Promise<ClaudeCodeStats> {
+export async function aggregateOmnicodeCodeStats(): Promise<OmnicodeCodeStats> {
   const allSessionFiles = await getAllSessionFiles()
 
   if (allSessionFiles.length === 0) {
@@ -715,11 +715,11 @@ export type StatsDateRange = '7d' | '30d' | 'all'
  * Aggregates stats for a specific date range.
  * For 'all', uses the cached aggregation. For other ranges, processes files directly.
  */
-export async function aggregateClaudeCodeStatsForRange(
+export async function aggregateOmnicodeCodeStatsForRange(
   range: StatsDateRange,
-): Promise<ClaudeCodeStats> {
+): Promise<OmnicodeCodeStats> {
   if (range === 'all') {
-    return aggregateClaudeCodeStats()
+    return aggregateOmnicodeCodeStats()
   }
 
   const allSessionFiles = await getAllSessionFiles()
@@ -739,16 +739,16 @@ export async function aggregateClaudeCodeStatsForRange(
     fromDate: fromDateStr,
   })
 
-  return processedStatsToClaudeCodeStats(stats)
+  return processedStatsToOmnicodeCodeStats(stats)
 }
 
 /**
- * Convert ProcessedStats to ClaudeCodeStats.
+ * Convert ProcessedStats to OmnicodeCodeStats.
  * Used for filtered date ranges that bypass the cache.
  */
-function processedStatsToClaudeCodeStats(
+function processedStatsToOmnicodeCodeStats(
   stats: ProcessedStats,
-): ClaudeCodeStats {
+): OmnicodeCodeStats {
   const dailyActivitySorted = stats.dailyActivity
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -783,8 +783,8 @@ function processedStatsToClaudeCodeStats(
   const peakActivityDay =
     dailyActivitySorted.length > 0
       ? dailyActivitySorted.reduce((max, d) =>
-          d.messageCount > max.messageCount ? d : max,
-        ).date
+        d.messageCount > max.messageCount ? d : max,
+      ).date
       : null
 
   // Peak activity hour
@@ -792,24 +792,24 @@ function processedStatsToClaudeCodeStats(
   const peakActivityHour =
     hourEntries.length > 0
       ? parseInt(
-          hourEntries.reduce((max, [hour, count]) =>
-            count > parseInt(max[1].toString()) ? [hour, count] : max,
-          )[0],
-          10,
-        )
+        hourEntries.reduce((max, [hour, count]) =>
+          count > parseInt(max[1].toString()) ? [hour, count] : max,
+        )[0],
+        10,
+      )
       : null
 
   // Total days in range
   const totalDays =
     firstSessionDate && lastSessionDate
       ? Math.ceil(
-          (new Date(lastSessionDate).getTime() -
-            new Date(firstSessionDate).getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1
+        (new Date(lastSessionDate).getTime() -
+          new Date(firstSessionDate).getTime()) /
+        (1000 * 60 * 60 * 24),
+      ) + 1
       : 0
 
-  const result: ClaudeCodeStats = {
+  const result: OmnicodeCodeStats = {
     totalSessions: stats.sessionStats.length,
     totalMessages: stats.totalMessages,
     totalDays,
@@ -1035,7 +1035,7 @@ export async function readSessionStartDate(
   }
 }
 
-function getEmptyStats(): ClaudeCodeStats {
+function getEmptyStats(): OmnicodeCodeStats {
   return {
     totalSessions: 0,
     totalMessages: 0,

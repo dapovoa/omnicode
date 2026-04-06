@@ -64,13 +64,13 @@ const PROGRESS_THRESHOLD_MS = 2000; // Show background hint after 2 seconds
 
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled =
-// eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
-isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS);
+  // eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
+  isEnvTruthy(process.env.OMNICODE_DISABLE_BACKGROUND_TASKS);
 
 // Auto-background agent tasks after this many ms (0 = disabled)
 // Enabled by env var OR GrowthBook gate (checked lazily since GB may not be ready at module load)
 function getAutoBackgroundMs(): number {
-  if (isEnvTruthy(process.env.CLAUDE_AUTO_BACKGROUND_TASKS) || getFeatureValue_CACHED_MAY_BE_STALE('tengu_auto_background_agents', false)) {
+  if (isEnvTruthy(process.env.OMNICODE_AUTO_BACKGROUND_TASKS) || getFeatureValue_CACHED_MAY_BE_STALE('tengu_auto_background_agents', false)) {
     return 120_000;
   }
   return 0;
@@ -220,7 +220,7 @@ export const AgentTool = buildTool({
 
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
-    const isCoordinator = feature('COORDINATOR_MODE') ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE) : false;
+    const isCoordinator = feature('COORDINATOR_MODE') ? isEnvTruthy(process.env.OMNICODE_COORDINATOR_MODE) : false;
     return await getPrompt(filteredAgents, isCoordinator, allowedAgentTypes);
   },
   name: AGENT_TOOL_NAME,
@@ -340,8 +340,8 @@ export const AgentTool = buildTool({
         allowedAgentTypes
       } = toolUseContext.options.agentDefinitions;
       const agents = filterDeniedAgents(
-      // When allowedAgentTypes is set (from Agent(x,y) tool spec), restrict to those types
-      allowedAgentTypes ? allAgents.filter(a => allowedAgentTypes.includes(a.agentType)) : allAgents, appState.toolPermissionContext, AGENT_TOOL_NAME);
+        // When allowedAgentTypes is set (from Agent(x,y) tool spec), restrict to those types
+        allowedAgentTypes ? allAgents.filter(a => allowedAgentTypes.includes(a.agentType)) : allAgents, appState.toolPermissionContext, AGENT_TOOL_NAME);
       const found = agents.find(agent => agent.agentType === effectiveType);
       if (!found) {
         // Check if the agent exists but is denied by permission rules
@@ -550,7 +550,7 @@ export const AgentTool = buildTool({
 
     // Use inline env check instead of coordinatorModule to avoid circular
     // dependency issues during test module loading.
-    const isCoordinator = feature('COORDINATOR_MODE') ? isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE) : false;
+    const isCoordinator = feature('COORDINATOR_MODE') ? isEnvTruthy(process.env.OMNICODE_COORDINATOR_MODE) : false;
 
     // Fork subagent experiment: force ALL spawns async for a unified
     // <task-notification> interaction model (not just fork spawns — all of them).
@@ -928,7 +928,7 @@ export const AgentTool = buildTool({
                     // (releases MCP connections, session hooks, prompt cache tracking, etc.)
                     // Timeout prevents blocking if MCP server cleanup hangs.
                     // .catch() prevents unhandled rejection if timeout wins the race.
-                    await Promise.race([agentIterator.return(undefined).catch(() => {}), sleep(1000)]);
+                    await Promise.race([agentIterator.return(undefined).catch(() => { }), sleep(1000)]);
                     // Initialize progress tracking from existing messages
                     const tracker = createProgressTracker();
                     const resolveActivity2 = createActivityDescriptionResolver(toolUseContext.options.tools);

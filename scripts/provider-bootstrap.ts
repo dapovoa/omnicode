@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   const argBaseUrl = parseArg('--base-url')
   const argApiKey = parseArg('--api-key')
   const goal = normalizeRecommendationGoal(
-    parseArg('--goal') || process.env.OPENCLAUDE_PROFILE_GOAL,
+    parseArg('--goal') || process.env.OPENOMNICODE_PROFILE_GOAL,
   )
 
   let selected: ProviderProfile
@@ -176,4 +176,4 @@ async function main(): Promise<void> {
 
 await main()
 
-export {}
+export { }

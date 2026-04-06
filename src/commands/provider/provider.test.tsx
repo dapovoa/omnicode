@@ -75,10 +75,10 @@ function createTestStreams(): {
     unref: () => void
   }
   stdin.isTTY = true
-  stdin.setRawMode = () => {}
-  stdin.ref = () => {}
-  stdin.unref = () => {}
-  ;(stdout as unknown as { columns: number }).columns = 120
+  stdin.setRawMode = () => { }
+  stdin.ref = () => { }
+  stdin.unref = () => { }
+    ; (stdout as unknown as { columns: number }).columns = 120
   stdout.on('data', chunk => {
     output += chunk.toString()
   })
@@ -112,8 +112,8 @@ function StepChangeHarness(): React.ReactNode {
         description="Enter the next value"
         initialValue={step === 'api' ? 'stale-secret-key' : 'fresh-model-name'}
         mask={step === 'api' ? '*' : undefined}
-        onSubmit={() => {}}
-        onCancel={() => {}}
+        onSubmit={() => { }}
+        onCancel={() => { }}
       />
     </AppStateProvider>
   )
@@ -144,8 +144,8 @@ test('wizard step remount prevents a typed API key from leaking into the next fi
         description="Enter the API key"
         initialValue=""
         mask="*"
-        onSubmit={() => {}}
-        onCancel={() => {}}
+        onSubmit={() => { }}
+        onCancel={() => { }}
       />
     </AppStateProvider>,
   )
@@ -162,8 +162,8 @@ test('wizard step remount prevents a typed API key from leaking into the next fi
         subtitle="Model step"
         description="Enter the model"
         initialValue=""
-        onSubmit={() => {}}
-        onCancel={() => {}}
+        onSubmit={() => { }}
+        onCancel={() => { }}
       />
     </AppStateProvider>,
   )
@@ -217,7 +217,7 @@ test('buildProfileSaveMessage describes Gemini access token / ADC mode clearly',
 test('buildCurrentProviderSummary redacts poisoned model and endpoint values', () => {
   const summary = buildCurrentProviderSummary({
     processEnv: {
-      CLAUDE_CODE_USE_OPENAI: '1',
+      OMNICODE_USE_OPENAI: '1',
       OPENAI_API_KEY: 'sk-secret-12345678',
       OPENAI_MODEL: 'sk-secret-12345678',
       OPENAI_BASE_URL: 'sk-secret-12345678',

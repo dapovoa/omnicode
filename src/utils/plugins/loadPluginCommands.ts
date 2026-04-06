@@ -238,23 +238,23 @@ function createPluginCommand(
         isSkill ? 'Plugin skill' : 'Plugin command',
       )
 
-    // Substitute ${CLAUDE_PLUGIN_ROOT} in allowed-tools before parsing
+    // Substitute ${OMNICODE_PLUGIN_ROOT} in allowed-tools before parsing
     const rawAllowedTools = frontmatter['allowed-tools']
     const substitutedAllowedTools =
       typeof rawAllowedTools === 'string'
         ? substitutePluginVariables(rawAllowedTools, {
-            path: pluginPath,
-            source: sourceName,
-          })
+          path: pluginPath,
+          source: sourceName,
+        })
         : Array.isArray(rawAllowedTools)
           ? rawAllowedTools.map(tool =>
-              typeof tool === 'string'
-                ? substitutePluginVariables(tool, {
-                    path: pluginPath,
-                    source: sourceName,
-                  })
-                : tool,
-            )
+            typeof tool === 'string'
+              ? substitutePluginVariables(tool, {
+                path: pluginPath,
+                source: sourceName,
+              })
+              : tool,
+          )
           : rawAllowedTools
     const allowedTools = parseSlashCommandToolsFromFrontmatter(
       substitutedAllowedTools,
@@ -336,7 +336,7 @@ function createPluginCommand(
           argumentNames,
         )
 
-        // Replace ${CLAUDE_PLUGIN_ROOT} and ${CLAUDE_PLUGIN_DATA} with their paths
+        // Replace ${OMNICODE_PLUGIN_ROOT} and ${OMNICODE_PLUGIN_DATA} with their paths
         finalContent = substitutePluginVariables(finalContent, {
           path: pluginPath,
           source: sourceName,
@@ -353,10 +353,10 @@ function createPluginCommand(
           )
         }
 
-        // Replace ${CLAUDE_SKILL_DIR} with this specific skill's directory.
-        // Distinct from ${CLAUDE_PLUGIN_ROOT}: a plugin can contain multiple
-        // skills, so CLAUDE_PLUGIN_ROOT points to the plugin root while
-        // CLAUDE_SKILL_DIR points to the individual skill's subdirectory.
+        // Replace ${OMNICODE_SKILL_DIR} with this specific skill's directory.
+        // Distinct from ${OMNICODE_PLUGIN_ROOT}: a plugin can contain multiple
+        // skills, so OMNICODE_PLUGIN_ROOT points to the plugin root while
+        // OMNICODE_SKILL_DIR points to the individual skill's subdirectory.
         if (config.isSkillMode) {
           const rawSkillDir = dirname(file.filePath)
           const skillDir =
@@ -364,14 +364,14 @@ function createPluginCommand(
               ? rawSkillDir.replace(/\\/g, '/')
               : rawSkillDir
           finalContent = finalContent.replace(
-            /\$\{CLAUDE_SKILL_DIR\}/g,
+            /\$\{OMNICODE_SKILL_DIR\}/g,
             skillDir,
           )
         }
 
-        // Replace ${CLAUDE_SESSION_ID} with the current session ID
+        // Replace ${OMNICODE_SESSION_ID} with the current session ID
         finalContent = finalContent.replace(
-          /\$\{CLAUDE_SESSION_ID\}/g,
+          /\$\{OMNICODE_SESSION_ID\}/g,
           getSessionId(),
         )
 
@@ -545,21 +545,21 @@ export const getPluginCommands = memoize(async (): Promise<Command[]> => {
                 // Apply metadata overrides to frontmatter
                 const finalFrontmatter = metadataOverride
                   ? {
-                      ...frontmatter,
-                      ...(metadataOverride.description && {
-                        description: metadataOverride.description,
-                      }),
-                      ...(metadataOverride.argumentHint && {
-                        'argument-hint': metadataOverride.argumentHint,
-                      }),
-                      ...(metadataOverride.model && {
-                        model: metadataOverride.model,
-                      }),
-                      ...(metadataOverride.allowedTools && {
-                        'allowed-tools':
-                          metadataOverride.allowedTools.join(','),
-                      }),
-                    }
+                    ...frontmatter,
+                    ...(metadataOverride.description && {
+                      description: metadataOverride.description,
+                    }),
+                    ...(metadataOverride.argumentHint && {
+                      'argument-hint': metadataOverride.argumentHint,
+                    }),
+                    ...(metadataOverride.model && {
+                      model: metadataOverride.model,
+                    }),
+                    ...(metadataOverride.allowedTools && {
+                      'allowed-tools':
+                        metadataOverride.allowedTools.join(','),
+                    }),
+                  }
                   : frontmatter
 
                 const file: PluginMarkdownFile = {

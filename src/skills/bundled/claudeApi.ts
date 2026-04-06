@@ -2,9 +2,9 @@ import { readdir } from 'fs/promises'
 import { getCwd } from '../../utils/cwd.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
-// claudeApiContent.js bundles 247KB of .md strings. Lazy-load inside
-// getPromptForCommand so they only enter memory when /claude-api is invoked.
-type SkillContent = typeof import('./claudeApiContent.js')
+// omnicodeApiContent.js bundles 247KB of .md strings. Lazy-load inside
+// getPromptForCommand so they only enter memory when /omnicode-api is invoked.
+type SkillContent = typeof import('./omnicodeApiContent.js')
 
 type DetectedLanguage =
   | 'python'
@@ -100,25 +100,25 @@ The relevant documentation for your detected language is included below in \`<do
 ### Quick Task Reference
 
 **Single text classification/summarization/extraction/Q&A:**
-→ Refer to \`{lang}/claude-api/README.md\`
+→ Refer to \`{lang}/omnicode-api/README.md\`
 
 **Chat UI or real-time response display:**
-→ Refer to \`{lang}/claude-api/README.md\` + \`{lang}/claude-api/streaming.md\`
+→ Refer to \`{lang}/omnicode-api/README.md\` + \`{lang}/omnicode-api/streaming.md\`
 
 **Long-running conversations (may exceed context window):**
-→ Refer to \`{lang}/claude-api/README.md\` — see Compaction section
+→ Refer to \`{lang}/omnicode-api/README.md\` — see Compaction section
 
 **Prompt caching / optimize caching / "why is my cache hit rate low":**
-→ Refer to \`shared/prompt-caching.md\` + \`{lang}/claude-api/README.md\` (Prompt Caching section)
+→ Refer to \`shared/prompt-caching.md\` + \`{lang}/omnicode-api/README.md\` (Prompt Caching section)
 
 **Function calling / tool use / agents:**
-→ Refer to \`{lang}/claude-api/README.md\` + \`shared/tool-use-concepts.md\` + \`{lang}/claude-api/tool-use.md\`
+→ Refer to \`{lang}/omnicode-api/README.md\` + \`shared/tool-use-concepts.md\` + \`{lang}/omnicode-api/tool-use.md\`
 
 **Batch processing (non-latency-sensitive):**
-→ Refer to \`{lang}/claude-api/README.md\` + \`{lang}/claude-api/batches.md\`
+→ Refer to \`{lang}/omnicode-api/README.md\` + \`{lang}/omnicode-api/batches.md\`
 
 **File uploads across multiple requests:**
-→ Refer to \`{lang}/claude-api/README.md\` + \`{lang}/claude-api/files-api.md\`
+→ Refer to \`{lang}/omnicode-api/README.md\` + \`{lang}/omnicode-api/files-api.md\`
 
 **Agent with built-in tools (file/web/terminal) (Python & TypeScript only):**
 → Refer to \`{lang}/agent-sdk/README.md\` + \`{lang}/agent-sdk/patterns.md\`
@@ -150,7 +150,7 @@ function buildPrompt(
     parts.push(readingGuide)
     parts.push(
       '---\n\n## Included Documentation\n\n' +
-        buildInlineReference(filePaths, content),
+      buildInlineReference(filePaths, content),
     )
   } else {
     // No language detected — include all docs and let the model ask
@@ -160,7 +160,7 @@ function buildPrompt(
     )
     parts.push(
       '---\n\n## Included Documentation\n\n' +
-        buildInlineReference(Object.keys(content.SKILL_FILES), content),
+      buildInlineReference(Object.keys(content.SKILL_FILES), content),
     )
   }
 
@@ -177,17 +177,17 @@ function buildPrompt(
   return parts.join('\n\n')
 }
 
-export function registerClaudeApiSkill(): void {
+export function registerOmnicodeApiSkill(): void {
   registerBundledSkill({
-    name: 'claude-api',
+    name: 'omnicode-api',
     description:
-      'Build apps with the Claude API or Anthropic SDK.\n' +
-      'TRIGGER when: code imports `anthropic`/`@anthropic-ai/sdk`/`claude_agent_sdk`, or user asks to use Claude API, Anthropic SDKs, or Agent SDK.\n' +
+      'Build apps with the Omnicode API or Anthropic SDK.\n' +
+      'TRIGGER when: code imports `anthropic`/`@anthropic-ai/sdk`/`omnicode_agent_sdk`, or user asks to use Omnicode API, Anthropic SDKs, or Agent SDK.\n' +
       'DO NOT TRIGGER when: code imports `openai`/other AI SDK, general programming, or ML/data-science tasks.',
     allowedTools: ['Read', 'Grep', 'Glob', 'WebFetch'],
     userInvocable: true,
     async getPromptForCommand(args) {
-      const content = await import('./claudeApiContent.js')
+      const content = await import('./omnicodeApiContent.js')
       const lang = await detectLanguage()
       const prompt = buildPrompt(lang, args, content)
       return [{ type: 'text', text: prompt }]

@@ -36,8 +36,8 @@ const teamMemOps = feature('TEAMMEM')
   : null
 const SNIP_TOOL_NAME = feature('HISTORY_SNIP')
   ? (
-      require('../tools/SnipTool/prompt.js') as typeof import('../tools/SnipTool/prompt.js')
-    ).SNIP_TOOL_NAME
+    require('../tools/SnipTool/prompt.js') as typeof import('../tools/SnipTool/prompt.js')
+  ).SNIP_TOOL_NAME
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -817,7 +817,7 @@ export function collapseReadSearchGroups(
         currentGroup.bashCount = (currentGroup.bashCount ?? 0) + count
         const input = toolInfo.input as { command?: string } | undefined
         if (input?.command) {
-          // Prefer the stripped `# comment` if present (it's what Claude wrote
+          // Prefer the stripped `# comment` if present (it's what Omnicode wrote
           // for the human — same trigger as the comment-as-label tool-use render).
           currentGroup.latestDisplayHint =
             extractBashCommentLabel(input.command) ??

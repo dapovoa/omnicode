@@ -21,11 +21,11 @@ export const DEFAULT_GEMINI_BASE_URL =
 export const DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash'
 
 const PROFILE_ENV_KEYS = [
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'OMNICODE_USE_OPENAI',
+  'OMNICODE_USE_GEMINI',
+  'OMNICODE_USE_BEDROCK',
+  'OMNICODE_USE_VERTEX',
+  'OMNICODE_USE_FOUNDRY',
   'OPENAI_BASE_URL',
   'OPENAI_MODEL',
   'OPENAI_API_KEY',
@@ -231,8 +231,8 @@ export function buildGeminiProfileEnv(options: {
   const authMode = options.authMode ?? 'api-key'
   const key = sanitizeApiKey(
     options.apiKey ??
-      processEnv.GEMINI_API_KEY ??
-      processEnv.GOOGLE_API_KEY,
+    processEnv.GEMINI_API_KEY ??
+    processEnv.GOOGLE_API_KEY,
   )
   if (authMode === 'api-key' && !key) {
     return null
@@ -408,12 +408,12 @@ export function hasExplicitProviderSelection(
   processEnv: NodeJS.ProcessEnv = process.env,
 ): boolean {
   return (
-    processEnv.CLAUDE_CODE_USE_OPENAI !== undefined ||
-    processEnv.CLAUDE_CODE_USE_GITHUB !== undefined ||
-    processEnv.CLAUDE_CODE_USE_GEMINI !== undefined ||
-    processEnv.CLAUDE_CODE_USE_BEDROCK !== undefined ||
-    processEnv.CLAUDE_CODE_USE_VERTEX !== undefined ||
-    processEnv.CLAUDE_CODE_USE_FOUNDRY !== undefined
+    processEnv.OMNICODE_USE_OPENAI !== undefined ||
+    processEnv.OMNICODE_USE_GITHUB !== undefined ||
+    processEnv.OMNICODE_USE_GEMINI !== undefined ||
+    processEnv.OMNICODE_USE_BEDROCK !== undefined ||
+    processEnv.OMNICODE_USE_VERTEX !== undefined ||
+    processEnv.OMNICODE_USE_FOUNDRY !== undefined
   )
 }
 
@@ -485,11 +485,11 @@ export async function buildLaunchEnv(options: {
   if (options.profile === 'gemini') {
     const env: NodeJS.ProcessEnv = {
       ...processEnv,
-      CLAUDE_CODE_USE_GEMINI: '1',
+      OMNICODE_USE_GEMINI: '1',
     }
 
-    delete env.CLAUDE_CODE_USE_OPENAI
-    delete env.CLAUDE_CODE_USE_GITHUB
+    delete env.OMNICODE_USE_OPENAI
+    delete env.OMNICODE_USE_GITHUB
 
     env.GEMINI_MODEL =
       shellGeminiModel ||
@@ -502,7 +502,7 @@ export async function buildLaunchEnv(options: {
 
     const geminiAuthMode =
       persistedGeminiAuthMode === 'access-token' ||
-      persistedGeminiAuthMode === 'adc'
+        persistedGeminiAuthMode === 'adc'
         ? persistedGeminiAuthMode
         : 'api-key'
     const geminiKey = shellGeminiKey || persistedGeminiKey
@@ -537,11 +537,11 @@ export async function buildLaunchEnv(options: {
 
   const env: NodeJS.ProcessEnv = {
     ...processEnv,
-    CLAUDE_CODE_USE_OPENAI: '1',
+    OMNICODE_USE_OPENAI: '1',
   }
 
-  delete env.CLAUDE_CODE_USE_GEMINI
-  delete env.CLAUDE_CODE_USE_GITHUB
+  delete env.OMNICODE_USE_GEMINI
+  delete env.OMNICODE_USE_GITHUB
   delete env.GEMINI_API_KEY
   delete env.GEMINI_AUTH_MODE
   delete env.GEMINI_ACCESS_TOKEN
@@ -676,7 +676,7 @@ export async function buildStartupEnvFromProfile(options?: {
     persisted,
     goal:
       options?.goal ??
-      normalizeRecommendationGoal(processEnv.OPENCLAUDE_PROFILE_GOAL),
+      normalizeRecommendationGoal(processEnv.OPENOMNICODE_PROFILE_GOAL),
     processEnv,
     getOllamaChatBaseUrl:
       options?.getOllamaChatBaseUrl ?? getOllamaChatBaseUrl,

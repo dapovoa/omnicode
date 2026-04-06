@@ -39,7 +39,7 @@ export function createWhatsNewFeed(releaseNotes: string[]): FeedConfig {
       text: note
     };
   });
-  const emptyMessage = "external" === 'ant' ? 'Unable to fetch latest claude-cli-internal commits' : 'Check /release-notes for recent updates';
+  const emptyMessage = "external" === 'ant' ? 'Unable to fetch latest omnicode-cli-internal commits' : 'Check /release-notes for recent updates';
   return {
     title: "external" === 'ant' ? "Omnicode Updates [internal-only: Latest CC commits]" : "Omnicode Updates",
     lines,
@@ -79,11 +79,11 @@ export function createGuestPassesFeed(): FeedConfig {
     lines: [],
     customContent: {
       content: <>
-          <Box marginY={1}>
-            <Text color="claude">[✻] [✻] [✻]</Text>
-          </Box>
-          <Text dimColor>{subtitle}</Text>
-        </>,
+        <Box marginY={1}>
+          <Text color="omnicode">[✻] [✻] [✻]</Text>
+        </Box>
+        <Text dimColor>{subtitle}</Text>
+      </>,
       width: 48
     },
     footer: '/passes'

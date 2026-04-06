@@ -10,7 +10,7 @@ import { MCPRemoteServerMenu } from '../../components/mcp/MCPRemoteServerMenu.js
 import { MCPStdioServerMenu } from '../../components/mcp/MCPStdioServerMenu.js';
 import { MCPToolDetailView } from '../../components/mcp/MCPToolDetailView.js';
 import { MCPToolListView } from '../../components/mcp/MCPToolListView.js';
-import type { ClaudeAIServerInfo, HTTPServerInfo, SSEServerInfo, StdioServerInfo } from '../../components/mcp/types.js';
+import type { OmnicodeAIServerInfo, HTTPServerInfo, SSEServerInfo, StdioServerInfo } from '../../components/mcp/types.js';
 import { SearchBox } from '../../components/SearchBox.js';
 import { useSearchInput } from '../../hooks/useSearchInput.js';
 import { useTerminalSize } from '../../hooks/useTerminalSize.js';
@@ -19,7 +19,7 @@ import { Box, Text, useInput, useTerminalFocus } from '../../ink.js';
 import { useKeybinding, useKeybindings } from '../../keybindings/useKeybinding.js';
 import { getBuiltinPluginDefinition } from '../../plugins/builtinPlugins.js';
 import { useMcpToggleEnabled } from '../../services/mcp/MCPConnectionManager.js';
-import type { MCPServerConnection, McpClaudeAIProxyServerConfig, McpHTTPServerConfig, McpSSEServerConfig, McpStdioServerConfig } from '../../services/mcp/types.js';
+import type { MCPServerConnection, McpOmnicodeAIProxyServerConfig, McpHTTPServerConfig, McpSSEServerConfig, McpStdioServerConfig } from '../../services/mcp/types.js';
 import { filterToolsByServer } from '../../services/mcp/utils.js';
 import { disablePluginOp, enablePluginOp, getPluginInstallationFromV2, isInstallableScope, isPluginEnabledAtProjectScope, uninstallPluginOp, updatePluginOp } from '../../services/plugins/pluginOperations.js';
 import { useAppState } from '../../state/AppState.js';
@@ -333,9 +333,9 @@ function PluginComponentsDisplay({
   }
   if (error) {
     return <Box flexDirection="column" marginBottom={1}>
-        <Text bold>Components:</Text>
-        <Text dimColor>Error: {error}</Text>
-      </Box>;
+      <Text bold>Components:</Text>
+      <Text dimColor>Error: {error}</Text>
+    </Box>;
   }
   if (!components) {
     return null; // No components info available
@@ -345,28 +345,28 @@ function PluginComponentsDisplay({
     return null; // No components defined
   }
   return <Box flexDirection="column" marginBottom={1}>
-      <Text bold>Installed components:</Text>
-      {components.commands ? <Text dimColor>
-          • Commands:{' '}
-          {typeof components.commands === 'string' ? components.commands : Array.isArray(components.commands) ? components.commands.join(', ') : Object.keys(components.commands).join(', ')}
-        </Text> : null}
-      {components.agents ? <Text dimColor>
-          • Agents:{' '}
-          {typeof components.agents === 'string' ? components.agents : Array.isArray(components.agents) ? components.agents.join(', ') : Object.keys(components.agents).join(', ')}
-        </Text> : null}
-      {components.skills ? <Text dimColor>
-          • Skills:{' '}
-          {typeof components.skills === 'string' ? components.skills : Array.isArray(components.skills) ? components.skills.join(', ') : Object.keys(components.skills).join(', ')}
-        </Text> : null}
-      {components.hooks ? <Text dimColor>
-          • Hooks:{' '}
-          {typeof components.hooks === 'string' ? components.hooks : Array.isArray(components.hooks) ? components.hooks.map(String).join(', ') : typeof components.hooks === 'object' && components.hooks !== null ? Object.keys(components.hooks).join(', ') : String(components.hooks)}
-        </Text> : null}
-      {components.mcpServers ? <Text dimColor>
-          • MCP Servers:{' '}
-          {typeof components.mcpServers === 'string' ? components.mcpServers : Array.isArray(components.mcpServers) ? components.mcpServers.map(String).join(', ') : typeof components.mcpServers === 'object' && components.mcpServers !== null ? Object.keys(components.mcpServers).join(', ') : String(components.mcpServers)}
-        </Text> : null}
-    </Box>;
+    <Text bold>Installed components:</Text>
+    {components.commands ? <Text dimColor>
+      • Commands:{' '}
+      {typeof components.commands === 'string' ? components.commands : Array.isArray(components.commands) ? components.commands.join(', ') : Object.keys(components.commands).join(', ')}
+    </Text> : null}
+    {components.agents ? <Text dimColor>
+      • Agents:{' '}
+      {typeof components.agents === 'string' ? components.agents : Array.isArray(components.agents) ? components.agents.join(', ') : Object.keys(components.agents).join(', ')}
+    </Text> : null}
+    {components.skills ? <Text dimColor>
+      • Skills:{' '}
+      {typeof components.skills === 'string' ? components.skills : Array.isArray(components.skills) ? components.skills.join(', ') : Object.keys(components.skills).join(', ')}
+    </Text> : null}
+    {components.hooks ? <Text dimColor>
+      • Hooks:{' '}
+      {typeof components.hooks === 'string' ? components.hooks : Array.isArray(components.hooks) ? components.hooks.map(String).join(', ') : typeof components.hooks === 'object' && components.hooks !== null ? Object.keys(components.hooks).join(', ') : String(components.hooks)}
+    </Text> : null}
+    {components.mcpServers ? <Text dimColor>
+      • MCP Servers:{' '}
+      {typeof components.mcpServers === 'string' ? components.mcpServers : Array.isArray(components.mcpServers) ? components.mcpServers.map(String).join(', ') : typeof components.mcpServers === 'object' && components.mcpServers !== null ? Object.keys(components.mcpServers).join(', ') : String(components.mcpServers)}
+    </Text> : null}
+  </Box>;
 }
 
 /**
@@ -837,7 +837,7 @@ export function ManagePlugins({
       if (!hasMcpb) {
         try {
           const marketplaceDir = path.join(selectedPlugin!.plugin.path, '..');
-          const marketplaceJsonPath = path.join(marketplaceDir, '.claude-plugin', 'marketplace.json');
+          const marketplaceJsonPath = path.join(marketplaceDir, '.omnicode-plugin', 'marketplace.json');
           const content = await fs.readFile(marketplaceJsonPath, 'utf-8');
           const marketplace_1 = jsonParse(content);
           const entry_0 = marketplace_1.plugins?.find((p: {
@@ -895,10 +895,10 @@ export function ManagePlugins({
           });
         }
 
-        // Sort marketplaces: claude-plugin-directory first, then alphabetically
+        // Sort marketplaces: omnicode-plugin-directory first, then alphabetically
         marketplaceInfos.sort((a, b) => {
-          if (a.name === 'claude-plugin-directory') return -1;
-          if (b.name === 'claude-plugin-directory') return 1;
+          if (a.name === 'omnicode-plugin-directory') return -1;
+          if (b.name === 'omnicode-plugin-directory') return 1;
           return a.name.localeCompare(b.name);
         });
         setMarketplaces(marketplaceInfos);
@@ -1043,7 +1043,7 @@ export function ManagePlugins({
           {
             if (isBuiltin) break; // guarded above; narrows pluginScope
             if (!isInstallableScope(pluginScope)) break;
-            // If the plugin is enabled in .claude/settings.json (shared with the
+            // If the plugin is enabled in .omnicode/settings.json (shared with the
             // team), divert to a confirmation dialog that offers to disable in
             // settings.local.json instead. Check the settings file directly —
             // `pluginScope` (from installed_plugins.json) can be 'user' even when
@@ -1054,7 +1054,7 @@ export function ManagePlugins({
               setViewState('confirm-project-uninstall');
               return;
             }
-            // If the plugin has persistent data (${CLAUDE_PLUGIN_DATA}) AND this
+            // If the plugin has persistent data (${OMNICODE_PLUGIN_DATA}) AND this
             // is the last scope, prompt before deleting it. For multi-scope
             // installs, the op's isLastScope check won't delete regardless of
             // the user's y/n — showing the dialog would mislead ("y" → nothing
@@ -1457,7 +1457,7 @@ export function ManagePlugins({
           // default scope if not installable (e.g. 'managed', though that
           // case is guarded by isActive below). deleteDataDir=false: this
           // is a recovery path for a plugin that failed to load — it may
-          // be reinstallable, so don't nuke ${CLAUDE_PLUGIN_DATA} silently.
+          // be reinstallable, so don't nuke ${OMNICODE_PLUGIN_DATA} silently.
           // The normal uninstall path prompts; this one preserves.
           const result_2 = isInstallableScope(pluginScope_1) ? await uninstallPluginOp(pluginId_7, pluginScope_1, false) : await uninstallPluginOp(pluginId_7, 'user', false);
           let success = result_2.success;
@@ -1523,7 +1523,7 @@ export function ManagePlugins({
         return;
       }
       clearAllCaches();
-      setResult(`✓ Disabled ${selectedPlugin.plugin.name} in .claude/settings.local.json. Run /reload-plugins to apply.`);
+      setResult(`✓ Disabled ${selectedPlugin.plugin.name} in .omnicode/settings.local.json. Run /reload-plugins to apply.`);
       if (onManageComplete) void onManageComplete();
       setParentViewState({
         type: 'menu'
@@ -1619,14 +1619,14 @@ export function ManagePlugins({
   // No plugins or MCPs installed
   if (unifiedItems.length === 0) {
     return <Box flexDirection="column">
-        <Box marginBottom={1}>
-          <Text bold>Manage plugins</Text>
-        </Box>
-        <Text>No plugins or MCP servers installed.</Text>
-        <Box marginTop={1}>
-          <Text dimColor>Esc to go back</Text>
-        </Box>
-      </Box>;
+      <Box marginBottom={1}>
+        <Text bold>Manage plugins</Text>
+      </Box>
+      <Text>No plugins or MCP servers installed.</Text>
+      <Box marginTop={1}>
+        <Text dimColor>Esc to go back</Text>
+      </Box>
+    </Box>;
   }
   if (typeof viewState === 'object' && viewState.type === 'plugin-options' && selectedPlugin) {
     const pluginId_10 = `${selectedPlugin.plugin.name}@${selectedPlugin.marketplace}`;
@@ -1722,91 +1722,91 @@ export function ManagePlugins({
   if (typeof viewState === 'object' && viewState.type === 'flagged-detail') {
     const fp = viewState.plugin;
     return <Box flexDirection="column">
+      <Box>
+        <Text bold>
+          {fp.name} @ {fp.marketplace}
+        </Text>
+      </Box>
+
+      <Box marginBottom={1}>
+        <Text dimColor>Status: </Text>
+        <Text color="error">Removed</Text>
+      </Box>
+
+      <Box marginBottom={1} flexDirection="column">
+        <Text color="error">
+          Removed from marketplace · reason: {fp.reason}
+        </Text>
+        <Text>{fp.text}</Text>
+        <Text dimColor>
+          Flagged on {new Date(fp.flaggedAt).toLocaleDateString()}
+        </Text>
+      </Box>
+
+      <Box marginTop={1} flexDirection="column">
         <Box>
-          <Text bold>
-            {fp.name} @ {fp.marketplace}
-          </Text>
+          <Text>{figures.pointer} </Text>
+          <Text color="suggestion">Dismiss</Text>
         </Box>
+      </Box>
 
-        <Box marginBottom={1}>
-          <Text dimColor>Status: </Text>
-          <Text color="error">Removed</Text>
-        </Box>
-
-        <Box marginBottom={1} flexDirection="column">
-          <Text color="error">
-            Removed from marketplace · reason: {fp.reason}
-          </Text>
-          <Text>{fp.text}</Text>
-          <Text dimColor>
-            Flagged on {new Date(fp.flaggedAt).toLocaleDateString()}
-          </Text>
-        </Box>
-
-        <Box marginTop={1} flexDirection="column">
-          <Box>
-            <Text>{figures.pointer} </Text>
-            <Text color="suggestion">Dismiss</Text>
-          </Box>
-        </Box>
-
-        <Byline>
-          <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="dismiss" />
-          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-        </Byline>
-      </Box>;
+      <Byline>
+        <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="dismiss" />
+        <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+      </Byline>
+    </Box>;
   }
 
-  // Confirm-project-uninstall: warn about shared .claude/settings.json,
+  // Confirm-project-uninstall: warn about shared .omnicode/settings.json,
   // offer to disable in settings.local.json instead.
   if (viewState === 'confirm-project-uninstall' && selectedPlugin) {
     return <Box flexDirection="column">
-        <Text bold color="warning">
-          {selectedPlugin.plugin.name} is enabled in .claude/settings.json
-          (shared with your team)
+      <Text bold color="warning">
+        {selectedPlugin.plugin.name} is enabled in .omnicode/settings.json
+        (shared with your team)
+      </Text>
+      <Box marginTop={1} flexDirection="column">
+        <Text>Disable it just for you in .omnicode/settings.local.json?</Text>
+        <Text dimColor>
+          This has the same effect as uninstalling, without affecting other
+          contributors.
         </Text>
-        <Box marginTop={1} flexDirection="column">
-          <Text>Disable it just for you in .claude/settings.local.json?</Text>
-          <Text dimColor>
-            This has the same effect as uninstalling, without affecting other
-            contributors.
-          </Text>
-        </Box>
-        {processError && <Box marginTop={1}>
-            <Text color="error">{processError}</Text>
-          </Box>}
-        <Box marginTop={1}>
-          {isProcessing ? <Text dimColor>Disabling…</Text> : <Byline>
-              <ConfigurableShortcutHint action="confirm:yes" context="Confirmation" fallback="y" description="disable" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="cancel" />
-            </Byline>}
-        </Box>
-      </Box>;
+      </Box>
+      {processError && <Box marginTop={1}>
+        <Text color="error">{processError}</Text>
+      </Box>}
+      <Box marginTop={1}>
+        {isProcessing ? <Text dimColor>Disabling…</Text> : <Byline>
+          <ConfigurableShortcutHint action="confirm:yes" context="Confirmation" fallback="y" description="disable" />
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="cancel" />
+        </Byline>}
+      </Box>
+    </Box>;
   }
 
-  // Confirm-data-cleanup: prompt before deleting ${CLAUDE_PLUGIN_DATA} dir
+  // Confirm-data-cleanup: prompt before deleting ${OMNICODE_PLUGIN_DATA} dir
   if (typeof viewState === 'object' && viewState.type === 'confirm-data-cleanup' && selectedPlugin) {
     return <Box flexDirection="column">
-        <Text bold>
-          {selectedPlugin.plugin.name} has {viewState.size.human} of persistent
-          data
+      <Text bold>
+        {selectedPlugin.plugin.name} has {viewState.size.human} of persistent
+        data
+      </Text>
+      <Box marginTop={1} flexDirection="column">
+        <Text>Delete it along with the plugin?</Text>
+        <Text dimColor>
+          {pluginDataDirPath(`${selectedPlugin.plugin.name}@${selectedPlugin.marketplace}`)}
         </Text>
-        <Box marginTop={1} flexDirection="column">
-          <Text>Delete it along with the plugin?</Text>
-          <Text dimColor>
-            {pluginDataDirPath(`${selectedPlugin.plugin.name}@${selectedPlugin.marketplace}`)}
-          </Text>
-        </Box>
-        {processError && <Box marginTop={1}>
-            <Text color="error">{processError}</Text>
-          </Box>}
-        <Box marginTop={1}>
-          {isProcessing ? <Text dimColor>Uninstalling…</Text> : <Text>
-              <Text bold>y</Text> to delete · <Text bold>n</Text> to keep ·{' '}
-              <Text bold>esc</Text> to cancel
-            </Text>}
-        </Box>
-      </Box>;
+      </Box>
+      {processError && <Box marginTop={1}>
+        <Text color="error">{processError}</Text>
+      </Box>}
+      <Box marginTop={1}>
+        {isProcessing ? <Text dimColor>Uninstalling…</Text> : <Text>
+          <Text bold>y</Text> to delete · <Text bold>n</Text> to keep ·{' '}
+          <Text bold>esc</Text> to cancel
+        </Text>}
+      </Box>
+    </Box>;
   }
 
   // Plugin details view
@@ -1818,97 +1818,97 @@ export function ManagePlugins({
     // Compute plugin errors section
     const filteredPluginErrors = pluginErrors.filter(e_1 => 'plugin' in e_1 && e_1.plugin === selectedPlugin.plugin.name || e_1.source === pluginId_13 || e_1.source.startsWith(`${selectedPlugin.plugin.name}@`));
     const pluginErrorsSection = filteredPluginErrors.length === 0 ? null : <Box flexDirection="column" marginBottom={1}>
-          <Text bold color="error">
-            {filteredPluginErrors.length}{' '}
-            {plural(filteredPluginErrors.length, 'error')}:
-          </Text>
-          {filteredPluginErrors.map((error_3, i_0) => {
+      <Text bold color="error">
+        {filteredPluginErrors.length}{' '}
+        {plural(filteredPluginErrors.length, 'error')}:
+      </Text>
+      {filteredPluginErrors.map((error_3, i_0) => {
         const guidance = getErrorGuidance(error_3);
         return <Box key={i_0} flexDirection="column" marginLeft={2}>
-                <Text color="error">{formatErrorMessage(error_3)}</Text>
-                {guidance && <Text dimColor italic>
-                    {figures.arrowRight} {guidance}
-                  </Text>}
-              </Box>;
-      })}
+          <Text color="error">{formatErrorMessage(error_3)}</Text>
+          {guidance && <Text dimColor italic>
+            {figures.arrowRight} {guidance}
+          </Text>}
         </Box>;
+      })}
+    </Box>;
     return <Box flexDirection="column">
-        <Box>
-          <Text bold>
-            {selectedPlugin.plugin.name} @ {selectedPlugin.marketplace}
-          </Text>
-        </Box>
+      <Box>
+        <Text bold>
+          {selectedPlugin.plugin.name} @ {selectedPlugin.marketplace}
+        </Text>
+      </Box>
 
-        {/* Scope */}
-        <Box>
-          <Text dimColor>Scope: </Text>
-          <Text>{selectedPlugin.scope || 'user'}</Text>
-        </Box>
+      {/* Scope */}
+      <Box>
+        <Text dimColor>Scope: </Text>
+        <Text>{selectedPlugin.scope || 'user'}</Text>
+      </Box>
 
-        {/* Plugin details */}
-        {selectedPlugin.plugin.manifest.version && <Box>
-            <Text dimColor>Version: </Text>
-            <Text>{selectedPlugin.plugin.manifest.version}</Text>
-          </Box>}
+      {/* Plugin details */}
+      {selectedPlugin.plugin.manifest.version && <Box>
+        <Text dimColor>Version: </Text>
+        <Text>{selectedPlugin.plugin.manifest.version}</Text>
+      </Box>}
 
-        {selectedPlugin.plugin.manifest.description && <Box marginBottom={1}>
-            <Text>{selectedPlugin.plugin.manifest.description}</Text>
-          </Box>}
+      {selectedPlugin.plugin.manifest.description && <Box marginBottom={1}>
+        <Text>{selectedPlugin.plugin.manifest.description}</Text>
+      </Box>}
 
-        {selectedPlugin.plugin.manifest.author && <Box>
-            <Text dimColor>Author: </Text>
-            <Text>{selectedPlugin.plugin.manifest.author.name}</Text>
-          </Box>}
+      {selectedPlugin.plugin.manifest.author && <Box>
+        <Text dimColor>Author: </Text>
+        <Text>{selectedPlugin.plugin.manifest.author.name}</Text>
+      </Box>}
 
-        {/* Current status */}
-        <Box marginBottom={1}>
-          <Text dimColor>Status: </Text>
-          <Text color={isEnabled_2 ? 'success' : 'warning'}>
-            {isEnabled_2 ? 'Enabled' : 'Disabled'}
-          </Text>
-          {selectedPlugin.pendingUpdate && <Text color="suggestion"> · Marked for update</Text>}
-        </Box>
+      {/* Current status */}
+      <Box marginBottom={1}>
+        <Text dimColor>Status: </Text>
+        <Text color={isEnabled_2 ? 'success' : 'warning'}>
+          {isEnabled_2 ? 'Enabled' : 'Disabled'}
+        </Text>
+        {selectedPlugin.pendingUpdate && <Text color="suggestion"> · Marked for update</Text>}
+      </Box>
 
-        {/* Installed components */}
-        <PluginComponentsDisplay plugin={selectedPlugin.plugin} marketplace={selectedPlugin.marketplace} />
+      {/* Installed components */}
+      <PluginComponentsDisplay plugin={selectedPlugin.plugin} marketplace={selectedPlugin.marketplace} />
 
-        {/* Plugin errors */}
-        {pluginErrorsSection}
+      {/* Plugin errors */}
+      {pluginErrorsSection}
 
-        {/* Menu */}
-        <Box marginTop={1} flexDirection="column">
-          {detailsMenuItems.map((item_9, index_0) => {
+      {/* Menu */}
+      <Box marginTop={1} flexDirection="column">
+        {detailsMenuItems.map((item_9, index_0) => {
           const isSelected = index_0 === detailsMenuIndex;
           return <Box key={index_0}>
-                {isSelected && <Text>{figures.pointer} </Text>}
-                {!isSelected && <Text>{'  '}</Text>}
-                <Text bold={isSelected} color={item_9.label.includes('Uninstall') ? 'error' : item_9.label.includes('Update') ? 'suggestion' : undefined}>
-                  {item_9.label}
-                </Text>
-              </Box>;
+            {isSelected && <Text>{figures.pointer} </Text>}
+            {!isSelected && <Text>{'  '}</Text>}
+            <Text bold={isSelected} color={item_9.label.includes('Uninstall') ? 'error' : item_9.label.includes('Update') ? 'suggestion' : undefined}>
+              {item_9.label}
+            </Text>
+          </Box>;
         })}
-        </Box>
+      </Box>
 
-        {/* Processing state */}
-        {isProcessing && <Box marginTop={1}>
-            <Text>Processing…</Text>
-          </Box>}
+      {/* Processing state */}
+      {isProcessing && <Box marginTop={1}>
+        <Text>Processing…</Text>
+      </Box>}
 
-        {/* Error message */}
-        {processError && <Box marginTop={1}>
-            <Text color="error">{processError}</Text>
-          </Box>}
+      {/* Error message */}
+      {processError && <Box marginTop={1}>
+        <Text color="error">{processError}</Text>
+      </Box>}
 
-        <Box marginTop={1}>
-          <Text dimColor italic>
-            <Byline>
-              <ConfigurableShortcutHint action="select:previous" context="Select" fallback="↑" description="navigate" />
-              <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-            </Byline>
-          </Text>
-        </Box>
-      </Box>;
+      <Box marginTop={1}>
+        <Text dimColor italic>
+          <Byline>
+            <ConfigurableShortcutHint action="select:previous" context="Select" fallback="↑" description="navigate" />
+            <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          </Byline>
+        </Text>
+      </Box>
+    </Box>;
   }
 
   // Failed plugin detail view
@@ -1917,34 +1917,34 @@ export function ManagePlugins({
     const firstError = failedPlugin_0.errors[0];
     const errorMessage_0 = firstError ? formatErrorMessage(firstError) : 'Failed to load';
     return <Box flexDirection="column">
-        <Text>
-          <Text bold>{failedPlugin_0.name}</Text>
-          <Text dimColor> @ {failedPlugin_0.marketplace}</Text>
-          <Text dimColor> ({failedPlugin_0.scope})</Text>
+      <Text>
+        <Text bold>{failedPlugin_0.name}</Text>
+        <Text dimColor> @ {failedPlugin_0.marketplace}</Text>
+        <Text dimColor> ({failedPlugin_0.scope})</Text>
+      </Text>
+      <Text color="error">{errorMessage_0}</Text>
+
+      {failedPlugin_0.scope === 'managed' ? <Box marginTop={1}>
+        <Text dimColor>
+          Managed by your organization — contact your admin
         </Text>
-        <Text color="error">{errorMessage_0}</Text>
+      </Box> : <Box marginTop={1}>
+        <Text color="suggestion">{figures.pointer} </Text>
+        <Text bold>Remove</Text>
+      </Box>}
 
-        {failedPlugin_0.scope === 'managed' ? <Box marginTop={1}>
-            <Text dimColor>
-              Managed by your organization — contact your admin
-            </Text>
-          </Box> : <Box marginTop={1}>
-            <Text color="suggestion">{figures.pointer} </Text>
-            <Text bold>Remove</Text>
-          </Box>}
+      {isProcessing && <Text>Processing…</Text>}
+      {processError && <Text color="error">{processError}</Text>}
 
-        {isProcessing && <Text>Processing…</Text>}
-        {processError && <Text color="error">{processError}</Text>}
-
-        <Box marginTop={1}>
-          <Text dimColor italic>
-            <Byline>
-              {failedPlugin_0.scope !== 'managed' && <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="remove" />}
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-            </Byline>
-          </Text>
-        </Box>
-      </Box>;
+      <Box marginTop={1}>
+        <Text dimColor italic>
+          <Byline>
+            {failedPlugin_0.scope !== 'managed' && <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="remove" />}
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          </Byline>
+        </Text>
+      </Box>
+    </Box>;
   }
 
   // MCP detail view
@@ -2001,14 +2001,14 @@ export function ManagePlugins({
         config: client_3.config as McpHTTPServerConfig
       };
       return <MCPRemoteServerMenu server={server_1} serverToolsCount={serverToolsCount} onViewTools={handleMcpViewTools} onCancel={handleMcpCancel} onComplete={handleMcpComplete} borderless />;
-    } else if (configType === 'claudeai-proxy') {
-      const server_2: ClaudeAIServerInfo = {
+    } else if (configType === 'omnicodeai-proxy') {
+      const server_2: OmnicodeAIServerInfo = {
         name: client_3.name,
         client: client_3,
         scope: scope_5,
-        transport: 'claudeai-proxy',
+        transport: 'omnicodeai-proxy',
         isAuthenticated: undefined,
-        config: client_3.config as McpClaudeAIProxyServerConfig
+        config: client_3.config as McpOmnicodeAIProxyServerConfig
       };
       return <MCPRemoteServerMenu server={server_2} serverToolsCount={serverToolsCount} onViewTools={handleMcpViewTools} onCancel={handleMcpCancel} onComplete={handleMcpComplete} borderless />;
     }
@@ -2025,7 +2025,7 @@ export function ManagePlugins({
     const configType_0 = client_4.config.type;
 
     // Build ServerInfo for MCPToolListView
-    let server_3: StdioServerInfo | SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo;
+    let server_3: StdioServerInfo | SSEServerInfo | HTTPServerInfo | OmnicodeAIServerInfo;
     if (configType_0 === 'stdio') {
       server_3 = {
         name: client_4.name,
@@ -2057,9 +2057,9 @@ export function ManagePlugins({
         name: client_4.name,
         client: client_4,
         scope: scope_6,
-        transport: 'claudeai-proxy',
+        transport: 'omnicodeai-proxy',
         isAuthenticated: undefined,
-        config: client_4.config as McpClaudeAIProxyServerConfig
+        config: client_4.config as McpOmnicodeAIProxyServerConfig
       };
     }
     return <MCPToolListView server={server_3} onSelectTool={(tool: Tool) => {
@@ -2084,7 +2084,7 @@ export function ManagePlugins({
     const configType_1 = client_5.config.type;
 
     // Build ServerInfo for MCPToolDetailView
-    let server_4: StdioServerInfo | SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo;
+    let server_4: StdioServerInfo | SSEServerInfo | HTTPServerInfo | OmnicodeAIServerInfo;
     if (configType_1 === 'stdio') {
       server_4 = {
         name: client_5.name,
@@ -2116,9 +2116,9 @@ export function ManagePlugins({
         name: client_5.name,
         client: client_5,
         scope: scope_7,
-        transport: 'claudeai-proxy',
+        transport: 'omnicodeai-proxy',
         isAuthenticated: undefined,
-        config: client_5.config as McpClaudeAIProxyServerConfig
+        config: client_5.config as McpOmnicodeAIProxyServerConfig
       };
     }
     return <MCPToolDetailView tool={tool_0} server={server_4} onBack={() => setViewState({
@@ -2130,23 +2130,23 @@ export function ManagePlugins({
   // Plugin list view (main management interface)
   const visibleItems = pagination.getVisibleItems(filteredItems);
   return <Box flexDirection="column">
-      {/* Search box */}
-      <Box marginBottom={1}>
-        <SearchBox query={searchQuery} isFocused={isSearchMode} isTerminalFocused={isTerminalFocused} width={terminalWidth - 4} cursorOffset={searchCursorOffset} />
-      </Box>
+    {/* Search box */}
+    <Box marginBottom={1}>
+      <SearchBox query={searchQuery} isFocused={isSearchMode} isTerminalFocused={isTerminalFocused} width={terminalWidth - 4} cursorOffset={searchCursorOffset} />
+    </Box>
 
-      {/* No search results */}
-      {filteredItems.length === 0 && searchQuery && <Box marginBottom={1}>
-          <Text dimColor>No items match &quot;{searchQuery}&quot;</Text>
-        </Box>}
+    {/* No search results */}
+    {filteredItems.length === 0 && searchQuery && <Box marginBottom={1}>
+      <Text dimColor>No items match &quot;{searchQuery}&quot;</Text>
+    </Box>}
 
-      {/* Scroll up indicator */}
-      {pagination.scrollPosition.canScrollUp && <Box>
-          <Text dimColor> {figures.arrowUp} more above</Text>
-        </Box>}
+    {/* Scroll up indicator */}
+    {pagination.scrollPosition.canScrollUp && <Box>
+      <Text dimColor> {figures.arrowUp} more above</Text>
+    </Box>}
 
-      {/* Unified list of plugins and MCPs grouped by scope */}
-      {visibleItems.map((item_10, visibleIndex) => {
+    {/* Unified list of plugins and MCPs grouped by scope */}
+    {visibleItems.map((item_10, visibleIndex) => {
       const actualIndex = pagination.toActualIndex(visibleIndex);
       const isSelected_0 = actualIndex === selectedIndex && !isSearchMode;
 
@@ -2178,37 +2178,37 @@ export function ManagePlugins({
         }
       };
       return <React.Fragment key={item_10.id}>
-            {showScopeHeader && <Box marginTop={visibleIndex > 0 ? 1 : 0} paddingLeft={2}>
-                <Text dimColor={item_10.scope !== 'flagged'} color={item_10.scope === 'flagged' ? 'warning' : undefined} bold={item_10.scope === 'flagged'}>
-                  {getScopeLabel(item_10.scope)}
-                </Text>
-              </Box>}
-            <UnifiedInstalledCell item={item_10} isSelected={isSelected_0} />
-          </React.Fragment>;
-    })}
-
-      {/* Scroll down indicator */}
-      {pagination.scrollPosition.canScrollDown && <Box>
-          <Text dimColor> {figures.arrowDown} more below</Text>
-        </Box>}
-
-      {/* Help text */}
-      <Box marginTop={1} marginLeft={1}>
-        <Text dimColor italic>
-          <Byline>
-            <Text>type to search</Text>
-            <ConfigurableShortcutHint action="plugin:toggle" context="Plugin" fallback="Space" description="toggle" />
-            <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="details" />
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-          </Byline>
-        </Text>
-      </Box>
-
-      {/* Reload disclaimer for plugin changes */}
-      {pendingToggles.size > 0 && <Box marginLeft={1}>
-          <Text dimColor italic>
-            Run /reload-plugins to apply changes
+        {showScopeHeader && <Box marginTop={visibleIndex > 0 ? 1 : 0} paddingLeft={2}>
+          <Text dimColor={item_10.scope !== 'flagged'} color={item_10.scope === 'flagged' ? 'warning' : undefined} bold={item_10.scope === 'flagged'}>
+            {getScopeLabel(item_10.scope)}
           </Text>
         </Box>}
-    </Box>;
+        <UnifiedInstalledCell item={item_10} isSelected={isSelected_0} />
+      </React.Fragment>;
+    })}
+
+    {/* Scroll down indicator */}
+    {pagination.scrollPosition.canScrollDown && <Box>
+      <Text dimColor> {figures.arrowDown} more below</Text>
+    </Box>}
+
+    {/* Help text */}
+    <Box marginTop={1} marginLeft={1}>
+      <Text dimColor italic>
+        <Byline>
+          <Text>type to search</Text>
+          <ConfigurableShortcutHint action="plugin:toggle" context="Plugin" fallback="Space" description="toggle" />
+          <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="details" />
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+        </Byline>
+      </Text>
+    </Box>
+
+    {/* Reload disclaimer for plugin changes */}
+    {pendingToggles.size > 0 && <Box marginLeft={1}>
+      <Text dimColor italic>
+        Run /reload-plugins to apply changes
+      </Text>
+    </Box>}
+  </Box>;
 }

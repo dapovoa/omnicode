@@ -4,7 +4,7 @@ import { getAttributionTexts } from '../../utils/attribution.js'
 import { hasEmbeddedSearchTools } from '../../utils/embeddedTools.js'
 import { isEnvTruthy } from '../../utils/envUtils.js'
 import { shouldIncludeGitInstructions } from '../../utils/gitSettings.js'
-import { getClaudeTempDir } from '../../utils/permissions/filesystem.js'
+import { getOmnicodeTempDir } from '../../utils/permissions/filesystem.js'
 import { SandboxManager } from '../../utils/sandbox/sandbox-adapter.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import {
@@ -33,7 +33,7 @@ export function getMaxTimeoutMs(): number {
 }
 
 function getBackgroundUsageNote(): string | null {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)) {
+  if (isEnvTruthy(process.env.OMNICODE_DISABLE_BACKGROUND_TASKS)) {
     return null
   }
   return "You can use the `run_in_background` parameter to run the command in the background. Only use this if you don't need the result immediately and are OK being notified when the command completes later. You do not need to check the output right away - you'll be notified when it finishes. You do not need to use '&' at the end of the command when using this parameter."
@@ -54,7 +54,7 @@ function getCommitAndPRInstructions(): string {
 
   // For ant users, use the short version pointing to skills
   if (process.env.USER_TYPE === 'ant') {
-    const skillsSection = !isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)
+    const skillsSection = !isEnvTruthy(process.env.OMNICODE_SIMPLE)
       ? `For git commits and pull requests, use the \`/commit\` and \`/commit-push-pr\` skills:
 - \`/commit\` - Create a git commit with staged changes
 - \`/commit-push-pr\` - Commit, push, and create a pull request
@@ -182,12 +182,12 @@ function getSimpleSandboxSection(): string {
   const allowUnsandboxedCommands =
     SandboxManager.areUnsandboxedCommandsAllowed()
 
-  // Replace the per-UID temp dir literal (e.g. /private/tmp/claude-1001/) with
+  // Replace the per-UID temp dir literal (e.g. /private/tmp/omnicode-1001/) with
   // "$TMPDIR" so the prompt is identical across users — avoids busting the
   // cross-user global prompt cache. The sandbox already sets $TMPDIR at runtime.
-  const claudeTempDir = getClaudeTempDir()
+  const omnicodeTempDir = getOmnicodeTempDir()
   const normalizeAllowOnly = (paths: string[]): string[] =>
-    [...new Set(paths)].map(p => (p === claudeTempDir ? '$TMPDIR' : p))
+    [...new Set(paths)].map(p => (p === omnicodeTempDir ? '$TMPDIR' : p))
 
   const filesystemConfig = {
     read: {
@@ -228,32 +228,32 @@ function getSimpleSandboxSection(): string {
   const sandboxOverrideItems: Array<string | string[]> =
     allowUnsandboxedCommands
       ? [
-          'You should always default to running commands within the sandbox. Do NOT attempt to set `dangerouslyDisableSandbox: true` unless:',
-          [
-            'The user *explicitly* asks you to bypass sandbox',
-            'A specific command just failed and you see evidence of sandbox restrictions causing the failure. Note that commands can fail for many reasons unrelated to the sandbox (missing files, wrong arguments, network issues, etc.).',
-          ],
-          'Evidence of sandbox-caused failures includes:',
-          [
-            '"Operation not permitted" errors for file/network operations',
-            'Access denied to specific paths outside allowed directories',
-            'Network connection failures to non-whitelisted hosts',
-            'Unix socket connection errors',
-          ],
-          'When you see evidence of sandbox-caused failure:',
-          [
-            "Immediately retry with `dangerouslyDisableSandbox: true` (don't ask, just do it)",
-            'Briefly explain what sandbox restriction likely caused the failure. Be sure to mention that the user can use the `/sandbox` command to manage restrictions.',
-            'This will prompt the user for permission',
-          ],
-          'Treat each command you execute with `dangerouslyDisableSandbox: true` individually. Even if you have recently run a command with this setting, you should default to running future commands within the sandbox.',
-          'Do not suggest adding sensitive paths like ~/.bashrc, ~/.zshrc, ~/.ssh/*, or credential files to the sandbox allowlist.',
-        ]
+        'You should always default to running commands within the sandbox. Do NOT attempt to set `dangerouslyDisableSandbox: true` unless:',
+        [
+          'The user *explicitly* asks you to bypass sandbox',
+          'A specific command just failed and you see evidence of sandbox restrictions causing the failure. Note that commands can fail for many reasons unrelated to the sandbox (missing files, wrong arguments, network issues, etc.).',
+        ],
+        'Evidence of sandbox-caused failures includes:',
+        [
+          '"Operation not permitted" errors for file/network operations',
+          'Access denied to specific paths outside allowed directories',
+          'Network connection failures to non-whitelisted hosts',
+          'Unix socket connection errors',
+        ],
+        'When you see evidence of sandbox-caused failure:',
+        [
+          "Immediately retry with `dangerouslyDisableSandbox: true` (don't ask, just do it)",
+          'Briefly explain what sandbox restriction likely caused the failure. Be sure to mention that the user can use the `/sandbox` command to manage restrictions.',
+          'This will prompt the user for permission',
+        ],
+        'Treat each command you execute with `dangerouslyDisableSandbox: true` individually. Even if you have recently run a command with this setting, you should default to running future commands within the sandbox.',
+        'Do not suggest adding sensitive paths like ~/.bashrc, ~/.zshrc, ~/.ssh/*, or credential files to the sandbox allowlist.',
+      ]
       : [
-          'All commands MUST run in sandbox mode - the `dangerouslyDisableSandbox` parameter is disabled by policy.',
-          'Commands cannot run outside the sandbox under any circumstances.',
-          'If a command fails due to sandbox restrictions, work with the user to adjust sandbox settings instead.',
-        ]
+        'All commands MUST run in sandbox mode - the `dangerouslyDisableSandbox` parameter is disabled by policy.',
+        'Commands cannot run outside the sandbox under any circumstances.',
+        'If a command fails due to sandbox restrictions, work with the user to adjust sandbox settings instead.',
+      ]
 
   const items: Array<string | string[]> = [
     ...sandboxOverrideItems,
@@ -273,7 +273,7 @@ function getSimpleSandboxSection(): string {
 }
 
 export function getSimplePrompt(): string {
-  // Ant-native builds alias find/grep to embedded bfs/ugrep in Claude's shell,
+  // Ant-native builds alias find/grep to embedded bfs/ugrep in Omnicode's shell,
   // so we don't steer away from them (and Glob/Grep tools are removed).
   const embedded = hasEmbeddedSearchTools()
 
@@ -281,9 +281,9 @@ export function getSimplePrompt(): string {
     ...(embedded
       ? []
       : [
-          `File search: Use ${GLOB_TOOL_NAME} (NOT find or ls)`,
-          `Content search: Use ${GREP_TOOL_NAME} (NOT grep or rg)`,
-        ]),
+        `File search: Use ${GLOB_TOOL_NAME} (NOT find or ls)`,
+        `Content search: Use ${GREP_TOOL_NAME} (NOT grep or rg)`,
+      ]),
     `Read files: Use ${FILE_READ_TOOL_NAME} (NOT cat/head/tail)`,
     `Edit files: Use ${FILE_EDIT_TOOL_NAME} (NOT sed/awk)`,
     `Write files: Use ${FILE_WRITE_TOOL_NAME} (NOT echo >/cat <<EOF)`,
@@ -311,20 +311,20 @@ export function getSimplePrompt(): string {
     'Do not sleep between commands that can run immediately — just run them.',
     ...(feature('MONITOR_TOOL')
       ? [
-          'Use the Monitor tool to stream events from a background process (each stdout line is a notification). For one-shot "wait until done," use Bash with run_in_background instead.',
-        ]
+        'Use the Monitor tool to stream events from a background process (each stdout line is a notification). For one-shot "wait until done," use Bash with run_in_background instead.',
+      ]
       : []),
     'If your command is long running and you would like to be notified when it finishes — use `run_in_background`. No sleep needed.',
     'Do not retry failing commands in a sleep loop — diagnose the root cause.',
     'If waiting for a background task you started with `run_in_background`, you will be notified when it completes — do not poll.',
     ...(feature('MONITOR_TOOL')
       ? [
-          '`sleep N` as the first command with N ≥ 2 is blocked. If you need a delay (rate limiting, deliberate pacing), keep it under 2 seconds.',
-        ]
+        '`sleep N` as the first command with N ≥ 2 is blocked. If you need a delay (rate limiting, deliberate pacing), keep it under 2 seconds.',
+      ]
       : [
-          'If you must poll an external process, use a check command (e.g. `gh run view`) rather than sleeping first.',
-          'If you must sleep, keep the duration short (1-5 seconds) to avoid blocking the user.',
-        ]),
+        'If you must poll an external process, use a check command (e.g. `gh run view`) rather than sleeping first.',
+        'If you must sleep, keep the duration short (1-5 seconds) to avoid blocking the user.',
+      ]),
   ]
   const backgroundNote = getBackgroundUsageNote()
 
@@ -342,12 +342,12 @@ export function getSimplePrompt(): string {
     sleepSubitems,
     ...(embedded
       ? [
-          // bfs (which backs `find`) uses Oniguruma for -regex, which picks the
-          // FIRST matching alternative (leftmost-first), unlike GNU find's
-          // POSIX leftmost-longest. This silently drops matches when a shorter
-          // alternative is a prefix of a longer one.
-          "When using `find -regex` with alternation, put the longest alternative first. Example: use `'.*\\.\\(tsx\\|ts\\)'` not `'.*\\.\\(ts\\|tsx\\)'` — the second form silently skips `.tsx` files.",
-        ]
+        // bfs (which backs `find`) uses Oniguruma for -regex, which picks the
+        // FIRST matching alternative (leftmost-first), unlike GNU find's
+        // POSIX leftmost-longest. This silently drops matches when a shorter
+        // alternative is a prefix of a longer one.
+        "When using `find -regex` with alternation, put the longest alternative first. Example: use `'.*\\.\\(tsx\\|ts\\)'` not `'.*\\.\\(ts\\|tsx\\)'` — the second form silently skips `.tsx` files.",
+      ]
       : []),
   ]
 

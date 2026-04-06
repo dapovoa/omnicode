@@ -44,9 +44,9 @@ export function deriveFirstPrompt(
     typeof content === 'string'
       ? content
       : content.find(
-          (block): block is { type: 'text'; text: string } =>
-            block.type === 'text',
-        )?.text
+        (block): block is { type: 'text'; text: string } =>
+          block.type === 'text',
+      )?.text
   if (!raw) return 'Branched conversation'
   return (
     raw.replace(/\s+/g, ' ').trim().slice(0, 100) || 'Branched conversation'
@@ -97,7 +97,7 @@ async function createFork(customTitle?: string): Promise<{
 
   // Content-replacement entries for the original session. These record which
   // tool_result blocks were replaced with previews by the per-message budget.
-  // Without them in the fork JSONL, `claude -r {forkId}` reconstructs state
+  // Without them in the fork JSONL, `omnicode -r {forkId}` reconstructs state
   // with an empty replacements Map → previously-replaced results are classified
   // as FROZEN and sent as full content (prompt cache miss + permanent overage).
   // sessionId must be rewritten since loadTranscriptFile keys lookup by the
@@ -273,7 +273,7 @@ export async function call(
 
     // Resume into the fork
     const titleInfo = title ? ` "${title}"` : ''
-    const resumeHint = `\nTo resume the original: claude -r ${originalSessionId}`
+    const resumeHint = `\nTo resume the original: omnicode -r ${originalSessionId}`
     const successMessage = `Branched conversation${titleInfo}. You are now in the branch.${resumeHint}`
 
     if (context.resume) {

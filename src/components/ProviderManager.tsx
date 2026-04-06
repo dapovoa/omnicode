@@ -48,32 +48,32 @@ const FORM_STEPS: Array<{
   helpText: string
   optional?: boolean
 }> = [
-  {
-    key: 'name',
-    label: 'Provider name',
-    placeholder: 'e.g. Ollama Home, OpenAI Work',
-    helpText: 'A short label shown in /provider and startup setup.',
-  },
-  {
-    key: 'baseUrl',
-    label: 'Base URL',
-    placeholder: 'e.g. http://localhost:11434/v1',
-    helpText: 'API base URL used for this provider profile.',
-  },
-  {
-    key: 'model',
-    label: 'Default model',
-    placeholder: 'e.g. llama3.1:8b',
-    helpText: 'Model name to use when this provider is active.',
-  },
-  {
-    key: 'apiKey',
-    label: 'API key',
-    placeholder: 'Leave empty if your provider does not require one',
-    helpText: 'Optional. Press Enter with empty value to skip.',
-    optional: true,
-  },
-]
+    {
+      key: 'name',
+      label: 'Provider name',
+      placeholder: 'e.g. Ollama Home, OpenAI Work',
+      helpText: 'A short label shown in /provider and startup setup.',
+    },
+    {
+      key: 'baseUrl',
+      label: 'Base URL',
+      placeholder: 'e.g. http://localhost:11434/v1',
+      helpText: 'API base URL used for this provider profile.',
+    },
+    {
+      key: 'model',
+      label: 'Default model',
+      placeholder: 'e.g. llama3.1:8b',
+      helpText: 'Model name to use when this provider is active.',
+    },
+    {
+      key: 'apiKey',
+      label: 'API key',
+      placeholder: 'Leave empty if your provider does not require one',
+      helpText: 'Optional. Press Enter with empty value to skip.',
+      optional: true,
+    },
+  ]
 
 function toDraft(profile: ProviderProfile): ProviderDraft {
   return {
@@ -265,7 +265,7 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
       {
         value: 'anthropic',
         label: 'Anthropic',
-        description: 'Native Claude API (x-api-key auth)',
+        description: 'Native Omnicode API (x-api-key auth)',
       },
       {
         value: 'ollama',
@@ -329,12 +329,12 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
       },
       ...(mode === 'first-run'
         ? [
-            {
-              value: 'skip',
-              label: 'Skip for now',
-              description: 'Continue with current defaults',
-            },
-          ]
+          {
+            value: 'skip',
+            label: 'Skip for now',
+            description: 'Continue with current defaults',
+          },
+        ]
         : []),
     ]
 

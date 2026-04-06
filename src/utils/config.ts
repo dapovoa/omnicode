@@ -16,8 +16,8 @@ import { getCwd } from '../utils/cwd.js'
 import { registerCleanup } from './cleanupRegistry.js'
 import { logForDebugging } from './debug.js'
 import { logForDiagnosticsNoPII } from './diagLogs.js'
-import { getGlobalClaudeFile } from './env.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './envUtils.js'
+import { getGlobalOmnicodeFile } from './env.js'
+import { getOmnicodeConfigHomeDir, isEnvTruthy } from './envUtils.js'
 import { ConfigParseError, getErrnoCode } from './errors.js'
 import { writeFileSyncAndFlush_DEPRECATED } from './file.js'
 import { getFsImplementation } from './fsOperations.js'
@@ -112,8 +112,8 @@ export type ProjectConfig = {
 
   hasCompletedProjectOnboarding?: boolean
   projectOnboardingSeenCount: number
-  hasClaudeMdExternalIncludesApproved?: boolean
-  hasClaudeMdExternalIncludesWarningShown?: boolean
+  hasOmnicodeMdExternalIncludesApproved?: boolean
+  hasOmnicodeMdExternalIncludesWarningShown?: boolean
   // MCP server approval fields - migrated to settings but kept for backward compatibility
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
@@ -131,7 +131,7 @@ export type ProjectConfig = {
     sessionId: string
     hookBased?: boolean
   }
-  /** Spawn mode for `claude remote-control` multi-session. Set by first-run dialog or `w` toggle. */
+  /** Spawn mode for `omnicode remote-control` multi-session. Set by first-run dialog or `w` toggle. */
   remoteControlSpawnMode?: 'same-dir' | 'worktree'
 }
 
@@ -143,8 +143,8 @@ const DEFAULT_PROJECT_CONFIG: ProjectConfig = {
   disabledMcpjsonServers: [],
   hasTrustDialogAccepted: false,
   projectOnboardingSeenCount: 0,
-  hasClaudeMdExternalIncludesApproved: false,
-  hasClaudeMdExternalIncludesWarningShown: false,
+  hasOmnicodeMdExternalIncludesApproved: false,
+  hasOmnicodeMdExternalIncludesWarningShown: false,
 }
 
 export type InstallMethod = 'local' | 'native' | 'global' | 'unknown'
@@ -209,17 +209,17 @@ export type GlobalConfig = {
   lastOnboardingVersion?: string
   // Tracks the last version for which release notes were seen, used for managing release notes
   lastReleaseNotesSeen?: string
-  // Timestamp when changelog was last fetched (content stored in ~/.claude/cache/changelog.md)
+  // Timestamp when changelog was last fetched (content stored in ~/.omnicode/cache/changelog.md)
   changelogLastFetched?: number
-  // @deprecated - Migrated to ~/.claude/cache/changelog.md. Keep for migration support.
+  // @deprecated - Migrated to ~/.omnicode/cache/changelog.md. Keep for migration support.
   cachedChangelog?: string
   mcpServers?: Record<string, McpServerConfig>
-  // claude.ai MCP connectors that have successfully connected at least once.
+  // omnicode.ai MCP connectors that have successfully connected at least once.
   // Used to gate "connector unavailable" / "needs auth" startup notifications:
   // a connector the user has actually used is worth flagging when it breaks,
   // but an org-configured connector that's been needs-auth since day one is
   // something the user has demonstrably ignored and shouldn't nag about.
-  claudeAiMcpEverConnected?: string[]
+  omnicodeAiMcpEverConnected?: string[]
   preferredNotifChannel: NotificationChannel
   /**
    * @deprecated. Use the Notification hook instead (docs/hooks.md).
@@ -379,9 +379,9 @@ export type GlobalConfig = {
   showSpinnerTree?: boolean // Whether to show the teammate spinner tree instead of pills
 
   // First start time tracking
-  firstStartTime?: string // ISO timestamp when Claude Code was first started on this machine
+  firstStartTime?: string // ISO timestamp when Omnicode Code was first started on this machine
 
-  messageIdleNotifThresholdMs: number // How long the user has to have been idle to get a notification that Claude is done generating
+  messageIdleNotifThresholdMs: number // How long the user has to have been idle to get a notification that Omnicode is done generating
 
   githubActionSetupCount?: number // Number of times the user has set up the GitHub Action
   slackAppInstallCount?: number // Number of times the user has clicked to install the Slack app
@@ -402,8 +402,8 @@ export type GlobalConfig = {
   inputNeededNotifEnabled?: boolean
   agentPushNotifEnabled?: boolean
 
-  // Claude Code usage tracking
-  claudeCodeFirstTokenDate?: string // ISO timestamp of the user's first Claude Code OAuth token
+  // Omnicode Code usage tracking
+  omnicodeCodeFirstTokenDate?: string // ISO timestamp of the user's first Omnicode Code OAuth token
 
   // Model switch callout tracking (internal-only)
   modelSwitchCalloutDismissed?: boolean // Whether user chose "Don't show again"
@@ -473,7 +473,7 @@ export type GlobalConfig = {
   // Fullscreen in-app text selection behavior
   copyOnSelect?: boolean // Auto-copy to clipboard on mouse-up (undefined → true; lets cmd+c "work" via no-op)
 
-  // Flicker-free fullscreen mode (equivalent to CLAUDE_CODE_NO_FLICKER=1 env var).
+  // Flicker-free fullscreen mode (equivalent to OMNICODE_NO_FLICKER=1 env var).
   // When true, enables alt-screen + virtualized scroll for all users.
   // Env var still takes precedence: =0 always off, =1 always on.
   flickerFreeMode?: boolean
@@ -482,7 +482,7 @@ export type GlobalConfig = {
   // Key: "owner/repo" (lowercase), Value: array of absolute paths where repo is cloned
   githubRepoPaths?: Record<string, string[]>
 
-  // Terminal emulator to launch for claude-cli:// deep links. Captured from
+  // Terminal emulator to launch for omnicode-cli:// deep links. Captured from
   // TERM_PROGRAM during interactive sessions since the deep link handler runs
   // headless (LaunchServices/xdg) with no TERM_PROGRAM set.
   deepLinkTerminal?: string
@@ -497,17 +497,17 @@ export type GlobalConfig = {
   officialMarketplaceAutoInstallAttempted?: boolean // Whether auto-install was attempted
   officialMarketplaceAutoInstalled?: boolean // Whether auto-install succeeded
   officialMarketplaceAutoInstallFailReason?:
-    | 'policy_blocked'
-    | 'git_unavailable'
-    | 'gcs_unavailable'
-    | 'unknown' // Reason for failure if applicable
+  | 'policy_blocked'
+  | 'git_unavailable'
+  | 'gcs_unavailable'
+  | 'unknown' // Reason for failure if applicable
   officialMarketplaceAutoInstallRetryCount?: number // Number of retry attempts
   officialMarketplaceAutoInstallLastAttemptTime?: number // Timestamp of last attempt
   officialMarketplaceAutoInstallNextRetryTime?: number // Earliest time to retry again
 
-  // Claude in Chrome settings
-  hasCompletedClaudeInChromeOnboarding?: boolean // Whether Claude in Chrome onboarding has been shown
-  claudeInChromeDefaultEnabled?: boolean // Whether Claude in Chrome is enabled by default (undefined means platform default)
+  // Omnicode in Chrome settings
+  hasCompletedOmnicodeInChromeOnboarding?: boolean // Whether Omnicode in Chrome onboarding has been shown
+  omnicodeInChromeDefaultEnabled?: boolean // Whether Omnicode in Chrome is enabled by default (undefined means platform default)
   cachedChromeExtensionInstalled?: boolean // Cached result of whether Chrome extension is installed
 
   // Chrome extension pairing state (persisted across sessions)
@@ -521,10 +521,10 @@ export type GlobalConfig = {
   lspRecommendationNeverPlugins?: string[] // Plugin IDs to never suggest
   lspRecommendationIgnoredCount?: number // Track ignored recommendations (stops after 5)
 
-  // Claude Code hint protocol state (<claude-code-hint /> tags from CLIs/SDKs).
+  // Omnicode Code hint protocol state (<omnicode-code-hint /> tags from CLIs/SDKs).
   // Nested by hint type so future types (docs, mcp, ...) slot in without new
   // top-level keys.
-  claudeCodeHints?: {
+  omnicodeCodeHints?: {
     // Plugin IDs the user has already been prompted for. Show-once semantics:
     // recorded regardless of yes/no response, never re-prompted. Capped at
     // 100 entries to bound config growth — past that, hints stop entirely.
@@ -589,9 +589,9 @@ export type GlobalConfig = {
   // Keyed by provider profile id.
   openaiAdditionalModelOptionsCacheByProfile?: Record<string, ModelOption[]>
 
-  // Disk cache for /api/claude_code/organizations/metrics_enabled.
+  // Disk cache for /api/omnicode_code/organizations/metrics_enabled.
   // Org-level settings change rarely; persisting across processes avoids a
-  // cold API call on every `claude -p` invocation.
+  // cold API call on every `omnicode -p` invocation.
   metricsStatusCache?: {
     enabled: boolean
     timestamp: number
@@ -680,8 +680,8 @@ export const GLOBAL_CONFIG_KEYS = [
   'inputNeededNotifEnabled',
   'agentPushNotifEnabled',
   'respectGitignore',
-  'claudeInChromeDefaultEnabled',
-  'hasCompletedClaudeInChromeOnboarding',
+  'omnicodeInChromeDefaultEnabled',
+  'hasCompletedOmnicodeInChromeOnboarding',
   'lspRecommendationDisabled',
   'lspRecommendationNeverPlugins',
   'lspRecommendationIgnoredCount',
@@ -839,7 +839,7 @@ export function saveGlobalConfig(
   let written: GlobalConfig | null = null
   try {
     const didWrite = saveConfigWithLock(
-      getGlobalClaudeFile(),
+      getGlobalOmnicodeFile(),
       createDefaultGlobalConfig,
       current => {
         const config = updater(current)
@@ -877,7 +877,7 @@ export function saveGlobalConfig(
     // getConfig returns defaults. Refuse to write those over a good cached
     // config to avoid wiping auth. See GH #3117.
     const currentConfig = getConfig(
-      getGlobalClaudeFile(),
+      getGlobalOmnicodeFile(),
       createDefaultGlobalConfig,
     )
     if (wouldLoseAuthState(currentConfig)) {
@@ -897,7 +897,7 @@ export function saveGlobalConfig(
       ...config,
       projects: removeProjectHistory(currentConfig.projects),
     }
-    saveConfig(getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
+    saveConfig(getGlobalOmnicodeFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written)
   }
 }
@@ -914,7 +914,7 @@ let configCacheHits = 0
 let configCacheMisses = 0
 // Session-total count of actual disk writes to the global config file.
 // Exposed for internal-only dev diagnostics (see inc-4552) so anomalous write
-// rates surface in the UI before they corrupt ~/.claude.json.
+// rates surface in the UI before they corrupt ~/.omnicode.json.
 let globalConfigWriteCount = 0
 
 export function getGlobalConfigWriteCount(): number {
@@ -955,12 +955,12 @@ function migrateConfigFields(config: GlobalConfig): GlobalConfig {
   // autoUpdaterStatus is removed from the type but may exist in old configs
   const legacy = config as GlobalConfig & {
     autoUpdaterStatus?:
-      | 'migrated'
-      | 'installed'
-      | 'disabled'
-      | 'enabled'
-      | 'no_permissions'
-      | 'not_configured'
+    | 'migrated'
+    | 'installed'
+    | 'disabled'
+    | 'enabled'
+    | 'no_permissions'
+    | 'not_configured'
   }
 
   // Determine install method and auto-update preference from old field
@@ -1034,7 +1034,7 @@ let freshnessWatcherStarted = false
 function startGlobalConfigFreshnessWatcher(): void {
   if (freshnessWatcherStarted || process.env.NODE_ENV === 'test') return
   freshnessWatcherStarted = true
-  const file = getGlobalClaudeFile()
+  const file = getGlobalOmnicodeFile()
   watchFile(
     file,
     { interval: CONFIG_FRESHNESS_POLL_MS, persistent: false },
@@ -1061,7 +1061,7 @@ function startGlobalConfigFreshnessWatcher(): void {
           }
           lastReadFileStats = { mtime: curr.mtimeMs, size: curr.size }
         })
-        .catch(() => {})
+        .catch(() => { })
     },
   )
   registerCleanup(async () => {
@@ -1098,12 +1098,12 @@ export function getGlobalConfig(): GlobalConfig {
   try {
     let stats: { mtimeMs: number; size: number } | null = null
     try {
-      stats = getFsImplementation().statSync(getGlobalClaudeFile())
+      stats = getFsImplementation().statSync(getGlobalOmnicodeFile())
     } catch {
       // File doesn't exist
     }
     const config = migrateConfigFields(
-      getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig),
+      getConfig(getGlobalOmnicodeFile(), createDefaultGlobalConfig),
     )
     globalConfigCache = {
       config,
@@ -1117,7 +1117,7 @@ export function getGlobalConfig(): GlobalConfig {
   } catch {
     // If anything goes wrong, fall back to uncached behavior
     return migrateConfigFields(
-      getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig),
+      getConfig(getGlobalOmnicodeFile(), createDefaultGlobalConfig),
     )
   }
 }
@@ -1176,7 +1176,7 @@ function saveConfig<A extends object>(
       mode: 0o600,
     },
   )
-  if (file === getGlobalClaudeFile()) {
+  if (file === getGlobalOmnicodeFile()) {
     globalConfigWriteCount++
   }
 }
@@ -1215,7 +1215,7 @@ function saveConfigWithLock<A extends object>(
     const lockTime = Date.now() - startTime
     if (lockTime > 100) {
       logForDebugging(
-        'Lock acquisition took longer than expected - another Claude instance may be running',
+        'Lock acquisition took longer than expected - another Omnicode instance may be running',
       )
       logEvent('tengu_config_lock_contention', {
         lock_time_ms: lockTime,
@@ -1224,7 +1224,7 @@ function saveConfigWithLock<A extends object>(
 
     // Check for stale write - file changed since we last read it
     // Only check for global config file since lastReadFileStats tracks that specific file
-    if (lastReadFileStats && file === getGlobalClaudeFile()) {
+    if (lastReadFileStats && file === getGlobalOmnicodeFile()) {
       try {
         const currentStats = fs.statSync(file)
         if (
@@ -1251,9 +1251,9 @@ function saveConfigWithLock<A extends object>(
     // momentarily corrupted (concurrent writes, kill-during-write), this
     // returns defaults -- we must not write those back over good config.
     const currentConfig = getConfig(file, createDefault)
-    if (file === getGlobalClaudeFile() && wouldLoseAuthState(currentConfig)) {
+    if (file === getGlobalOmnicodeFile() && wouldLoseAuthState(currentConfig)) {
       logForDebugging(
-        'saveConfigWithLock: re-read config is missing auth that cache has; refusing to write to avoid wiping ~/.claude.json. See GH #3117.',
+        'saveConfigWithLock: re-read config is missing auth that cache has; refusing to write to avoid wiping ~/.omnicode.json. See GH #3117.',
         { level: 'error' },
       )
       logEvent('tengu_config_auth_loss_prevented', {})
@@ -1277,7 +1277,7 @@ function saveConfigWithLock<A extends object>(
 
     // Create timestamped backup of existing config before writing
     // We keep multiple backups to prevent data loss if a reset/corrupted config
-    // overwrites a good backup. Backups are stored in ~/.claude/backups/ to
+    // overwrites a good backup. Backups are stored in ~/.omnicode/backups/ to
     // keep the home directory clean.
     try {
       const fileBase = basename(file)
@@ -1322,10 +1322,10 @@ function saveConfigWithLock<A extends object>(
       // Re-read if we just created one; otherwise reuse the list
       const backupsForCleanup = shouldCreateBackup
         ? fs
-            .readdirStringSync(backupDir)
-            .filter(f => f.startsWith(`${fileBase}.backup.`))
-            .sort()
-            .reverse()
+          .readdirStringSync(backupDir)
+          .filter(f => f.startsWith(`${fileBase}.backup.`))
+          .sort()
+          .reverse()
         : existingBackups
 
       for (const oldBackup of backupsForCleanup.slice(MAX_BACKUPS)) {
@@ -1354,7 +1354,7 @@ function saveConfigWithLock<A extends object>(
         mode: 0o600,
       },
     )
-    if (file === getGlobalClaudeFile()) {
+    if (file === getGlobalOmnicodeFile()) {
       globalConfigWriteCount++
     }
     return true
@@ -1382,7 +1382,7 @@ export function enableConfigs(): void {
   configReadingAllowed = true
   // We only check the global config because currently all the configs share a file
   getConfig(
-    getGlobalClaudeFile(),
+    getGlobalOmnicodeFile(),
     createDefaultGlobalConfig,
     true /* throw on invalid */,
   )
@@ -1394,15 +1394,15 @@ export function enableConfigs(): void {
 
 /**
  * Returns the directory where config backup files are stored.
- * Uses ~/.claude/backups/ to keep the home directory clean.
+ * Uses ~/.omnicode/backups/ to keep the home directory clean.
  */
 function getConfigBackupDir(): string {
-  return join(getClaudeConfigHomeDir(), 'backups')
+  return join(getOmnicodeConfigHomeDir(), 'backups')
 }
 
 /**
  * Find the most recent backup file for a given config file.
- * Checks ~/.claude/backups/ first, then falls back to the legacy location
+ * Checks ~/.omnicode/backups/ first, then falls back to the legacy location
  * (next to the config file) for backwards compatibility.
  * Returns the full path to the most recent backup, or null if none exist.
  */
@@ -1491,9 +1491,9 @@ function getConfig<A>(
       const backupPath = findMostRecentBackup(file)
       if (backupPath) {
         process.stderr.write(
-          `\nClaude configuration file not found at: ${file}\n` +
-            `A backup file exists at: ${backupPath}\n` +
-            `You can manually restore it by running: cp "${backupPath}" "${file}"\n\n`,
+          `\nOmnicode configuration file not found at: ${file}\n` +
+          `A backup file exists at: ${backupPath}\n` +
+          `You can manually restore it by running: cp "${backupPath}" "${file}"\n\n`,
         )
       }
       return createDefault()
@@ -1538,7 +1538,7 @@ function getConfig<A>(
       }
 
       process.stderr.write(
-        `\nClaude configuration file at ${file} is corrupted: ${error.message}\n`,
+        `\nOmnicode configuration file at ${file} is corrupted: ${error.message}\n`,
       )
 
       // Try to backup the corrupted config file (only if not already backed up)
@@ -1610,7 +1610,7 @@ function getConfig<A>(
       if (backupPath) {
         process.stderr.write(
           `A backup file exists at: ${backupPath}\n` +
-            `You can manually restore it by running: cp "${backupPath}" "${file}"\n\n`,
+          `You can manually restore it by running: cp "${backupPath}" "${file}"\n\n`,
         )
       } else {
         process.stderr.write(`\n`)
@@ -1676,7 +1676,7 @@ export function saveCurrentProjectConfig(
   let written: GlobalConfig | null = null
   try {
     const didWrite = saveConfigWithLock(
-      getGlobalClaudeFile(),
+      getGlobalOmnicodeFile(),
       createDefaultGlobalConfig,
       current => {
         const currentProjectConfig =
@@ -1706,7 +1706,7 @@ export function saveCurrentProjectConfig(
 
     // Same race window as saveGlobalConfig's fallback -- refuse to write
     // defaults over good cached config. See GH #3117.
-    const config = getConfig(getGlobalClaudeFile(), createDefaultGlobalConfig)
+    const config = getConfig(getGlobalOmnicodeFile(), createDefaultGlobalConfig)
     if (wouldLoseAuthState(config)) {
       logForDebugging(
         'saveCurrentProjectConfig fallback: re-read config is missing auth that cache has; refusing to write. See GH #3117.',
@@ -1729,7 +1729,7 @@ export function saveCurrentProjectConfig(
         [absolutePath]: newProjectConfig,
       },
     }
-    saveConfig(getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
+    saveConfig(getGlobalOmnicodeFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written)
   }
 }
@@ -1818,13 +1818,13 @@ export function getMemoryPath(memoryType: MemoryType): string {
 
   switch (memoryType) {
     case 'User':
-      return join(getClaudeConfigHomeDir(), 'CLAUDE.md')
+      return join(getOmnicodeConfigHomeDir(), 'OMNICODE.md')
     case 'Local':
-      return join(cwd, 'CLAUDE.local.md')
+      return join(cwd, 'OMNICODE.local.md')
     case 'Project':
-      return join(cwd, 'CLAUDE.md')
+      return join(cwd, 'OMNICODE.md')
     case 'Managed':
-      return join(getManagedFilePath(), 'CLAUDE.md')
+      return join(getManagedFilePath(), 'OMNICODE.md')
     case 'AutoMem':
       return getAutoMemEntrypoint()
   }
@@ -1835,12 +1835,12 @@ export function getMemoryPath(memoryType: MemoryType): string {
   return '' // unreachable in external builds where TeamMem is not in MemoryType
 }
 
-export function getManagedClaudeRulesDir(): string {
-  return join(getManagedFilePath(), '.claude', 'rules')
+export function getManagedOmnicodeRulesDir(): string {
+  return join(getManagedFilePath(), '.omnicode', 'rules')
 }
 
-export function getUserClaudeRulesDir(): string {
-  return join(getClaudeConfigHomeDir(), 'rules')
+export function getUserOmnicodeRulesDir(): string {
+  return join(getOmnicodeConfigHomeDir(), 'rules')
 }
 
 // Exported for testing only

@@ -52,12 +52,12 @@ export async function cleanupComputerUseAfterTurn(
       prev.computerUseMcpState?.hiddenDuringTurn === undefined
         ? prev
         : {
-            ...prev,
-            computerUseMcpState: {
-              ...prev.computerUseMcpState,
-              hiddenDuringTurn: undefined,
-            },
+          ...prev,
+          computerUseMcpState: {
+            ...prev.computerUseMcpState,
+            hiddenDuringTurn: undefined,
           },
+        },
     )
   }
 
@@ -79,7 +79,7 @@ export async function cleanupComputerUseAfterTurn(
 
   if (await releaseComputerUseLock()) {
     ctx.sendOSNotification?.({
-      message: 'Claude is done using your computer',
+      message: 'Omnicode is done using your computer',
       notificationType: 'computer_use_exit',
     })
   }

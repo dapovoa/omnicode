@@ -28,7 +28,7 @@ type Props = {
  * Hook that watches a task list directory and automatically picks up
  * open, unowned tasks to work on.
  *
- * This enables "tasks mode" where Claude watches for externally-created
+ * This enables "tasks mode" where Omnicode watches for externally-created
  * tasks and processes them one at a time.
  */
 export function useTaskListWatcher({
@@ -56,7 +56,7 @@ export function useTaskListWatcher({
   // up-to-date, no stale closure, and doesn't force a new function identity
   // per render. Stored in a ref so the watcher effect can call it without
   // depending on it.
-  const checkForTasksRef = useRef<() => Promise<void>>(async () => {})
+  const checkForTasksRef = useRef<() => Promise<void>>(async () => { })
   checkForTasksRef.current = async () => {
     if (!enabled) {
       return
@@ -128,7 +128,7 @@ export function useTaskListWatcher({
 
   // Schedules a check after DEBOUNCE_MS, collapsing rapid fs events.
   // Shared between the watcher callback and the idle-trigger effect below.
-  const scheduleCheckRef = useRef<() => void>(() => {})
+  const scheduleCheckRef = useRef<() => void>(() => { })
 
   useEffect(() => {
     if (!enabled) return
@@ -167,7 +167,7 @@ export function useTaskListWatcher({
       // This cleanup only fires when taskListId changes or on unmount —
       // never per-turn. That keeps watcher.close() out of the Bun
       // PathWatcherManager deadlock window.
-      scheduleCheckRef.current = () => {}
+      scheduleCheckRef.current = () => { }
       if (watcher) {
         watcher.close()
       }
@@ -208,7 +208,7 @@ function findAvailableTask(tasks: Task[]): Task | undefined {
 }
 
 /**
- * Format a task as a prompt for Claude to work on.
+ * Format a task as a prompt for Omnicode to work on.
  */
 function formatTaskAsPrompt(task: Task): string {
   let prompt = `Complete all open tasks. Start with task #${task.id}: \n\n ${task.subject}`

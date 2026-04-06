@@ -153,13 +153,13 @@ export function generateHeatmap(
   lines.push('')
   lines.push(
     '    Less ' +
-      [
-        claudeOrange('░'),
-        claudeOrange('▒'),
-        claudeOrange('▓'),
-        claudeOrange('█'),
-      ].join(' ') +
-      ' More',
+    [
+      omnicodeOrange('░'),
+      omnicodeOrange('▒'),
+      omnicodeOrange('▓'),
+      omnicodeOrange('█'),
+    ].join(' ') +
+    ' More',
   )
 
   return lines.join('\n')
@@ -177,21 +177,21 @@ function getIntensity(
   return 1
 }
 
-// Claude orange color (hex #da7756)
-const claudeOrange = chalk.hex('#da7756')
+// Omnicode orange color (hex #da7756)
+const omnicodeOrange = chalk.hex('#da7756')
 
 function getHeatmapChar(intensity: number): string {
   switch (intensity) {
     case 0:
       return chalk.gray('·')
     case 1:
-      return claudeOrange('░')
+      return omnicodeOrange('░')
     case 2:
-      return claudeOrange('▒')
+      return omnicodeOrange('▒')
     case 3:
-      return claudeOrange('▓')
+      return omnicodeOrange('▓')
     case 4:
-      return claudeOrange('█')
+      return omnicodeOrange('█')
     default:
       return chalk.gray('·')
   }

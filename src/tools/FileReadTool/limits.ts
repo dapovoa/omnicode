@@ -22,7 +22,7 @@ export const DEFAULT_MAX_OUTPUT_TOKENS = 25000
  * so the caller can fall through to the next precedence tier.
  */
 function getEnvMaxTokens(): number | undefined {
-  const override = process.env.CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS
+  const override = process.env.OMNICODE_FILE_READ_MAX_OUTPUT_TOKENS
   if (override) {
     const parsed = parseInt(override, 10)
     if (!isNaN(parsed) && parsed > 0) {
@@ -59,8 +59,8 @@ export const getDefaultFileReadingLimits = memoize((): FileReadingLimits => {
 
   const maxSizeBytes =
     typeof override?.maxSizeBytes === 'number' &&
-    Number.isFinite(override.maxSizeBytes) &&
-    override.maxSizeBytes > 0
+      Number.isFinite(override.maxSizeBytes) &&
+      override.maxSizeBytes > 0
       ? override.maxSizeBytes
       : MAX_OUTPUT_SIZE
 
@@ -68,8 +68,8 @@ export const getDefaultFileReadingLimits = memoize((): FileReadingLimits => {
   const maxTokens =
     envMaxTokens ??
     (typeof override?.maxTokens === 'number' &&
-    Number.isFinite(override.maxTokens) &&
-    override.maxTokens > 0
+      Number.isFinite(override.maxTokens) &&
+      override.maxTokens > 0
       ? override.maxTokens
       : DEFAULT_MAX_OUTPUT_TOKENS)
 

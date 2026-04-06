@@ -18,8 +18,8 @@ export interface EnvironmentMetadata {
   is_ci?: boolean | undefined
   is_claubbit?: boolean | undefined
   is_github_action?: boolean | undefined
-  is_claude_code_action?: boolean | undefined
-  is_claude_ai_auth?: boolean | undefined
+  is_omnicode_code_action?: boolean | undefined
+  is_omnicode_ai_auth?: boolean | undefined
   version?: string | undefined
   github_event_name?: string | undefined
   github_actions_runner_environment?: string | undefined
@@ -28,10 +28,10 @@ export interface EnvironmentMetadata {
   wsl_version?: string | undefined
   github_actions_metadata?: GitHubActionsMetadata | undefined
   arch?: string | undefined
-  is_claude_code_remote?: boolean | undefined
+  is_omnicode_code_remote?: boolean | undefined
   remote_environment_type?: string | undefined
-  claude_code_container_id?: string | undefined
-  claude_code_remote_session_id?: string | undefined
+  omnicode_code_container_id?: string | undefined
+  omnicode_code_remote_session_id?: string | undefined
   tags?: string[] | undefined
   deployment_environment?: string | undefined
   is_conductor?: boolean | undefined
@@ -53,7 +53,7 @@ export interface SlackContext {
   creation_method?: string | undefined
 }
 
-export interface ClaudeCodeInternalEvent {
+export interface OmnicodeCodeInternalEvent {
   event_name?: string | undefined
   client_timestamp?: Date | undefined
   model?: string | undefined
@@ -85,24 +85,24 @@ export interface ClaudeCodeInternalEvent {
   marketplace_name?: string | undefined
 }
 
-export const ClaudeCodeInternalEvent = {
-  fromJSON(object: any): ClaudeCodeInternalEvent {
+export const OmnicodeCodeInternalEvent = {
+  fromJSON(object: any): OmnicodeCodeInternalEvent {
     return object ?? {}
   },
 
-  toJSON(message: ClaudeCodeInternalEvent): unknown {
+  toJSON(message: OmnicodeCodeInternalEvent): unknown {
     return message ?? {}
   },
 
-  create<I extends ClaudeCodeInternalEvent>(
+  create<I extends OmnicodeCodeInternalEvent>(
     base?: I,
-  ): ClaudeCodeInternalEvent {
+  ): OmnicodeCodeInternalEvent {
     return base ?? {}
   },
 
-  fromPartial<I extends ClaudeCodeInternalEvent>(
+  fromPartial<I extends OmnicodeCodeInternalEvent>(
     object: I,
-  ): ClaudeCodeInternalEvent {
+  ): OmnicodeCodeInternalEvent {
     return object ?? {}
   },
 }

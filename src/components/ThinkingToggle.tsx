@@ -30,11 +30,11 @@ export function ThinkingToggle(t0) {
     t1 = [{
       value: "true",
       label: "Enabled",
-      description: "Claude will think before responding"
+      description: "Omnicode will think before responding"
     }, {
       value: "false",
       label: "Disabled",
-      description: "Claude will respond without extended thinking"
+      description: "Omnicode will respond without extended thinking"
     }];
     $[0] = t1;
   } else {
@@ -149,4 +149,4 @@ export function ThinkingToggle(t0) {
   }
   return t11;
 }
-function _temp() {}
+function _temp() { }

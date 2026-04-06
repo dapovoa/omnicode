@@ -30,40 +30,40 @@ export function renderToolResultMessage(output: Output, _progressMessagesForMess
   // Simplified message for empty plans
   if (isEmpty) {
     return <Box flexDirection="column" marginTop={1}>
-        <Box flexDirection="row">
-          <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
-          <Text> Exited plan mode</Text>
-        </Box>
-      </Box>;
+      <Box flexDirection="row">
+        <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
+        <Text> Exited plan mode</Text>
+      </Box>
+    </Box>;
   }
 
   // When awaiting leader approval, show a different message
   if (awaitingLeaderApproval) {
     return <Box flexDirection="column" marginTop={1}>
-        <Box flexDirection="row">
-          <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
-          <Text> Plan submitted for team lead approval</Text>
-        </Box>
-        <MessageResponse>
-          <Box flexDirection="column">
-            {filePath && <Text dimColor>Plan file: {displayPath}</Text>}
-            <Text dimColor>Waiting for team lead to review and approve...</Text>
-          </Box>
-        </MessageResponse>
-      </Box>;
-  }
-  return <Box flexDirection="column" marginTop={1}>
       <Box flexDirection="row">
         <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
-        <Text> User approved Claude&apos;s plan</Text>
+        <Text> Plan submitted for team lead approval</Text>
       </Box>
       <MessageResponse>
         <Box flexDirection="column">
-          {filePath && <Text dimColor>Plan saved to: {displayPath} · /plan to edit</Text>}
-          <Markdown>{plan}</Markdown>
+          {filePath && <Text dimColor>Plan file: {displayPath}</Text>}
+          <Text dimColor>Waiting for team lead to review and approve...</Text>
         </Box>
       </MessageResponse>
     </Box>;
+  }
+  return <Box flexDirection="column" marginTop={1}>
+    <Box flexDirection="row">
+      <Text color={getModeColor('plan')}>{BLACK_CIRCLE}</Text>
+      <Text> User approved Omnicode&apos;s plan</Text>
+    </Box>
+    <MessageResponse>
+      <Box flexDirection="column">
+        {filePath && <Text dimColor>Plan saved to: {displayPath} · /plan to edit</Text>}
+        <Markdown>{plan}</Markdown>
+      </Box>
+    </MessageResponse>
+  </Box>;
 }
 export function renderToolUseRejectedMessage({
   plan
@@ -76,6 +76,6 @@ export function renderToolUseRejectedMessage({
 }): React.ReactNode {
   const planContent = plan ?? getPlan() ?? 'No plan found';
   return <Box flexDirection="column">
-      <RejectedPlanMessage plan={planContent} />
-    </Box>;
+    <RejectedPlanMessage plan={planContent} />
+  </Box>;
 }

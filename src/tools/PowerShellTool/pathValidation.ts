@@ -883,8 +883,8 @@ function isPathAllowed(
   }
 
   // 2. For write/create operations, check internal editable paths (plan files, scratchpad, agent memory, job dirs)
-  // This MUST come before checkPathSafetyForAutoEdit since .claude is a dangerous directory
-  // and internal editable paths live under ~/.claude/ — matching the ordering in
+  // This MUST come before checkPathSafetyForAutoEdit since .omnicode is a dangerous directory
+  // and internal editable paths live under ~/.omnicode/ — matching the ordering in
   // checkWritePermissionForTool (filesystem.ts step 1.5)
   if (operationType !== 'read') {
     const internalEditResult = checkEditableInternalPath(resolvedPath, {})
@@ -939,7 +939,7 @@ function isPathAllowed(
 
   // 3.7. For write/create operations to paths OUTSIDE the working directory,
   // check the sandbox write allowlist. When the sandbox is enabled, users
-  // have explicitly configured writable directories (e.g. /tmp/claude/) —
+  // have explicitly configured writable directories (e.g. /tmp/omnicode/) —
   // treat these as additional allowed write directories so redirects/Out-File/
   // New-Item don't prompt unnecessarily. Paths IN the working directory are
   // excluded: the sandbox allowlist always seeds '.' (cwd), which would
@@ -1581,13 +1581,13 @@ function checkPathConstraintsForStatement(
   // New-PSDrive, relative paths in later statements resolve against the
   // CHANGED cwd at runtime, but this validator resolves them against the
   // STALE getCwd() snapshot. Example attack (finding #3):
-  //   Set-Location ./.claude; Set-Content ./settings.json '...'
+  //   Set-Location ./.omnicode; Set-Content ./settings.json '...'
   // Validator sees ./settings.json → /project/settings.json (not a config file).
-  // Runtime writes /project/.claude/settings.json (Claude's permission config).
+  // Runtime writes /project/.omnicode/settings.json (Omnicode's permission config).
   //
   // ALTERNATIVE APPROACH (rejected): simulate cwd through the statement chain
-  // — after `Set-Location ./.claude`, validate subsequent statements with
-  // cwd='./.claude'. This would be more permissive but requires careful
+  // — after `Set-Location ./.omnicode`, validate subsequent statements with
+  // cwd='./.omnicode'. This would be more permissive but requires careful
   // handling of:
   //   - Push-Location/Pop-Location stack semantics
   //   - Set-Location with no args (→ home on some platforms)
@@ -1758,9 +1758,9 @@ function checkPathConstraintsForStatement(
 
         const message =
           decisionReason?.type === 'other' ||
-          decisionReason?.type === 'safetyCheck'
+            decisionReason?.type === 'safetyCheck'
             ? decisionReason.reason
-            : `${canonical} targeting '${resolvedPath}' was blocked. For security, Claude Code may only access files in the allowed working directories for this session: ${dirListStr}.`
+            : `${canonical} targeting '${resolvedPath}' was blocked. For security, Omnicode Code may only access files in the allowed working directories for this session: ${dirListStr}.`
 
         if (decisionReason?.type === 'rule') {
           return {
@@ -1871,9 +1871,9 @@ function checkPathConstraintsForStatement(
 
           const message =
             decisionReason?.type === 'other' ||
-            decisionReason?.type === 'safetyCheck'
+              decisionReason?.type === 'safetyCheck'
               ? decisionReason.reason
-              : `${canonical} targeting '${resolvedPath}' was blocked. For security, Claude Code may only access files in the allowed working directories for this session: ${dirListStr}.`
+              : `${canonical} targeting '${resolvedPath}' was blocked. For security, Omnicode Code may only access files in the allowed working directories for this session: ${dirListStr}.`
 
           if (decisionReason?.type === 'rule') {
             return {
@@ -1958,9 +1958,9 @@ function checkPathConstraintsForStatement(
 
             const message =
               decisionReason?.type === 'other' ||
-              decisionReason?.type === 'safetyCheck'
+                decisionReason?.type === 'safetyCheck'
                 ? decisionReason.reason
-                : `Output redirection to '${resolvedPath}' was blocked. For security, Claude Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
+                : `Output redirection to '${resolvedPath}' was blocked. For security, Omnicode Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
 
             if (decisionReason?.type === 'rule') {
               return {
@@ -2011,9 +2011,9 @@ function checkPathConstraintsForStatement(
 
         const message =
           decisionReason?.type === 'other' ||
-          decisionReason?.type === 'safetyCheck'
+            decisionReason?.type === 'safetyCheck'
             ? decisionReason.reason
-            : `Output redirection to '${resolvedPath}' was blocked. For security, Claude Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
+            : `Output redirection to '${resolvedPath}' was blocked. For security, Omnicode Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
 
         if (decisionReason?.type === 'rule') {
           return {

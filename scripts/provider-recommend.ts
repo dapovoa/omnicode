@@ -39,7 +39,7 @@ function parseOptions(argv: string[]): CliOptions {
   const options: CliOptions = {
     apply: false,
     benchmark: false,
-    goal: normalizeRecommendationGoal(process.env.OPENCLAUDE_PROFILE_GOAL),
+    goal: normalizeRecommendationGoal(process.env.OPENOMNICODE_PROFILE_GOAL),
     json: false,
     provider: 'auto',
     baseUrl: null,
@@ -118,8 +118,8 @@ function printHumanSummary(payload: {
   } else {
     console.log(
       '\nTip: run `bun run profile:auto -- --goal ' +
-        payload.goal +
-        '` to apply this automatically.',
+      payload.goal +
+      '` to apply this automatically.',
     )
   }
 }
@@ -181,9 +181,9 @@ async function main(): Promise<void> {
   const rankedModels: BenchmarkedOllamaModel[] = options.benchmark
     ? applyBenchmarkLatency(heuristicRanked, benchmarkResults, options.goal)
     : heuristicRanked.map(model => ({
-        ...model,
-        benchmarkMs: null,
-      }))
+      ...model,
+      benchmarkMs: null,
+    }))
 
   const recommendedOllama = selectRecommendedOllamaModel(rankedModels)
   const openAIConfigured = Boolean(sanitizeApiKey(process.env.OPENAI_API_KEY))
@@ -262,4 +262,4 @@ async function main(): Promise<void> {
 
 await main()
 
-export {}
+export { }

@@ -40,7 +40,7 @@ const INITIAL_STATE: State = {
   secretName: 'ANTHROPIC_API_KEY',
   useExistingSecret: true,
   workflowExists: false,
-  selectedWorkflows: ['claude', 'claude-review'] as Workflow[],
+  selectedWorkflows: ['omnicode', 'omnicode-review'] as Workflow[],
   selectedApiKeyOption: 'new' as 'existing' | 'new' | 'oauth',
   authType: 'api_key'
 };
@@ -163,9 +163,9 @@ function InstallGitHubApp(props: {
         setState(prev_2 => ({
           ...prev_2,
           step: 'error',
-          error: 'A Claude workflow file already exists in this repository.',
+          error: 'A Omnicode workflow file already exists in this repository.',
           errorReason: 'Workflow file conflict',
-          errorInstructions: ['The file .github/workflows/claude.yml already exists', 'You can either:', '  1. Delete the existing file and run this command again', '  2. Update the existing file manually using the template from:', `     ${GITHUB_ACTION_SETUP_DOCS_URL}`]
+          errorInstructions: ['The file .github/workflows/omnicode.yml already exists', 'You can either:', '  1. Delete the existing file and run this command again', '  2. Update the existing file manually using the template from:', `     ${GITHUB_ACTION_SETUP_DOCS_URL}`]
         }));
       } else {
         logEvent('tengu_install_github_app_error', {
@@ -182,7 +182,7 @@ function InstallGitHubApp(props: {
     }
   }, [state.selectedRepoName, state.workflowAction, state.selectedWorkflows, state.useCurrentRepo, state.workflowExists, state.secretExists, state.authType]);
   async function openGitHubAppInstallation() {
-    const installUrl = 'https://github.com/apps/claude';
+    const installUrl = 'https://github.com/apps/omnicode';
     await openBrowser(installUrl);
   }
   async function checkRepositoryPermissions(repoName: string): Promise<{
@@ -213,7 +213,7 @@ function InstallGitHubApp(props: {
     }
   }
   async function checkExistingWorkflowFile(repoName_0: string): Promise<boolean> {
-    const checkFileResult = await execFileNoThrow('gh', ['api', `repos/${repoName_0}/contents/.github/workflows/claude.yml`, '--jq', '.sha']);
+    const checkFileResult = await execFileNoThrow('gh', ['api', `repos/${repoName_0}/contents/.github/workflows/omnicode.yml`, '--jq', '.sha']);
     return checkFileResult.code === 0;
   }
   async function checkExistingSecret() {
@@ -290,14 +290,14 @@ function InstallGitHubApp(props: {
         repoWarnings.push({
           title: 'Invalid GitHub URL format',
           message: 'The repository URL format appears to be invalid.',
-          instructions: ['Use format: owner/repo or https://github.com/owner/repo', 'Example: anthropics/claude-cli']
+          instructions: ['Use format: owner/repo or https://github.com/owner/repo', 'Example: anthropics/omnicode-cli']
         });
       }
       if (!repoName_1.includes('/')) {
         repoWarnings.push({
           title: 'Repository format warning',
           message: 'Repository should be in format "owner/repo"',
-          instructions: ['Use format: owner/repo', 'Example: anthropics/claude-cli']
+          instructions: ['Use format: owner/repo', 'Example: anthropics/omnicode-cli']
         });
       }
       const permissionCheck = await checkRepositoryPermissions(repoName_1);
@@ -462,10 +462,10 @@ function InstallGitHubApp(props: {
       ...prev_23,
       apiKeyOrOAuthToken: token,
       useExistingKey: false,
-      secretName: 'CLAUDE_CODE_OAUTH_TOKEN',
+      secretName: 'OMNICODE_OAUTH_TOKEN',
       authType: 'oauth_token'
     }));
-    void runSetupGitHubActions(token, 'CLAUDE_CODE_OAUTH_TOKEN');
+    void runSetupGitHubActions(token, 'OMNICODE_OAUTH_TOKEN');
   }, [runSetupGitHubActions]);
   const handleOAuthCancel = useCallback(() => {
     setState(prev_24 => ({
@@ -551,12 +551,12 @@ function InstallGitHubApp(props: {
       return <CreatingStep currentWorkflowInstallStep={state.currentWorkflowInstallStep} secretExists={state.secretExists} useExistingSecret={state.useExistingSecret} secretName={state.secretName} skipWorkflow={state.workflowAction === 'skip'} selectedWorkflows={state.selectedWorkflows} />;
     case 'success':
       return <Box tabIndex={0} autoFocus onKeyDown={handleDismissKeyDown}>
-          <SuccessStep secretExists={state.secretExists} useExistingSecret={state.useExistingSecret} secretName={state.secretName} skipWorkflow={state.workflowAction === 'skip'} />
-        </Box>;
+        <SuccessStep secretExists={state.secretExists} useExistingSecret={state.useExistingSecret} secretName={state.secretName} skipWorkflow={state.workflowAction === 'skip'} />
+      </Box>;
     case 'error':
       return <Box tabIndex={0} autoFocus onKeyDown={handleDismissKeyDown}>
-          <ErrorStep error={state.error} errorReason={state.errorReason} errorInstructions={state.errorInstructions} />
-        </Box>;
+        <ErrorStep error={state.error} errorReason={state.errorReason} errorInstructions={state.errorInstructions} />
+      </Box>;
     case 'select-workflows':
       return <WorkflowMultiselectDialog defaultSelections={state.selectedWorkflows} onSubmit={selectedWorkflows => {
         logEvent('tengu_install_github_app_step_completed', {

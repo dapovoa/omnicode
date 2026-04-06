@@ -8,7 +8,7 @@ import { type AutoUpdaterResult, getLatestVersion, getMaxVersion, type InstallSt
 import { getGlobalConfig, isAutoUpdaterDisabled } from '../utils/config.js';
 import { logForDebugging } from '../utils/debug.js';
 import { getCurrentInstallationType } from '../utils/doctorDiagnostic.js';
-import { installOrUpdateClaudePackage, localInstallationExists } from '../utils/localInstaller.js';
+import { installOrUpdateOmnicodePackage, localInstallationExists } from '../utils/localInstaller.js';
 import { removeInstalledSymlink } from '../utils/nativeInstaller/index.js';
 import { gt, gte } from '../utils/semver.js';
 import { getInitialSettings } from '../utils/settings/settings.js';
@@ -107,7 +107,7 @@ export function AutoUpdater({
         // Use local update for local installations
         logForDebugging('AutoUpdater: Using local update method');
         updateMethod = 'local';
-        installStatus = await installOrUpdateClaudePackage(channel);
+        installStatus = await installOrUpdateOmnicodePackage(channel);
       } else if (installationType === 'npm-global') {
         // Use global update for global installations
         logForDebugging('AutoUpdater: Using global update method');
@@ -124,7 +124,7 @@ export function AutoUpdater({
         const isMigrated = config.installMethod === 'local';
         updateMethod = isMigrated ? 'local' : 'global';
         if (isMigrated) {
-          installStatus = await installOrUpdateClaudePackage(channel);
+          installStatus = await installOrUpdateOmnicodePackage(channel);
         } else {
           installStatus = await installGlobalPackage();
         }
@@ -174,24 +174,24 @@ export function AutoUpdater({
     return null;
   }
   return <Box flexDirection="row" gap={1}>
-      {verbose && <Text dimColor wrap="truncate">
-          globalVersion: {versions.global} &middot; latestVersion:{' '}
-          {versions.latest}
-        </Text>}
-      {isUpdating ? <>
-          <Box>
-            <Text color="text" dimColor wrap="truncate">
-              Auto-updating…
-            </Text>
-          </Box>
-        </> : autoUpdaterResult?.status === 'success' && showSuccessMessage && updateSemver && <Text color="success" wrap="truncate">
-            ✓ Update installed · Restart to apply
-          </Text>}
-      {(autoUpdaterResult?.status === 'install_failed' || autoUpdaterResult?.status === 'no_permissions') && <Text color="error" wrap="truncate">
-          ✗ Auto-update failed &middot; Try <Text bold>claude doctor</Text> or{' '}
-          <Text bold>
-            {hasLocalInstall ? `cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}` : `npm i -g ${MACRO.PACKAGE_URL}`}
-          </Text>
-        </Text>}
-    </Box>;
+    {verbose && <Text dimColor wrap="truncate">
+      globalVersion: {versions.global} &middot; latestVersion:{' '}
+      {versions.latest}
+    </Text>}
+    {isUpdating ? <>
+      <Box>
+        <Text color="text" dimColor wrap="truncate">
+          Auto-updating…
+        </Text>
+      </Box>
+    </> : autoUpdaterResult?.status === 'success' && showSuccessMessage && updateSemver && <Text color="success" wrap="truncate">
+      ✓ Update installed · Restart to apply
+    </Text>}
+    {(autoUpdaterResult?.status === 'install_failed' || autoUpdaterResult?.status === 'no_permissions') && <Text color="error" wrap="truncate">
+      ✗ Auto-update failed &middot; Try <Text bold>omnicode doctor</Text> or{' '}
+      <Text bold>
+        {hasLocalInstall ? `cd ~/.omnicode/local && npm update ${MACRO.PACKAGE_URL}` : `npm i -g ${MACRO.PACKAGE_URL}`}
+      </Text>
+    </Text>}
+  </Box>;
 }

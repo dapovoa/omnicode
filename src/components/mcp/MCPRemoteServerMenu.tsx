@@ -26,10 +26,10 @@ import { KeyboardShortcutHint } from '../design-system/KeyboardShortcutHint.js';
 import { Spinner } from '../Spinner.js';
 import TextInput from '../TextInput.js';
 import { CapabilitiesSection } from './CapabilitiesSection.js';
-import type { ClaudeAIServerInfo, HTTPServerInfo, SSEServerInfo } from './types.js';
+import type { OmnicodeAIServerInfo, HTTPServerInfo, SSEServerInfo } from './types.js';
 import { handleReconnectError, handleReconnectResult } from './utils/reconnectHelpers.js';
 type Props = {
-  server: SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo;
+  server: SSEServerInfo | HTTPServerInfo | OmnicodeAIServerInfo;
   serverToolsCount: number;
   onViewTools: () => void;
   onCancel: () => void;
@@ -58,11 +58,11 @@ export function MCPRemoteServerMenu({
   const [authorizationUrl, setAuthorizationUrl] = React.useState<string | null>(null);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const authAbortControllerRef = useRef<AbortController | null>(null);
-  const [isClaudeAIAuthenticating, setIsClaudeAIAuthenticating] = useState(false);
-  const [claudeAIAuthUrl, setClaudeAIAuthUrl] = useState<string | null>(null);
-  const [isClaudeAIClearingAuth, setIsClaudeAIClearingAuth] = useState(false);
-  const [claudeAIClearAuthUrl, setClaudeAIClearAuthUrl] = useState<string | null>(null);
-  const [claudeAIClearAuthBrowserOpened, setClaudeAIClearAuthBrowserOpened] = useState(false);
+  const [isOmnicodeAIAuthenticating, setIsOmnicodeAIAuthenticating] = useState(false);
+  const [omnicodeAIAuthUrl, setOmnicodeAIAuthUrl] = useState<string | null>(null);
+  const [isOmnicodeAIClearingAuth, setIsOmnicodeAIClearingAuth] = useState(false);
+  const [omnicodeAIClearAuthUrl, setOmnicodeAIClearAuthUrl] = useState<string | null>(null);
+  const [omnicodeAIClearAuthBrowserOpened, setOmnicodeAIClearAuthBrowserOpened] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const unmountedRef = useRef(false);
@@ -89,25 +89,25 @@ export function MCPRemoteServerMenu({
   // 2. It's connected and has tools (meaning it's working via some auth mechanism)
   const isEffectivelyAuthenticated = server.isAuthenticated || server.client.type === 'connected' && serverToolsCount > 0;
   const reconnectMcpServer = useMcpReconnect();
-  const handleClaudeAIAuthComplete = React.useCallback(async () => {
-    setIsClaudeAIAuthenticating(false);
-    setClaudeAIAuthUrl(null);
+  const handleOmnicodeAIAuthComplete = React.useCallback(async () => {
+    setIsOmnicodeAIAuthenticating(false);
+    setOmnicodeAIAuthUrl(null);
     setIsReconnecting(true);
     try {
       const result = await reconnectMcpServer(server.name);
       const success = result.client.type === 'connected';
-      logEvent('tengu_claudeai_mcp_auth_completed', {
+      logEvent('tengu_omnicodeai_mcp_auth_completed', {
         success
       });
       if (success) {
         onComplete?.(`Authentication successful. Connected to ${server.name}.`);
       } else if (result.client.type === 'needs-auth') {
-        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Omnicode Code.');
       } else {
-        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Omnicode Code for the changes to take effect.');
       }
     } catch (err) {
-      logEvent('tengu_claudeai_mcp_auth_completed', {
+      logEvent('tengu_omnicodeai_mcp_auth_completed', {
         success: false
       });
       onComplete?.(handleReconnectError(err, server.name));
@@ -115,7 +115,7 @@ export function MCPRemoteServerMenu({
       setIsReconnecting(false);
     }
   }, [reconnectMcpServer, server.name, onComplete]);
-  const handleClaudeAIClearAuthComplete = React.useCallback(async () => {
+  const handleOmnicodeAIClearAuthComplete = React.useCallback(async () => {
     await clearServerCache(server.name, {
       ...server.config,
       scope: server.scope
@@ -139,11 +139,11 @@ export function MCPRemoteServerMenu({
         }
       };
     });
-    logEvent('tengu_claudeai_mcp_clear_auth_completed', {});
+    logEvent('tengu_omnicodeai_mcp_clear_auth_completed', {});
     onComplete?.(`Disconnected from ${server.name}.`);
-    setIsClaudeAIClearingAuth(false);
-    setClaudeAIClearAuthUrl(null);
-    setClaudeAIClearAuthBrowserOpened(false);
+    setIsOmnicodeAIClearingAuth(false);
+    setOmnicodeAIClearAuthUrl(null);
+    setOmnicodeAIClearAuthBrowserOpened(false);
   }, [server.name, server.config, server.scope, setAppState, onComplete]);
 
   // Escape to cancel authentication flow
@@ -157,43 +157,43 @@ export function MCPRemoteServerMenu({
     isActive: isAuthenticating
   });
 
-  // Escape to cancel Claude AI authentication
+  // Escape to cancel Omnicode AI authentication
   useKeybinding('confirm:no', () => {
-    setIsClaudeAIAuthenticating(false);
-    setClaudeAIAuthUrl(null);
+    setIsOmnicodeAIAuthenticating(false);
+    setOmnicodeAIAuthUrl(null);
   }, {
     context: 'Confirmation',
-    isActive: isClaudeAIAuthenticating
+    isActive: isOmnicodeAIAuthenticating
   });
 
-  // Escape to cancel Claude AI clear auth
+  // Escape to cancel Omnicode AI clear auth
   useKeybinding('confirm:no', () => {
-    setIsClaudeAIClearingAuth(false);
-    setClaudeAIClearAuthUrl(null);
-    setClaudeAIClearAuthBrowserOpened(false);
+    setIsOmnicodeAIClearingAuth(false);
+    setOmnicodeAIClearAuthUrl(null);
+    setOmnicodeAIClearAuthBrowserOpened(false);
   }, {
     context: 'Confirmation',
-    isActive: isClaudeAIClearingAuth
+    isActive: isOmnicodeAIClearingAuth
   });
 
   // Return key handling for authentication flows and 'c' to copy URL
   useInput((input, key) => {
-    if (key.return && isClaudeAIAuthenticating) {
-      void handleClaudeAIAuthComplete();
+    if (key.return && isOmnicodeAIAuthenticating) {
+      void handleOmnicodeAIAuthComplete();
     }
-    if (key.return && isClaudeAIClearingAuth) {
-      if (claudeAIClearAuthBrowserOpened) {
-        void handleClaudeAIClearAuthComplete();
+    if (key.return && isOmnicodeAIClearingAuth) {
+      if (omnicodeAIClearAuthBrowserOpened) {
+        void handleOmnicodeAIClearAuthComplete();
       } else {
         // First Enter: open the browser
-        const connectorsUrl = `${getOauthConfig().CLAUDE_AI_ORIGIN}/settings/connectors`;
-        setClaudeAIClearAuthUrl(connectorsUrl);
-        setClaudeAIClearAuthBrowserOpened(true);
+        const connectorsUrl = `${getOauthConfig().OMNICODE_AI_ORIGIN}/settings/connectors`;
+        setOmnicodeAIClearAuthUrl(connectorsUrl);
+        setOmnicodeAIClearAuthBrowserOpened(true);
         void openBrowser(connectorsUrl);
       }
     }
     if (input === 'c' && !urlCopied) {
-      const urlToCopy = authorizationUrl || claudeAIAuthUrl || claudeAIClearAuthUrl;
+      const urlToCopy = authorizationUrl || omnicodeAIAuthUrl || omnicodeAIClearAuthUrl;
       if (urlToCopy) {
         void setClipboard(urlToCopy).then(raw => {
           if (unmountedRef.current) return;
@@ -212,36 +212,36 @@ export function MCPRemoteServerMenu({
   // Count MCP prompts for this server (skills are shown in /skills, not here)
   const serverCommandsCount = filterMcpPromptsByServer(mcp.commands, server.name).length;
   const toggleMcpServer = useMcpToggleEnabled();
-  const handleClaudeAIAuth = React.useCallback(async () => {
-    const claudeAiBaseUrl = getOauthConfig().CLAUDE_AI_ORIGIN;
+  const handleOmnicodeAIAuth = React.useCallback(async () => {
+    const omnicodeAiBaseUrl = getOauthConfig().OMNICODE_AI_ORIGIN;
     const accountInfo = getOauthAccountInfo();
     const orgUuid = accountInfo?.organizationUuid;
     let authUrl: string;
-    if (orgUuid && server.config.type === 'claudeai-proxy' && server.config.id) {
+    if (orgUuid && server.config.type === 'omnicodeai-proxy' && server.config.id) {
       // Use the direct auth URL with org and server IDs
       // Replace 'mcprs' prefix with 'mcpsrv' if present
       const serverId = server.config.id.startsWith('mcprs') ? 'mcpsrv' + server.config.id.slice(5) : server.config.id;
-      const productSurface = encodeURIComponent(process.env.CLAUDE_CODE_ENTRYPOINT || 'cli');
-      authUrl = `${claudeAiBaseUrl}/api/organizations/${orgUuid}/mcp/start-auth/${serverId}?product_surface=${productSurface}`;
+      const productSurface = encodeURIComponent(process.env.OMNICODE_ENTRYPOINT || 'cli');
+      authUrl = `${omnicodeAiBaseUrl}/api/organizations/${orgUuid}/mcp/start-auth/${serverId}?product_surface=${productSurface}`;
     } else {
       // Fall back to settings/connectors if we don't have the required IDs
-      authUrl = `${claudeAiBaseUrl}/settings/connectors`;
+      authUrl = `${omnicodeAiBaseUrl}/settings/connectors`;
     }
-    setClaudeAIAuthUrl(authUrl);
-    setIsClaudeAIAuthenticating(true);
-    logEvent('tengu_claudeai_mcp_auth_started', {});
+    setOmnicodeAIAuthUrl(authUrl);
+    setIsOmnicodeAIAuthenticating(true);
+    logEvent('tengu_omnicodeai_mcp_auth_started', {});
     await openBrowser(authUrl);
   }, [server.config]);
-  const handleClaudeAIClearAuth = React.useCallback(() => {
-    setIsClaudeAIClearingAuth(true);
-    logEvent('tengu_claudeai_mcp_clear_auth_started', {});
+  const handleOmnicodeAIClearAuth = React.useCallback(() => {
+    setIsOmnicodeAIClearingAuth(true);
+    logEvent('tengu_omnicodeai_mcp_clear_auth_started', {});
   }, []);
   const handleToggleEnabled = React.useCallback(async () => {
     const wasEnabled = server.client.type !== 'disabled';
     try {
       await toggleMcpServer(server.name);
-      if (server.config.type === 'claudeai-proxy') {
-        logEvent('tengu_claudeai_mcp_toggle', {
+      if (server.config.type === 'omnicodeai-proxy') {
+        logEvent('tengu_omnicodeai_mcp_toggle', {
           new_state: (wasEnabled ? 'disabled' : 'enabled') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
         });
       }
@@ -254,7 +254,7 @@ export function MCPRemoteServerMenu({
     }
   }, [server.client.type, server.config.type, server.name, toggleMcpServer, onCancel, onComplete]);
   const handleAuthenticate = React.useCallback(async () => {
-    if (server.config.type === 'claudeai-proxy') return;
+    if (server.config.type === 'omnicodeai-proxy') return;
     setIsAuthenticating(true);
     setError(null);
     const controller = new AbortController();
@@ -281,11 +281,11 @@ export function MCPRemoteServerMenu({
           const message = isEffectivelyAuthenticated ? `Authentication successful. Reconnected to ${server.name}.` : `Authentication successful. Connected to ${server.name}.`;
           onComplete?.(message);
         } else if (result_0.client.type === 'needs-auth') {
-          onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+          onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Omnicode Code.');
         } else {
           // result.client.type === 'failed'
           logMCPDebug(server.name, `Reconnection failed after authentication`);
-          onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+          onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Omnicode Code for the changes to take effect.');
         }
       }
     } catch (err_1) {
@@ -301,7 +301,7 @@ export function MCPRemoteServerMenu({
     }
   }, [server.isAuthenticated, server.config, server.name, onComplete, reconnectMcpServer, isEffectivelyAuthenticated]);
   const handleClearAuth = async () => {
-    if (server.config.type === 'claudeai-proxy') return;
+    if (server.config.type === 'omnicodeai-proxy') return;
     if (server.config) {
       // First revoke the authentication tokens and clear all auth state
       await revokeServerTokens(server.name, server.config);
@@ -316,11 +316,11 @@ export function MCPRemoteServerMenu({
       // Update app state to remove the disconnected server's tools, commands, and resources
       setAppState(prev_0 => {
         const newClients_0 = prev_0.mcp.clients.map(c_0 =>
-        // 'failed' is a misnomer here, but we don't really differentiate between "not connected" and "failed" at the moment
-        c_0.name === server.name ? {
-          ...c_0,
-          type: 'failed' as const
-        } : c_0);
+          // 'failed' is a misnomer here, but we don't really differentiate between "not connected" and "failed" at the moment
+          c_0.name === server.name ? {
+            ...c_0,
+            type: 'failed' as const
+          } : c_0);
         const newTools_0 = excludeToolsByServer(prev_0.mcp.tools, server.name);
         const newCommands_0 = excludeCommandsByServer(prev_0.mcp.commands, server.name);
         const newResources_0 = excludeResourcesByServer(prev_0.mcp.resources, server.name);
@@ -342,130 +342,130 @@ export function MCPRemoteServerMenu({
     // XAA: silent exchange (cached id_token → no browser), so don't claim
     // one will open. If IdP login IS needed, authorizationUrl populates and
     // the URL fallback block below still renders.
-    const authCopy = server.config.type !== 'claudeai-proxy' && server.config.oauth?.xaa ? ' Authenticating via your identity provider' : ' A browser window will open for authentication';
+    const authCopy = server.config.type !== 'omnicodeai-proxy' && server.config.oauth?.xaa ? ' Authenticating via your identity provider' : ' A browser window will open for authentication';
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Authenticating with {server.name}…</Text>
+      <Text color="omnicode">Authenticating with {server.name}…</Text>
+      <Box>
+        <Spinner />
+        <Text>{authCopy}</Text>
+      </Box>
+      {authorizationUrl && <Box flexDirection="column">
         <Box>
-          <Spinner />
-          <Text>{authCopy}</Text>
+          <Text dimColor>
+            If your browser doesn&apos;t open automatically, copy this URL
+            manually{' '}
+          </Text>
+          {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+            <KeyboardShortcutHint shortcut="c" action="copy" parens />
+          </Text>}
         </Box>
-        {authorizationUrl && <Box flexDirection="column">
-            <Box>
-              <Text dimColor>
-                If your browser doesn&apos;t open automatically, copy this URL
-                manually{' '}
-              </Text>
-              {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                  <KeyboardShortcutHint shortcut="c" action="copy" parens />
-                </Text>}
-            </Box>
-            <Link url={authorizationUrl} />
-          </Box>}
-        {isAuthenticating && authorizationUrl && manualCallbackSubmit && <Box flexDirection="column" marginTop={1}>
-            <Text dimColor>
-              If the redirect page shows a connection error, paste the URL from
-              your browser&apos;s address bar:
-            </Text>
-            <Box>
-              <Text dimColor>URL {'>'} </Text>
-              <TextInput value={callbackUrlInput} onChange={setCallbackUrlInput} onSubmit={(value: string) => {
+        <Link url={authorizationUrl} />
+      </Box>}
+      {isAuthenticating && authorizationUrl && manualCallbackSubmit && <Box flexDirection="column" marginTop={1}>
+        <Text dimColor>
+          If the redirect page shows a connection error, paste the URL from
+          your browser&apos;s address bar:
+        </Text>
+        <Box>
+          <Text dimColor>URL {'>'} </Text>
+          <TextInput value={callbackUrlInput} onChange={setCallbackUrlInput} onSubmit={(value: string) => {
             manualCallbackSubmit(value.trim());
             setCallbackUrlInput('');
           }} cursorOffset={callbackUrlCursorOffset} onChangeCursorOffset={setCallbackUrlCursorOffset} columns={terminalColumns - 8} />
-            </Box>
-          </Box>}
-        <Box marginLeft={3}>
-          <Text dimColor>
-            Return here after authenticating in your browser. Press Esc to go
-            back.
-          </Text>
         </Box>
-      </Box>;
+      </Box>}
+      <Box marginLeft={3}>
+        <Text dimColor>
+          Return here after authenticating in your browser. Press Esc to go
+          back.
+        </Text>
+      </Box>
+    </Box>;
   }
-  if (isClaudeAIAuthenticating) {
+  if (isOmnicodeAIAuthenticating) {
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Authenticating with {server.name}…</Text>
+      <Text color="omnicode">Authenticating with {server.name}…</Text>
+      <Box>
+        <Spinner />
+        <Text> A browser window will open for authentication</Text>
+      </Box>
+      {omnicodeAIAuthUrl && <Box flexDirection="column">
         <Box>
-          <Spinner />
-          <Text> A browser window will open for authentication</Text>
+          <Text dimColor>
+            If your browser doesn&apos;t open automatically, copy this URL
+            manually{' '}
+          </Text>
+          {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+            <KeyboardShortcutHint shortcut="c" action="copy" parens />
+          </Text>}
         </Box>
-        {claudeAIAuthUrl && <Box flexDirection="column">
-            <Box>
-              <Text dimColor>
-                If your browser doesn&apos;t open automatically, copy this URL
-                manually{' '}
-              </Text>
-              {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                  <KeyboardShortcutHint shortcut="c" action="copy" parens />
-                </Text>}
-            </Box>
-            <Link url={claudeAIAuthUrl} />
-          </Box>}
+        <Link url={omnicodeAIAuthUrl} />
+      </Box>}
+      <Box marginLeft={3} flexDirection="column">
+        <Text color="permission">
+          Press <Text bold>Enter</Text> after authenticating in your browser.
+        </Text>
+        <Text dimColor italic>
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+        </Text>
+      </Box>
+    </Box>;
+  }
+  if (isOmnicodeAIClearingAuth) {
+    return <Box flexDirection="column" gap={1} padding={1}>
+      <Text color="omnicode">Clear authentication for {server.name}</Text>
+      {omnicodeAIClearAuthBrowserOpened ? <>
+        <Text>
+          Find the MCP server in the browser and click
+          &quot;Disconnect&quot;.
+        </Text>
+        {omnicodeAIClearAuthUrl && <Box flexDirection="column">
+          <Box>
+            <Text dimColor>
+              If your browser didn&apos;t open automatically, copy this
+              URL manually{' '}
+            </Text>
+            {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
+              <KeyboardShortcutHint shortcut="c" action="copy" parens />
+            </Text>}
+          </Box>
+          <Link url={omnicodeAIClearAuthUrl} />
+        </Box>}
         <Box marginLeft={3} flexDirection="column">
           <Text color="permission">
-            Press <Text bold>Enter</Text> after authenticating in your browser.
+            Press <Text bold>Enter</Text> when done.
           </Text>
           <Text dimColor italic>
             <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
           </Text>
         </Box>
-      </Box>;
-  }
-  if (isClaudeAIClearingAuth) {
-    return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Clear authentication for {server.name}</Text>
-        {claudeAIClearAuthBrowserOpened ? <>
-            <Text>
-              Find the MCP server in the browser and click
-              &quot;Disconnect&quot;.
-            </Text>
-            {claudeAIClearAuthUrl && <Box flexDirection="column">
-                <Box>
-                  <Text dimColor>
-                    If your browser didn&apos;t open automatically, copy this
-                    URL manually{' '}
-                  </Text>
-                  {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                      <KeyboardShortcutHint shortcut="c" action="copy" parens />
-                    </Text>}
-                </Box>
-                <Link url={claudeAIClearAuthUrl} />
-              </Box>}
-            <Box marginLeft={3} flexDirection="column">
-              <Text color="permission">
-                Press <Text bold>Enter</Text> when done.
-              </Text>
-              <Text dimColor italic>
-                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-              </Text>
-            </Box>
-          </> : <>
-            <Text>
-              This will open claude.ai in the browser. Find the MCP server in
-              the list and click &quot;Disconnect&quot;.
-            </Text>
-            <Box marginLeft={3} flexDirection="column">
-              <Text color="permission">
-                Press <Text bold>Enter</Text> to open the browser.
-              </Text>
-              <Text dimColor italic>
-                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-              </Text>
-            </Box>
-          </>}
-      </Box>;
+      </> : <>
+        <Text>
+          This will open omnicode.ai in the browser. Find the MCP server in
+          the list and click &quot;Disconnect&quot;.
+        </Text>
+        <Box marginLeft={3} flexDirection="column">
+          <Text color="permission">
+            Press <Text bold>Enter</Text> to open the browser.
+          </Text>
+          <Text dimColor italic>
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          </Text>
+        </Box>
+      </>}
+    </Box>;
   }
   if (isReconnecting) {
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="text">
-          Connecting to <Text bold>{server.name}</Text>…
-        </Text>
-        <Box>
-          <Spinner />
-          <Text> Establishing connection to MCP server</Text>
-        </Box>
-        <Text dimColor>This may take a few moments.</Text>
-      </Box>;
+      <Text color="text">
+        Connecting to <Text bold>{server.name}</Text>…
+      </Text>
+      <Box>
+        <Spinner />
+        <Text> Establishing connection to MCP server</Text>
+      </Box>
+      <Text dimColor>This may take a few moments.</Text>
+    </Box>;
   }
   const menuOptions = [];
 
@@ -482,16 +482,16 @@ export function MCPRemoteServerMenu({
       value: 'tools'
     });
   }
-  if (server.config.type === 'claudeai-proxy') {
+  if (server.config.type === 'omnicodeai-proxy') {
     if (server.client.type === 'connected') {
       menuOptions.push({
         label: 'Clear authentication',
-        value: 'claudeai-clear-auth'
+        value: 'omnicodeai-clear-auth'
       });
     } else if (server.client.type !== 'disabled') {
       menuOptions.push({
         label: 'Authenticate',
-        value: 'claudeai-auth'
+        value: 'omnicodeai-auth'
       });
     }
   } else {
@@ -533,56 +533,56 @@ export function MCPRemoteServerMenu({
     });
   }
   return <Box flexDirection="column">
-      <Box flexDirection="column" paddingX={1} borderStyle={borderless ? undefined : 'round'}>
-        <Box marginBottom={1}>
-          <Text bold>{capitalizedServerName} MCP Server</Text>
+    <Box flexDirection="column" paddingX={1} borderStyle={borderless ? undefined : 'round'}>
+      <Box marginBottom={1}>
+        <Text bold>{capitalizedServerName} MCP Server</Text>
+      </Box>
+
+      <Box flexDirection="column" gap={0}>
+        <Box>
+          <Text bold>Status: </Text>
+          {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} disabled</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} connected</Text> : server.client.type === 'pending' ? <>
+            <Text dimColor>{figures.radioOff}</Text>
+            <Text> connecting…</Text>
+          </> : server.client.type === 'needs-auth' ? <Text>
+            {color('warning', theme)(figures.triangleUpOutline)} needs
+            authentication
+          </Text> : <Text>{color('error', theme)(figures.cross)} failed</Text>}
         </Box>
 
-        <Box flexDirection="column" gap={0}>
-          <Box>
-            <Text bold>Status: </Text>
-            {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} disabled</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} connected</Text> : server.client.type === 'pending' ? <>
-                <Text dimColor>{figures.radioOff}</Text>
-                <Text> connecting…</Text>
-              </> : server.client.type === 'needs-auth' ? <Text>
-                {color('warning', theme)(figures.triangleUpOutline)} needs
-                authentication
-              </Text> : <Text>{color('error', theme)(figures.cross)} failed</Text>}
-          </Box>
+        {server.transport !== 'omnicodeai-proxy' && <Box>
+          <Text bold>Auth: </Text>
+          {isEffectivelyAuthenticated ? <Text>
+            {color('success', theme)(figures.tick)} authenticated
+          </Text> : <Text>
+            {color('error', theme)(figures.cross)} not authenticated
+          </Text>}
+        </Box>}
 
-          {server.transport !== 'claudeai-proxy' && <Box>
-              <Text bold>Auth: </Text>
-              {isEffectivelyAuthenticated ? <Text>
-                  {color('success', theme)(figures.tick)} authenticated
-                </Text> : <Text>
-                  {color('error', theme)(figures.cross)} not authenticated
-                </Text>}
-            </Box>}
-
-          <Box>
-            <Text bold>URL: </Text>
-            <Text dimColor>{server.config.url}</Text>
-          </Box>
-
-          <Box>
-            <Text bold>Config location: </Text>
-            <Text dimColor>{describeMcpConfigFilePath(server.scope)}</Text>
-          </Box>
-
-          {server.client.type === 'connected' && <CapabilitiesSection serverToolsCount={serverToolsCount} serverPromptsCount={serverCommandsCount} serverResourcesCount={mcp.resources[server.name]?.length || 0} />}
-
-          {server.client.type === 'connected' && serverToolsCount > 0 && <Box>
-              <Text bold>Tools: </Text>
-              <Text dimColor>{serverToolsCount} tools</Text>
-            </Box>}
+        <Box>
+          <Text bold>URL: </Text>
+          <Text dimColor>{server.config.url}</Text>
         </Box>
 
-        {error && <Box marginTop={1}>
-            <Text color="error">Error: {error}</Text>
-          </Box>}
+        <Box>
+          <Text bold>Config location: </Text>
+          <Text dimColor>{describeMcpConfigFilePath(server.scope)}</Text>
+        </Box>
 
-        {menuOptions.length > 0 && <Box marginTop={1}>
-            <Select options={menuOptions} onChange={async value_0 => {
+        {server.client.type === 'connected' && <CapabilitiesSection serverToolsCount={serverToolsCount} serverPromptsCount={serverCommandsCount} serverResourcesCount={mcp.resources[server.name]?.length || 0} />}
+
+        {server.client.type === 'connected' && serverToolsCount > 0 && <Box>
+          <Text bold>Tools: </Text>
+          <Text dimColor>{serverToolsCount} tools</Text>
+        </Box>}
+      </Box>
+
+      {error && <Box marginTop={1}>
+        <Text color="error">Error: {error}</Text>
+      </Box>}
+
+      {menuOptions.length > 0 && <Box marginTop={1}>
+        <Select options={menuOptions} onChange={async value_0 => {
           switch (value_0) {
             case 'tools':
               onViewTools();
@@ -594,18 +594,18 @@ export function MCPRemoteServerMenu({
             case 'clear-auth':
               await handleClearAuth();
               break;
-            case 'claudeai-auth':
-              await handleClaudeAIAuth();
+            case 'omnicodeai-auth':
+              await handleOmnicodeAIAuth();
               break;
-            case 'claudeai-clear-auth':
-              handleClaudeAIClearAuth();
+            case 'omnicodeai-clear-auth':
+              handleOmnicodeAIClearAuth();
               break;
             case 'reconnectMcpServer':
               setIsReconnecting(true);
               try {
                 const result_1 = await reconnectMcpServer(server.name);
-                if (server.config.type === 'claudeai-proxy') {
-                  logEvent('tengu_claudeai_mcp_reconnect', {
+                if (server.config.type === 'omnicodeai-proxy') {
+                  logEvent('tengu_omnicodeai_mcp_reconnect', {
                     success: result_1.client.type === 'connected'
                   });
                 }
@@ -614,8 +614,8 @@ export function MCPRemoteServerMenu({
                 } = handleReconnectResult(result_1, server.name);
                 onComplete?.(message_0);
               } catch (err_2) {
-                if (server.config.type === 'claudeai-proxy') {
-                  logEvent('tengu_claudeai_mcp_reconnect', {
+                if (server.config.type === 'omnicodeai-proxy') {
+                  logEvent('tengu_omnicodeai_mcp_reconnect', {
                     success: false
                   });
                 }
@@ -632,17 +632,17 @@ export function MCPRemoteServerMenu({
               break;
           }
         }} onCancel={onCancel} />
-          </Box>}
-      </Box>
+      </Box>}
+    </Box>
 
-      <Box marginTop={1}>
-        <Text dimColor italic>
-          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <Byline>
-              <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
-              <KeyboardShortcutHint shortcut="Enter" action="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-            </Byline>}
-        </Text>
-      </Box>
-    </Box>;
+    <Box marginTop={1}>
+      <Text dimColor italic>
+        {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <Byline>
+          <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
+          <KeyboardShortcutHint shortcut="Enter" action="select" />
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+        </Byline>}
+      </Text>
+    </Box>
+  </Box>;
 }

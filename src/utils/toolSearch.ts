@@ -170,15 +170,15 @@ export type ToolSearchMode = 'tst' | 'tst-auto' | 'standard'
  *   (unset)               tst (default: always defer MCP and shouldDefer tools)
  */
 export function getToolSearchMode(): ToolSearchMode {
-  // CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS is a kill switch for beta API
+  // OMNICODE_DISABLE_EXPERIMENTAL_BETAS is a kill switch for beta API
   // features. Tool search emits defer_loading on tool definitions and
   // tool_reference content blocks — both require the API to accept a beta
   // header. When the kill switch is set, force 'standard' so no beta shapes
   // reach the wire, even if ENABLE_TOOL_SEARCH is also set. This is the
   // explicit escape hatch for proxy gateways that the heuristic in
   // isToolSearchEnabledOptimistic doesn't cover.
-  // github.com/anthropics/claude-code/issues/20031
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS)) {
+  // github.com/anthropics/omnicode-code/issues/20031
+  if (isEnvTruthy(process.env.OMNICODE_DISABLE_EXPERIMENTAL_BETAS)) {
     return 'standard'
   }
 
@@ -284,7 +284,7 @@ export function isToolSearchEnabledOptimistic(): boolean {
   // is 'firstParty' but the base URL points elsewhere, the proxy will reject
   // tool_reference blocks with a 400. Vertex/Bedrock/Foundry are unaffected —
   // they have their own endpoints and beta headers.
-  // https://github.com/anthropics/claude-code/issues/30912
+  // https://github.com/anthropics/omnicode-code/issues/30912
   //
   // HOWEVER: some proxies DO support tool_reference (LiteLLM passthrough,
   // Cloudflare AI Gateway, corp gateways that forward beta headers). The
@@ -419,7 +419,7 @@ export async function isToolSearchEnabled(
   if (!modelSupportsToolReference(model)) {
     logForDebugging(
       `Tool search disabled for model '${model}': model does not support tool_reference blocks. ` +
-        `This feature is only available on Claude Sonnet 4+, Opus 4+, and newer models.`,
+      `This feature is only available on Omnicode Sonnet 4+, Opus 4+, and newer models.`,
     )
     logModeDecision(false, 'standard', 'model_unsupported')
     return false
@@ -452,7 +452,7 @@ export async function isToolSearchEnabled(
       if (enabled) {
         logForDebugging(
           `Auto tool search enabled: ${debugDescription}` +
-            (source ? ` [source: ${source}]` : ''),
+          (source ? ` [source: ${source}]` : ''),
         )
         logModeDecision(true, mode, 'auto_above_threshold', metrics)
         return true
@@ -460,7 +460,7 @@ export async function isToolSearchEnabled(
 
       logForDebugging(
         `Auto tool search disabled: ${debugDescription}` +
-          (source ? ` [source: ${source}]` : ''),
+        (source ? ` [source: ${source}]` : ''),
       )
       logModeDecision(false, mode, 'auto_below_threshold', metrics)
       return false
@@ -582,9 +582,9 @@ export function extractDiscoveredToolNames(messages: Message[]): Set<string> {
   if (discoveredTools.size > 0) {
     logForDebugging(
       `Dynamic tool loading: found ${discoveredTools.size} discovered tools in message history` +
-        (carriedFromBoundary > 0
-          ? ` (${carriedFromBoundary} carried from compact boundary)`
-          : ''),
+      (carriedFromBoundary > 0
+        ? ` (${carriedFromBoundary} carried from compact boundary)`
+        : ''),
     )
   }
 
@@ -613,17 +613,17 @@ export type DeferredToolsDelta = {
  */
 export type DeferredToolsDeltaScanContext = {
   callSite:
-    | 'attachments_main'
-    | 'attachments_subagent'
-    | 'compact_full'
-    | 'compact_partial'
-    | 'reactive_compact'
+  | 'attachments_main'
+  | 'attachments_subagent'
+  | 'compact_full'
+  | 'compact_partial'
+  | 'reactive_compact'
   querySource?: string
 }
 
 /**
  * True → announce deferred tools via persisted delta attachments.
- * False → claude.ts keeps its per-call <available-deferred-tools>
+ * False → omnicode.ts keeps its per-call <available-deferred-tools>
  * header prepend (the attachment does not fire).
  */
 export function isDeferredToolsDeltaEnabled(): boolean {

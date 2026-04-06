@@ -71,7 +71,7 @@ export const ThinkingAdaptiveSchema = lazySchema(() =>
     .object({
       type: z.literal('adaptive'),
     })
-    .describe('Claude decides when and how much to think (Opus 4.6+).'),
+    .describe('Omnicode decides when and how much to think (Opus 4.6+).'),
 )
 
 export const ThinkingEnabledSchema = lazySchema(() =>
@@ -99,7 +99,7 @@ export const ThinkingConfigSchema = lazySchema(() =>
       ThinkingDisabledSchema(),
     ])
     .describe(
-      "Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.",
+      "Controls Omnicode's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.",
     ),
 )
 
@@ -148,19 +148,19 @@ export const McpServerConfigForProcessTransportSchema = lazySchema(() =>
   ]),
 )
 
-export const McpClaudeAIProxyServerConfigSchema = lazySchema(() =>
+export const McpOmnicodeAIProxyServerConfigSchema = lazySchema(() =>
   z.object({
-    type: z.literal('claudeai-proxy'),
+    type: z.literal('omnicodeai-proxy'),
     url: z.string(),
     id: z.string(),
   }),
 )
 
-// Broader config type for status responses (includes claudeai-proxy which is output-only)
+// Broader config type for status responses (includes omnicodeai-proxy which is output-only)
 export const McpServerStatusConfigSchema = lazySchema(() =>
   z.union([
     McpServerConfigForProcessTransportSchema(),
-    McpClaudeAIProxyServerConfigSchema(),
+    McpOmnicodeAIProxyServerConfigSchema(),
   ]),
 )
 
@@ -189,7 +189,7 @@ export const McpServerStatusSchema = lazySchema(() =>
         .string()
         .optional()
         .describe(
-          'Configuration scope (e.g., project, user, local, claudeai, managed)',
+          'Configuration scope (e.g., project, user, local, omnicodeai, managed)',
         ),
       tools: z
         .array(
@@ -213,7 +213,7 @@ export const McpServerStatusSchema = lazySchema(() =>
         })
         .optional()
         .describe(
-          "@internal Server capabilities (available when connected). experimental['claude/channel'] is only present if the server's plugin is on the approved channels allowlist — use its presence to decide whether to show an Enable-channel prompt.",
+          "@internal Server capabilities (available when connected). experimental['omnicode/channel'] is only present if the server's plugin is on the approved channels allowlist — use its presence to decide whether to show an Enable-channel prompt.",
         ),
     })
     .describe('Status information for an MCP server connection.'),
@@ -303,12 +303,12 @@ export const PermissionDecisionClassificationSchema = lazySchema(() =>
     .enum(['user_temporary', 'user_permanent', 'user_reject'])
     .describe(
       'Classification of this permission decision for telemetry. SDK hosts ' +
-        'that prompt users (desktop apps, IDEs) should set this to reflect ' +
-        'what actually happened: user_temporary for allow-once, user_permanent ' +
-        'for always-allow (both the click and later cache hits), user_reject ' +
-        'for deny. If unset, the CLI infers conservatively (temporary for ' +
-        'allow, reject for deny). The vocabulary matches tool_decision OTel ' +
-        'events (monitoring-usage docs).',
+      'that prompt users (desktop apps, IDEs) should set this to reflect ' +
+      'what actually happened: user_temporary for allow-once, user_permanent ' +
+      'for always-allow (both the click and later cache hits), user_reject ' +
+      'for deny. If unset, the CLI infers conservatively (temporary for ' +
+      'allow, reject for deny). The vocabulary matches tool_decision OTel ' +
+      'events (monitoring-usage docs).',
     ),
 )
 
@@ -339,11 +339,11 @@ export const PermissionModeSchema = lazySchema(() =>
     .enum(['default', 'acceptEdits', 'bypassPermissions', 'plan', 'dontAsk'])
     .describe(
       'Permission mode for controlling how tool executions are handled. ' +
-        "'default' - Standard behavior, prompts for dangerous operations. " +
-        "'acceptEdits' - Auto-accept file edit operations. " +
-        "'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). " +
-        "'plan' - Planning mode, no actual tool execution. " +
-        "'dontAsk' - Don't prompt for permissions, deny if not pre-approved.",
+      "'default' - Standard behavior, prompts for dangerous operations. " +
+      "'acceptEdits' - Auto-accept file edit operations. " +
+      "'bypassPermissions' - Bypass all permission checks (requires allowDangerouslySkipPermissions). " +
+      "'plan' - Planning mode, no actual tool execution. " +
+      "'dontAsk' - Don't prompt for permissions, deny if not pre-approved.",
     ),
 )
 
@@ -395,17 +395,17 @@ export const BaseHookInputSchema = lazySchema(() =>
       .optional()
       .describe(
         'Subagent identifier. Present only when the hook fires from within a subagent ' +
-          '(e.g., a tool called by an AgentTool worker). Absent for the main thread, ' +
-          'even in --agent sessions. Use this field (not agent_type) to distinguish ' +
-          'subagent calls from main-thread calls.',
+        '(e.g., a tool called by an AgentTool worker). Absent for the main thread, ' +
+        'even in --agent sessions. Use this field (not agent_type) to distinguish ' +
+        'subagent calls from main-thread calls.',
       ),
     agent_type: z
       .string()
       .optional()
       .describe(
         'Agent type name (e.g., "general-purpose", "code-reviewer"). Present when the ' +
-          'hook fires from within a subagent (alongside agent_id), or on the main thread ' +
-          'of a session started with --agent (without agent_id).',
+        'hook fires from within a subagent (alongside agent_id), or on the main thread ' +
+        'of a session started with --agent (without agent_id).',
       ),
   }),
 )
@@ -520,7 +520,7 @@ export const StopHookInputSchema = lazySchema(() =>
         .optional()
         .describe(
           'Text content of the last assistant message before stopping. ' +
-            'Avoids the need to read and parse the transcript file.',
+          'Avoids the need to read and parse the transcript file.',
         ),
     }),
   ),
@@ -560,7 +560,7 @@ export const SubagentStopHookInputSchema = lazySchema(() =>
         .optional()
         .describe(
           'Text content of the last assistant message before stopping. ' +
-            'Avoids the need to read and parse the transcript file.',
+          'Avoids the need to read and parse the transcript file.',
         ),
     }),
   ),
@@ -1064,7 +1064,7 @@ export const ModelInfoSchema = lazySchema(() =>
         .boolean()
         .optional()
         .describe(
-          'Whether this model supports adaptive thinking (Claude decides when and how much to think)',
+          'Whether this model supports adaptive thinking (Omnicode decides when and how much to think)',
         ),
       supportsFastMode: z
         .boolean()
@@ -1128,7 +1128,7 @@ export const AgentDefinitionSchema = lazySchema(() =>
         .string()
         .optional()
         .describe(
-          "Model alias (e.g. 'sonnet', 'opus', 'haiku') or full model ID (e.g. 'claude-opus-4-5'). If omitted or 'inherit', uses the main model",
+          "Model alias (e.g. 'sonnet', 'opus', 'haiku') or full model ID (e.g. 'omnicode-opus-4-5'). If omitted or 'inherit', uses the main model",
         ),
       mcpServers: z.array(AgentMcpServerSpecSchema()).optional(),
       criticalSystemReminder_EXPERIMENTAL: z
@@ -1163,7 +1163,7 @@ export const AgentDefinitionSchema = lazySchema(() =>
         .enum(['user', 'project', 'local'])
         .optional()
         .describe(
-          "Scope for auto-loading agent memory files. 'user' - ~/.claude/agent-memory/<agentType>/, 'project' - .claude/agent-memory/<agentType>/, 'local' - .claude/agent-memory-local/<agentType>/",
+          "Scope for auto-loading agent memory files. 'user' - ~/.omnicode/agent-memory/<agentType>/, 'project' - .omnicode/agent-memory/<agentType>/, 'local' - .omnicode/agent-memory-local/<agentType>/",
         ),
       effort: z
         .union([z.enum(['low', 'medium', 'high', 'max']), z.number().int()])
@@ -1191,9 +1191,9 @@ export const SettingSourceSchema = lazySchema(() =>
     .enum(['user', 'project', 'local'])
     .describe(
       'Source for loading filesystem-based settings. ' +
-        "'user' - Global user settings (~/.claude/settings.json). " +
-        "'project' - Project settings (.claude/settings.json). " +
-        "'local' - Local settings (.claude/settings.local.json).",
+      "'user' - Global user settings (~/.omnicode/settings.json). " +
+      "'project' - Project settings (.omnicode/settings.json). " +
+      "'local' - Local settings (.omnicode/settings.local.json).",
     ),
 )
 
@@ -1341,7 +1341,7 @@ export const SDKRateLimitInfoSchema = lazySchema(() =>
       isUsingOverage: z.boolean().optional(),
       surpassedThreshold: z.number().optional(),
     })
-    .describe('Rate limit information for claude.ai subscription users.'),
+    .describe('Rate limit information for omnicode.ai subscription users.'),
 )
 
 export const SDKAssistantMessageSchema = lazySchema(() =>
@@ -1461,7 +1461,7 @@ export const SDKSystemMessageSchema = lazySchema(() =>
     agents: z.array(z.string()).optional(),
     apiKeySource: ApiKeySourceSchema(),
     betas: z.array(z.string()).optional(),
-    claude_code_version: z.string(),
+    omnicode_code_version: z.string(),
     cwd: z.string(),
     tools: z.array(z.string()),
     mcp_servers: z.array(
@@ -1519,10 +1519,10 @@ export const SDKCompactBoundaryMessageSchema = lazySchema(() =>
         .optional()
         .describe(
           'Relink info for messagesToKeep. Loaders splice the preserved ' +
-            'segment at anchor_uuid (summary for suffix-preserving, ' +
-            'boundary for prefix-preserving partial compact) so resume ' +
-            'includes preserved content. Unset when compaction summarizes ' +
-            'everything (no messagesToKeep).',
+          'segment at anchor_uuid (summary for suffix-preserving, ' +
+          'boundary for prefix-preserving partial compact) so resume ' +
+          'includes preserved content. Unset when compaction summarizes ' +
+          'everything (no messagesToKeep).',
         ),
     }),
     uuid: UUIDPlaceholder(),

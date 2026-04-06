@@ -150,7 +150,7 @@ function createHttpsProxyAgent(
     ...(caCerts && { ca: caCerts }),
   }
 
-  if (isEnvTruthy(process.env.CLAUDE_CODE_PROXY_RESOLVES_HOSTS)) {
+  if (isEnvTruthy(process.env.OMNICODE_PROXY_RESOLVES_HOSTS)) {
     // Skip local DNS resolution - let the proxy resolve hostnames
     // This is needed for environments where DNS is not configured locally
     // and instead handled by the proxy (as in sandboxes)
@@ -281,7 +281,7 @@ export function getWebSocketProxyUrl(url: string): string | undefined {
  * Returns fetch options with appropriate dispatcher for proxy and/or mTLS
  *
  * @param opts.forAnthropicAPI - Enables ANTHROPIC_UNIX_SOCKET tunneling. This
- *   env var is set by `claude ssh` on the remote CLI to route API calls through
+ *   env var is set by `omnicode ssh` on the remote CLI to route API calls through
  *   an ssh -R forwarded unix socket to a local auth proxy. It MUST NOT leak
  *   into non-Anthropic-API fetch paths (MCP HTTP/SSE transports, etc.) or those
  *   requests get misrouted to api.anthropic.com. Only the Anthropic SDK client
@@ -296,7 +296,7 @@ export function getProxyFetchOptions(opts?: { forAnthropicAPI?: boolean }): {
 } {
   const base = keepAliveDisabled ? ({ keepalive: false } as const) : {}
 
-  // ANTHROPIC_UNIX_SOCKET tunnels through the `claude ssh` auth proxy, which
+  // ANTHROPIC_UNIX_SOCKET tunnels through the `omnicode ssh` auth proxy, which
   // hardcodes the upstream to the Anthropic API. Scope to the Anthropic API
   // client so MCP/SSE/other callers don't get their requests misrouted.
   if (opts?.forAnthropicAPI) {
@@ -369,11 +369,11 @@ export function configureGlobalAgents(): void {
       return config
     })
 
-    // Set global dispatcher that now respects NO_PROXY via EnvHttpProxyAgent
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    ;(require('undici') as typeof undici).setGlobalDispatcher(
-      getProxyAgent(proxyUrl),
-    )
+      // Set global dispatcher that now respects NO_PROXY via EnvHttpProxyAgent
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      ; (require('undici') as typeof undici).setGlobalDispatcher(
+        getProxyAgent(proxyUrl),
+      )
   } else if (mtlsAgent) {
     // No proxy but mTLS is configured
     axios.defaults.httpsAgent = mtlsAgent
@@ -382,7 +382,7 @@ export function configureGlobalAgents(): void {
     const mtlsOptions = getTLSFetchOptions()
     if (mtlsOptions.dispatcher) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      ;(require('undici') as typeof undici).setGlobalDispatcher(
+      ; (require('undici') as typeof undici).setGlobalDispatcher(
         mtlsOptions.dispatcher,
       )
     }

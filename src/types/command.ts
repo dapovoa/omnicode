@@ -16,10 +16,10 @@ import type { PluginManifest } from './plugin.js'
 export type LocalCommandResult =
   | { type: 'text'; value: string }
   | {
-      type: 'compact'
-      compactionResult: CompactionResult
-      displayText?: string
-    }
+    type: 'compact'
+    compactionResult: CompactionResult
+    displayText?: string
+  }
   | { type: 'skip' } // Skip messages
 
 export type PromptCommand = {
@@ -37,7 +37,7 @@ export type PromptCommand = {
   disableNonInteractive?: boolean
   // Hooks to register when this skill is invoked
   hooks?: HooksSettings
-  // Base directory for skill resources (used to set CLAUDE_PLUGIN_ROOT environment variable for skill hooks)
+  // Base directory for skill resources (used to set OMNICODE_PLUGIN_ROOT environment variable for skill hooks)
   skillRoot?: string
   // Execution context: 'inline' (default) or 'fork' (run as sub-agent)
   // 'inline' = skill content expands into the current conversation
@@ -162,14 +162,14 @@ type LocalJSXCommand = {
  * Commands with `availability` are only shown if the user matches at least one
  * of the listed auth types. See meetsAvailabilityRequirement() in commands.ts.
  *
- * Example: `availability: ['claude-ai', 'console']` shows the command to
- * claude.ai subscribers and direct Console API key users (api.anthropic.com),
+ * Example: `availability: ['omnicode-ai', 'console']` shows the command to
+ * omnicode.ai subscribers and direct Console API key users (api.anthropic.com),
  * but hides it from Bedrock/Vertex/Foundry users and custom base URL users.
  */
 export type CommandAvailability =
-  // claude.ai OAuth subscriber (Pro/Max/Team/Enterprise via claude.ai)
-  | 'claude-ai'
-  // Console API key user (direct api.anthropic.com, not via claude.ai OAuth)
+  // omnicode.ai OAuth subscriber (Pro/Max/Team/Enterprise via omnicode.ai)
+  | 'omnicode-ai'
+  // Console API key user (direct api.anthropic.com, not via omnicode.ai OAuth)
   | 'console'
 
 export type CommandBase = {
@@ -189,12 +189,12 @@ export type CommandBase = {
   disableModelInvocation?: boolean // Whether to disable this command from being invoked by models
   userInvocable?: boolean // Whether users can invoke this skill by typing /skill-name
   loadedFrom?:
-    | 'commands_DEPRECATED'
-    | 'skills'
-    | 'plugin'
-    | 'managed'
-    | 'bundled'
-    | 'mcp' // Where the command was loaded from
+  | 'commands_DEPRECATED'
+  | 'skills'
+  | 'plugin'
+  | 'managed'
+  | 'bundled'
+  | 'mcp' // Where the command was loaded from
   kind?: 'workflow' // Distinguishes workflow-backed commands (badged in autocomplete)
   immediate?: boolean // If true, command executes immediately without waiting for a stop point (bypasses queue)
   isSensitive?: boolean // If true, args are redacted from the conversation history

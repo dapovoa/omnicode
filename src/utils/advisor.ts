@@ -17,18 +17,18 @@ export type AdvisorToolResultBlock = {
   type: 'advisor_tool_result'
   tool_use_id: string
   content:
-    | {
-        type: 'advisor_result'
-        text: string
-      }
-    | {
-        type: 'advisor_redacted_result'
-        encrypted_content: string
-      }
-    | {
-        type: 'advisor_tool_result_error'
-        error_code: string
-      }
+  | {
+    type: 'advisor_result'
+    text: string
+  }
+  | {
+    type: 'advisor_redacted_result'
+    encrypted_content: string
+  }
+  | {
+    type: 'advisor_tool_result_error'
+    error_code: string
+  }
 }
 
 export type AdvisorBlock = AdvisorServerToolUseBlock | AdvisorToolResultBlock
@@ -58,7 +58,7 @@ function getAdvisorConfig(): AdvisorConfig {
 }
 
 export function isAdvisorEnabled(): boolean {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_ADVISOR_TOOL)) {
+  if (isEnvTruthy(process.env.OMNICODE_DISABLE_ADVISOR_TOOL)) {
     return false
   }
   // The advisor beta header is first-party only (Bedrock/Vertex 400 on it).

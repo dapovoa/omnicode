@@ -30,7 +30,7 @@ type Props = {
   onCancel: () => void;
   onTabPrev?: () => void;
   onTabNext?: () => void;
-  onRespondToClaude: () => void;
+  onRespondToOmnicode: () => void;
   onFinishPlanInterview: () => void;
 };
 
@@ -53,7 +53,7 @@ export function PreviewQuestionView({
   onCancel,
   onTabPrev,
   onTabNext,
-  onRespondToClaude,
+  onRespondToOmnicode,
   onFinishPlanInterview
 }: Props): React.ReactNode {
   const isInPlanMode = useAppState(s => s.toolPermissionContext.mode) === 'plan';
@@ -173,7 +173,7 @@ export function PreviewQuestionView({
       if (e.key === 'return') {
         e.preventDefault();
         if (footerIndex === 0) {
-          onRespondToClaude();
+          onRespondToOmnicode();
         } else {
           onFinishPlanInterview();
         }
@@ -226,7 +226,7 @@ export function PreviewQuestionView({
         handleNavigate(idx_0);
       }
     }
-  }, [isFooterFocused, footerIndex, isInPlanMode, isInNotesInput, focusedIndex, allOptions.length, handleUpFromFooter, handleDownFromPreview, handleNavigate, handleSelectOption, handleNotesExit, onRespondToClaude, onFinishPlanInterview, onCancel, onTextInputFocus]);
+  }, [isFooterFocused, footerIndex, isInPlanMode, isInNotesInput, focusedIndex, allOptions.length, handleUpFromFooter, handleDownFromPreview, handleNavigate, handleSelectOption, handleNotesExit, onRespondToOmnicode, onFinishPlanInterview, onCancel, onTextInputFocus]);
   const previewContent = focusedOption?.preview || null;
 
   // The right panel's available width is terminal minus the left panel and gap.
@@ -255,73 +255,73 @@ export function PreviewQuestionView({
     return minContentHeight ? Math.max(1, minContentHeight - PREVIEW_OVERHEAD) : undefined;
   }, [minContentHeight]);
   return <Box flexDirection="column" marginTop={1} tabIndex={0} autoFocus onKeyDown={handleKeyDown}>
-      <Divider color="inactive" />
-      <Box flexDirection="column" paddingTop={0}>
-        <QuestionNavigationBar questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} hideSubmitTab={hideSubmitTab} />
-        <PermissionRequestTitle title={question.question} color={'text'} />
+    <Divider color="inactive" />
+    <Box flexDirection="column" paddingTop={0}>
+      <QuestionNavigationBar questions={questions} currentQuestionIndex={currentQuestionIndex} answers={answers} hideSubmitTab={hideSubmitTab} />
+      <PermissionRequestTitle title={question.question} color={'text'} />
 
-        <Box flexDirection="column" minHeight={minContentHeight}>
-          {/* Side-by-side layout: options on left, preview on right */}
-          <Box marginTop={1} flexDirection="row" gap={4}>
-            {/* Left panel: vertical option list */}
-            <Box flexDirection="column" width={30}>
-              {allOptions.map((option_0, index_0) => {
+      <Box flexDirection="column" minHeight={minContentHeight}>
+        {/* Side-by-side layout: options on left, preview on right */}
+        <Box marginTop={1} flexDirection="row" gap={4}>
+          {/* Left panel: vertical option list */}
+          <Box flexDirection="column" width={30}>
+            {allOptions.map((option_0, index_0) => {
               const isFocused = focusedIndex === index_0;
               const isSelected = selectedValue === option_0.label;
               return <Box key={option_0.label} flexDirection="row">
-                    {isFocused ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
-                    <Text dimColor> {index_0 + 1}.</Text>
-                    <Text color={isSelected ? 'success' : isFocused ? 'suggestion' : undefined} bold={isFocused}>
-                      {' '}
-                      {option_0.label}
-                    </Text>
-                    {isSelected && <Text color="success"> {figures.tick}</Text>}
-                  </Box>;
+                {isFocused ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
+                <Text dimColor> {index_0 + 1}.</Text>
+                <Text color={isSelected ? 'success' : isFocused ? 'suggestion' : undefined} bold={isFocused}>
+                  {' '}
+                  {option_0.label}
+                </Text>
+                {isSelected && <Text color="success"> {figures.tick}</Text>}
+              </Box>;
             })}
-            </Box>
+          </Box>
 
-            {/* Right panel: preview + notes */}
-            <Box flexDirection="column" flexGrow={1}>
-              <PreviewBox content={previewContent || 'No preview available'} maxLines={previewMaxLines} minWidth={minContentWidth} maxWidth={previewMaxWidth} />
-              <Box marginTop={1} flexDirection="row" gap={1}>
-                <Text color="suggestion">Notes:</Text>
-                {isInNotesInput ? <TextInput value={notesValue} placeholder="Add notes on this design…" onChange={value => {
+          {/* Right panel: preview + notes */}
+          <Box flexDirection="column" flexGrow={1}>
+            <PreviewBox content={previewContent || 'No preview available'} maxLines={previewMaxLines} minWidth={minContentWidth} maxWidth={previewMaxWidth} />
+            <Box marginTop={1} flexDirection="row" gap={1}>
+              <Text color="suggestion">Notes:</Text>
+              {isInNotesInput ? <TextInput value={notesValue} placeholder="Add notes on this design…" onChange={value => {
                 onUpdateQuestionState(questionText, {
                   textInputValue: value
                 }, false);
               }} onSubmit={handleNotesExit} onExit={handleNotesExit} focus={true} showCursor={true} columns={60} cursorOffset={cursorOffset} onChangeCursorOffset={setCursorOffset} /> : <Text dimColor italic>
-                    {notesValue || 'press n to add notes'}
-                  </Text>}
-              </Box>
+                {notesValue || 'press n to add notes'}
+              </Text>}
             </Box>
-          </Box>
-
-          {/* Footer section */}
-          <Box flexDirection="column" marginTop={1}>
-            <Divider color="inactive" />
-            <Box flexDirection="row" gap={1}>
-              {isFooterFocused && footerIndex === 0 ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
-              <Text color={isFooterFocused && footerIndex === 0 ? 'suggestion' : undefined}>
-                Chat about this
-              </Text>
-            </Box>
-            {isInPlanMode && <Box flexDirection="row" gap={1}>
-                {isFooterFocused && footerIndex === 1 ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
-                <Text color={isFooterFocused && footerIndex === 1 ? 'suggestion' : undefined}>
-                  Skip interview and plan immediately
-                </Text>
-              </Box>}
-          </Box>
-          <Box marginTop={1}>
-            <Text color="inactive" dimColor>
-              Enter to select · {figures.arrowUp}/{figures.arrowDown} to
-              navigate · n to add notes
-              {questions.length > 1 && <> · Tab to switch questions</>}
-              {isInNotesInput && editorName && <> · ctrl+g to edit in {editorName}</>}{' '}
-              · Esc to cancel
-            </Text>
           </Box>
         </Box>
+
+        {/* Footer section */}
+        <Box flexDirection="column" marginTop={1}>
+          <Divider color="inactive" />
+          <Box flexDirection="row" gap={1}>
+            {isFooterFocused && footerIndex === 0 ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
+            <Text color={isFooterFocused && footerIndex === 0 ? 'suggestion' : undefined}>
+              Chat about this
+            </Text>
+          </Box>
+          {isInPlanMode && <Box flexDirection="row" gap={1}>
+            {isFooterFocused && footerIndex === 1 ? <Text color="suggestion">{figures.pointer}</Text> : <Text> </Text>}
+            <Text color={isFooterFocused && footerIndex === 1 ? 'suggestion' : undefined}>
+              Skip interview and plan immediately
+            </Text>
+          </Box>}
+        </Box>
+        <Box marginTop={1}>
+          <Text color="inactive" dimColor>
+            Enter to select · {figures.arrowUp}/{figures.arrowDown} to
+            navigate · n to add notes
+            {questions.length > 1 && <> · Tab to switch questions</>}
+            {isInNotesInput && editorName && <> · ctrl+g to edit in {editorName}</>}{' '}
+            · Esc to cancel
+          </Text>
+        </Box>
       </Box>
-    </Box>;
+    </Box>
+  </Box>;
 }

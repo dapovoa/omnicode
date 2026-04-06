@@ -64,19 +64,19 @@ type Step =
   | { name: 'openai-key'; defaultModel: string }
   | { name: 'openai-base'; apiKey: string; defaultModel: string }
   | {
-      name: 'openai-model'
-      apiKey: string
-      baseUrl: string | null
-      defaultModel: string
-    }
+    name: 'openai-model'
+    apiKey: string
+    baseUrl: string | null
+    defaultModel: string
+  }
   | { name: 'gemini-auth-method' }
   | { name: 'gemini-key' }
   | { name: 'gemini-access-token' }
   | {
-      name: 'gemini-model'
-      apiKey?: string
-      authMode: 'api-key' | 'access-token' | 'adc'
-    }
+    name: 'gemini-model'
+    apiKey?: string
+    authMode: 'api-key' | 'access-token' | 'adc'
+  }
   | { name: 'codex-check' }
 
 type CurrentProviderSummary = {
@@ -158,7 +158,7 @@ export function buildCurrentProviderSummary(options?: {
   const persisted = options?.persisted ?? loadProfileFile()
   const savedProfileLabel = persisted?.profile ?? 'none'
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GEMINI)) {
+  if (isEnvTruthy(processEnv.OMNICODE_USE_GEMINI)) {
     return {
       providerLabel: 'Google Gemini',
       modelLabel: getSafeDisplayValue(
@@ -173,7 +173,7 @@ export function buildCurrentProviderSummary(options?: {
     }
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_OPENAI)) {
+  if (isEnvTruthy(processEnv.OMNICODE_USE_OPENAI)) {
     const request = resolveProviderRequest({
       model: processEnv.OPENAI_MODEL,
       baseUrl: processEnv.OPENAI_BASE_URL,
@@ -200,8 +200,8 @@ export function buildCurrentProviderSummary(options?: {
     providerLabel: 'Anthropic',
     modelLabel: getSafeDisplayValue(
       processEnv.ANTHROPIC_MODEL ??
-        processEnv.CLAUDE_MODEL ??
-        'claude-sonnet-4-6',
+      processEnv.OMNICODE_MODEL ??
+      'omnicode-sonnet-4-6',
       processEnv,
     ),
     endpointLabel: getSafeDisplayValue(
@@ -235,9 +235,9 @@ function buildSavedProfileSummary(
             ? 'access token (stored securely)'
             : env.GEMINI_AUTH_MODE === 'adc'
               ? 'local ADC'
-            : maskSecretForDisplay(env.GEMINI_API_KEY) !== undefined
-              ? 'configured'
-              : undefined,
+              : maskSecretForDisplay(env.GEMINI_API_KEY) !== undefined
+                ? 'configured'
+                : undefined,
       }
     case 'codex':
       return {
@@ -540,21 +540,21 @@ function AutoRecommendationStep({
 }): React.ReactNode {
   const [status, setStatus] = React.useState<
     | {
-        state: 'loading'
-      }
+      state: 'loading'
+    }
     | {
-        state: 'ollama'
-        model: string
-        summary: string
-      }
+      state: 'ollama'
+      model: string
+      summary: string
+    }
     | {
-        state: 'openai'
-        defaultModel: string
-      }
+      state: 'openai'
+      defaultModel: string
+    }
     | {
-        state: 'error'
-        message: string
-      }
+      state: 'error'
+      message: string
+    }
   >({ state: 'loading' })
 
   React.useEffect(() => {
@@ -710,10 +710,10 @@ function OllamaModelStep({
   const [status, setStatus] = React.useState<
     | { state: 'loading' }
     | {
-        state: 'ready'
-        options: OptionWithDescription<string>[]
-        defaultValue?: string
-      }
+      state: 'ready'
+      options: OptionWithDescription<string>[]
+      defaultValue?: string
+    }
     | { state: 'unavailable'; message: string }
   >({ state: 'loading' })
 
@@ -1102,11 +1102,10 @@ export function ProviderWizard({
           label: 'Access token',
           value: 'access-token',
           description: hasShellGeminiAccessToken || hasStoredGeminiAccessToken
-            ? `Use ${
-                hasShellGeminiAccessToken
-                  ? 'the current GEMINI_ACCESS_TOKEN'
-                  : 'the securely stored Gemini access token'
-              }`
+            ? `Use ${hasShellGeminiAccessToken
+              ? 'the current GEMINI_ACCESS_TOKEN'
+              : 'the securely stored Gemini access token'
+            }`
             : 'Enter a Gemini access token and store it securely',
         },
         {

@@ -3,17 +3,17 @@ import { getOauthConfig } from '../../constants/oauth.js'
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js'
 import { getAuthHeaders } from '../../utils/http.js'
 import { logError } from '../../utils/log.js'
-import { getClaudeCodeUserAgent } from '../../utils/userAgent.js'
+import { getOmnicodeCodeUserAgent } from '../../utils/userAgent.js'
 
 /**
- * Fetch the user's first Claude Code token date and store in config.
- * This is called after successful login to cache when they started using Claude Code.
+ * Fetch the user's first Omnicode Code token date and store in config.
+ * This is called after successful login to cache when they started using Omnicode Code.
  */
-export async function fetchAndStoreClaudeCodeFirstTokenDate(): Promise<void> {
+export async function fetchAndStoreOmnicodeCodeFirstTokenDate(): Promise<void> {
   try {
     const config = getGlobalConfig()
 
-    if (config.claudeCodeFirstTokenDate !== undefined) {
+    if (config.omnicodeCodeFirstTokenDate !== undefined) {
       return
     }
 
@@ -24,12 +24,12 @@ export async function fetchAndStoreClaudeCodeFirstTokenDate(): Promise<void> {
     }
 
     const oauthConfig = getOauthConfig()
-    const url = `${oauthConfig.BASE_API_URL}/api/organization/claude_code_first_token_date`
+    const url = `${oauthConfig.BASE_API_URL}/api/organization/omnicode_code_first_token_date`
 
     const response = await axios.get(url, {
       headers: {
         ...authHeaders.headers,
-        'User-Agent': getClaudeCodeUserAgent(),
+        'User-Agent': getOmnicodeCodeUserAgent(),
       },
       timeout: 10000,
     })
@@ -52,7 +52,7 @@ export async function fetchAndStoreClaudeCodeFirstTokenDate(): Promise<void> {
 
     saveGlobalConfig(current => ({
       ...current,
-      claudeCodeFirstTokenDate: firstTokenDate,
+      omnicodeCodeFirstTokenDate: firstTokenDate,
     }))
   } catch (error) {
     logError(error)

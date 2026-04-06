@@ -291,7 +291,7 @@ export function resolveProviderRequest(options?: {
   fallbackModel?: string
   reasoningEffortOverride?: ReasoningEffort
 }): ResolvedProviderRequest {
-  const isGithubMode = isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+  const isGithubMode = isEnvTruthy(process.env.OMNICODE_USE_GITHUB)
   const requestedModel =
     options?.model?.trim() ||
     process.env.OPENAI_MODEL?.trim() ||
@@ -314,7 +314,7 @@ export function resolveProviderRequest(options?: {
 
   const resolvedModel =
     transport === 'chat_completions' &&
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_GITHUB)
+      isEnvTruthy(process.env.OMNICODE_USE_GITHUB)
       ? normalizeGithubModelsApiModel(requestedModel)
       : descriptor.baseModel
 

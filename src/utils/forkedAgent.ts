@@ -18,7 +18,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '../services/analytics/index.js'
-import { accumulateUsage, updateUsage } from '../services/api/claude.js'
+import { accumulateUsage, updateUsage } from '../services/api/omnicode.js'
 import { EMPTY_USAGE, type NonNullableUsage } from '../services/api/logging.js'
 import type { ToolUseContext } from '../Tool.js'
 import type { AgentDefinition } from '../tools/AgentTool/loadAgentsDir.js'
@@ -51,7 +51,7 @@ import { createAgentId } from './uuid.js'
  * CacheSafeParams carries the first five. Thinking config is derived from the
  * inherited toolUseContext.options.thinkingConfig — but can be inadvertently
  * changed if the fork sets maxOutputTokens, which clamps budget_tokens in
- * claude.ts (but only for older models that do not use adaptive thinking).
+ * omnicode.ts (but only for older models that do not use adaptive thinking).
  * See the maxOutputTokens doc on ForkedAgentParams.
  */
 export type CacheSafeParams = {
@@ -95,7 +95,7 @@ export type ForkedAgentParams = {
   overrides?: SubagentContextOverrides
   /**
    * Optional cap on output tokens. CAUTION: setting this changes both max_tokens
-   * AND budget_tokens (via clamping in claude.ts). If the fork uses cacheSafeParams
+   * AND budget_tokens (via clamping in omnicode.ts). If the fork uses cacheSafeParams
    * to share the parent's prompt cache, a different budget_tokens will invalidate
    * the cache — thinking config is part of the cache key. Only set this when cache
    * sharing is not a goal (e.g., compact summaries).
@@ -360,18 +360,18 @@ export function createSubagentContext(
     : overrides?.shareAbortController
       ? parentContext.getAppState
       : () => {
-          const state = parentContext.getAppState()
-          if (state.toolPermissionContext.shouldAvoidPermissionPrompts) {
-            return state
-          }
-          return {
-            ...state,
-            toolPermissionContext: {
-              ...state.toolPermissionContext,
-              shouldAvoidPermissionPrompts: true,
-            },
-          }
+        const state = parentContext.getAppState()
+        if (state.toolPermissionContext.shouldAvoidPermissionPrompts) {
+          return state
         }
+        return {
+          ...state,
+          toolPermissionContext: {
+            ...state.toolPermissionContext,
+            shouldAvoidPermissionPrompts: true,
+          },
+        }
+      }
 
   return {
     // Mutable state - cloned by default to maintain isolation
@@ -409,7 +409,7 @@ export function createSubagentContext(
     getAppState,
     setAppState: overrides?.shareSetAppState
       ? parentContext.setAppState
-      : () => {},
+      : () => { },
     // Task registration/kill must always reach the root store, even when
     // setAppState is a no-op — otherwise async agents' background bash tasks
     // are never registered and never killed (PPID=1 zombie).
@@ -422,14 +422,14 @@ export function createSubagentContext(
       : createDenialTrackingState(),
 
     // Mutation callbacks - no-op by default
-    setInProgressToolUseIDs: () => {},
+    setInProgressToolUseIDs: () => { },
     setResponseLength: overrides?.shareSetResponseLength
       ? parentContext.setResponseLength
-      : () => {},
+      : () => { },
     pushApiMetricsEntry: overrides?.shareSetResponseLength
       ? parentContext.pushApiMetricsEntry
       : undefined,
-    updateFileHistoryState: () => {},
+    updateFileHistoryState: () => { },
     // Attribution is scoped and functional (prev => next) — safe to share even
     // when setAppState is stubbed. Concurrent calls compose via React's state queue.
     updateAttributionState: parentContext.updateAttributionState,
@@ -519,7 +519,7 @@ export async function runForkedAgent({
 
   // Do NOT filterIncompleteToolCalls here — it drops the whole assistant on
   // partial tool batches, orphaning the paired results (API 400). Dangling
-  // tool_uses are repaired downstream by ensureToolResultPairing in claude.ts,
+  // tool_uses are repaired downstream by ensureToolResultPairing in omnicode.ts,
   // same as the main thread — identical post-repair prefix keeps the cache hit.
   const initialMessages: Message[] = [...forkContextMessages, ...promptMessages]
 
@@ -680,10 +680,10 @@ function logForkAgentQueryEvent({
     // Query tracking
     ...(queryTracking
       ? {
-          queryChainId:
-            queryTracking.chainId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-          queryDepth: queryTracking.depth,
-        }
+        queryChainId:
+          queryTracking.chainId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        queryDepth: queryTracking.depth,
+      }
       : {}),
   })
 }

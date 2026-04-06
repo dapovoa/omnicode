@@ -1,7 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: internal-only import markers must not be reordered
 /**
  * Hooks are user-defined shell commands that can be executed at various points
- * in Claude Code's lifecycle.
+ * in Omnicode Code's lifecycle.
  */
 import { basename } from 'path'
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
@@ -174,7 +174,7 @@ const TOOL_HOOK_EXECUTION_TIMEOUT_MS = 10 * 60 * 1000
  */
 const SESSION_END_HOOK_TIMEOUT_MS_DEFAULT = 1500
 export function getSessionEndHookTimeoutMs(): number {
-  const raw = process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
+  const raw = process.env.OMNICODE_SESSIONEND_HOOKS_TIMEOUT_MS
   const parsed = raw ? parseInt(raw, 10) : NaN
   return Number.isFinite(parsed) && parsed > 0
     ? parsed
@@ -268,7 +268,7 @@ function executeInBackground({
  * Checks if a hook should be skipped due to lack of workspace trust.
  *
  * ALL hooks require workspace trust because they execute arbitrary commands from
- * .claude/settings.json. This is a defense-in-depth security measure.
+ * .omnicode/settings.json. This is a defense-in-depth security measure.
  *
  * Context: Hooks are captured via captureHooksConfigSnapshot() before the trust
  * dialog is shown. While most hooks won't execute until after trust is established
@@ -711,28 +711,28 @@ function processHookJSONOutput({
     ...result,
     message: result.blockingError
       ? createAttachmentMessage({
-          type: 'hook_blocking_error',
-          hookName,
-          toolUseID,
-          hookEvent,
-          blockingError: result.blockingError,
-        })
+        type: 'hook_blocking_error',
+        hookName,
+        toolUseID,
+        hookEvent,
+        blockingError: result.blockingError,
+      })
       : createAttachmentMessage({
-          type: 'hook_success',
-          hookName,
-          toolUseID,
-          hookEvent,
-          // JSON-output hooks inject context via additionalContext →
-          // hook_additional_context, not this field. Empty content suppresses
-          // the trivial "X hook success: Success" system-reminder that
-          // otherwise pollutes every turn (messages.ts:3577 skips on '').
-          content: '',
-          stdout,
-          stderr,
-          exitCode,
-          command,
-          durationMs,
-        }),
+        type: 'hook_success',
+        hookName,
+        toolUseID,
+        hookEvent,
+        // JSON-output hooks inject context via additionalContext →
+        // hook_additional_context, not this field. Empty content suppresses
+        // the trivial "X hook success: Success" system-reminder that
+        // otherwise pollutes every turn (messages.ts:3577 skips on '').
+        content: '',
+        stdout,
+        stderr,
+        exitCode,
+        command,
+        durationMs,
+      }),
   }
 }
 
@@ -741,7 +741,7 @@ function processHookJSONOutput({
  *
  * Shell resolution: hook.shell → 'bash'. PowerShell hooks spawn pwsh
  * with -NoProfile -NonInteractive -Command and skip bash-specific prep
- * (POSIX path conversion, .sh auto-prepend, CLAUDE_CODE_SHELL_PREFIX).
+ * (POSIX path conversion, .sh auto-prepend, OMNICODE_SHELL_PREFIX).
  * See docs/design/ps-shell-selection.md §5.1.
  */
 async function execCommandHook(
@@ -810,14 +810,14 @@ async function execCommandHook(
       ? (p: string) => windowsPathToPosixPath(p)
       : (p: string) => p
 
-  // Set CLAUDE_PROJECT_DIR to the stable project root (not the worktree path).
+  // Set OMNICODE_PROJECT_DIR to the stable project root (not the worktree path).
   // getProjectRoot() is never updated when entering a worktree, so hooks that
-  // reference $CLAUDE_PROJECT_DIR always resolve relative to the real repo root.
+  // reference $OMNICODE_PROJECT_DIR always resolve relative to the real repo root.
   const projectDir = getProjectRoot()
 
-  // Substitute ${CLAUDE_PLUGIN_ROOT} and ${user_config.X} in the command string.
+  // Substitute ${OMNICODE_PLUGIN_ROOT} and ${user_config.X} in the command string.
   // Order matches MCP/LSP (plugin vars FIRST, then user config) so a user-
-  // entered value containing the literal text ${CLAUDE_PLUGIN_ROOT} is treated
+  // entered value containing the literal text ${OMNICODE_PLUGIN_ROOT} is treated
   // as opaque — not re-interpreted as a template.
   let command = hook.command
   let pluginOpts: ReturnType<typeof loadPluginOptions> | undefined
@@ -831,7 +831,7 @@ async function execCommandHook(
     if (!(await pathExists(pluginRoot))) {
       throw new Error(
         `Plugin directory does not exist: ${pluginRoot}` +
-          (pluginId ? ` (${pluginId} — run /plugin to reinstall)` : ''),
+        (pluginId ? ` (${pluginId} — run /plugin to reinstall)` : ''),
       )
     }
     // Inline both ROOT and DATA substitution instead of calling
@@ -842,10 +842,10 @@ async function execCommandHook(
     // form .replace() so paths containing $ aren't mangled by $-pattern
     // interpretation (rare but possible: \\server\c$\plugin).
     const rootPath = toHookPath(pluginRoot)
-    command = command.replace(/\$\{CLAUDE_PLUGIN_ROOT\}/g, () => rootPath)
+    command = command.replace(/\$\{OMNICODE_PLUGIN_ROOT\}/g, () => rootPath)
     if (pluginId) {
       const dataPath = toHookPath(getPluginDataDir(pluginId))
-      command = command.replace(/\$\{CLAUDE_PLUGIN_DATA\}/g, () => dataPath)
+      command = command.replace(/\$\{OMNICODE_PLUGIN_DATA\}/g, () => dataPath)
     }
     if (pluginId) {
       pluginOpts = loadPluginOptions(pluginId)
@@ -865,13 +865,13 @@ async function execCommandHook(
     }
   }
 
-  // CLAUDE_CODE_SHELL_PREFIX wraps the command via POSIX quoting
+  // OMNICODE_SHELL_PREFIX wraps the command via POSIX quoting
   // (formatShellPrefixCommand uses shell-quote). This makes no sense for
   // PowerShell — see design §8.1. For now PS hooks ignore the prefix;
-  // a CLAUDE_CODE_PS_SHELL_PREFIX (or shell-aware prefix) is a follow-up.
+  // a OMNICODE_PS_SHELL_PREFIX (or shell-aware prefix) is a follow-up.
   const finalCommand =
-    !isPowerShell && process.env.CLAUDE_CODE_SHELL_PREFIX
-      ? formatShellPrefixCommand(process.env.CLAUDE_CODE_SHELL_PREFIX, command)
+    !isPowerShell && process.env.OMNICODE_SHELL_PREFIX
+      ? formatShellPrefixCommand(process.env.OMNICODE_SHELL_PREFIX, command)
       : command
 
   const hookTimeoutMs = hook.timeout
@@ -881,15 +881,15 @@ async function execCommandHook(
   // Build env vars — all paths go through toHookPath for Windows POSIX conversion
   const envVars: NodeJS.ProcessEnv = {
     ...subprocessEnv(),
-    CLAUDE_PROJECT_DIR: toHookPath(projectDir),
+    OMNICODE_PROJECT_DIR: toHookPath(projectDir),
   }
 
-  // Plugin and skill hooks both set CLAUDE_PLUGIN_ROOT (skills use the same
+  // Plugin and skill hooks both set OMNICODE_PLUGIN_ROOT (skills use the same
   // name for consistency — skills can migrate to plugins without code changes)
   if (pluginRoot) {
-    envVars.CLAUDE_PLUGIN_ROOT = toHookPath(pluginRoot)
+    envVars.OMNICODE_PLUGIN_ROOT = toHookPath(pluginRoot)
     if (pluginId) {
-      envVars.CLAUDE_PLUGIN_DATA = toHookPath(getPluginDataDir(pluginId))
+      envVars.OMNICODE_PLUGIN_DATA = toHookPath(getPluginDataDir(pluginId))
     }
   }
   // Expose plugin options as env vars too, so hooks can read them without
@@ -901,14 +901,14 @@ async function execCommandHook(
       // at schemas.ts:611 now constrains keys to /^[A-Za-z_]\w*$/ so this is
       // belt-and-suspenders, but cheap insurance if someone bypasses the schema.
       const envKey = key.replace(/[^A-Za-z0-9_]/g, '_').toUpperCase()
-      envVars[`CLAUDE_PLUGIN_OPTION_${envKey}`] = String(value)
+      envVars[`OMNICODE_PLUGIN_OPTION_${envKey}`] = String(value)
     }
   }
   if (skillRoot) {
-    envVars.CLAUDE_PLUGIN_ROOT = toHookPath(skillRoot)
+    envVars.OMNICODE_PLUGIN_ROOT = toHookPath(skillRoot)
   }
 
-  // CLAUDE_ENV_FILE points to a .sh file that the hook writes env var
+  // OMNICODE_ENV_FILE points to a .sh file that the hook writes env var
   // definitions into; getSessionEnvironmentScript() concatenates them and
   // bashProvider injects the content into bash commands. A PS hook would
   // naturally write PS syntax ($env:FOO = 'bar'), which bash can't parse.
@@ -922,7 +922,7 @@ async function execCommandHook(
       hookEvent === 'FileChanged') &&
     hookIndex !== undefined
   ) {
-    envVars.CLAUDE_ENV_FILE = await getHookEnvFilePath(hookEvent, hookIndex)
+    envVars.OMNICODE_ENV_FILE = await getHookEnvFilePath(hookEvent, hookIndex)
   }
 
   // When agent worktrees are removed, getCwd() may return a deleted path via
@@ -960,8 +960,8 @@ async function execCommandHook(
     if (!pwshPath) {
       throw new Error(
         `Hook "${hook.command}" has shell: 'powershell' but no PowerShell ` +
-          `executable (pwsh or powershell) was found on PATH. Install ` +
-          `PowerShell, or remove "shell": "powershell" to use bash.`,
+        `executable (pwsh or powershell) was found on PATH. Install ` +
+        `PowerShell, or remove "shell": "powershell" to use bash.`,
       )
     }
     child = spawn(pwshPath, buildPowerShellArgs(finalCommand), {
@@ -1041,11 +1041,11 @@ async function execCommandHook(
 
   let asyncResolve:
     | ((result: {
-        stdout: string
-        stderr: string
-        output: string
-        status: number
-      }) => void)
+      stdout: string
+      stderr: string
+      output: string
+      status: number
+    }) => void)
     | null = null
   const childIsAsyncPromise = new Promise<{
     stdout: string
@@ -1195,25 +1195,25 @@ async function execCommandHook(
   const stdinWritePromise = stdinWritten
     ? Promise.resolve()
     : new Promise<void>((resolve, reject) => {
-        child.stdin.on('error', err => {
-          // When requestPrompt is provided, stdin stays open for prompt responses.
-          // EPIPE errors from later writes (after process exits) are expected -- suppress them.
-          if (!requestPrompt) {
-            reject(err)
-          } else {
-            logForDebugging(
-              `Hooks: stdin error during prompt flow (likely process exited): ${err}`,
-            )
-          }
-        })
-        // Explicitly specify UTF-8 encoding to ensure proper handling of Unicode characters
-        child.stdin.write(jsonInput + '\n', 'utf8')
-        // When requestPrompt is provided, keep stdin open for prompt responses
+      child.stdin.on('error', err => {
+        // When requestPrompt is provided, stdin stays open for prompt responses.
+        // EPIPE errors from later writes (after process exits) are expected -- suppress them.
         if (!requestPrompt) {
-          child.stdin.end()
+          reject(err)
+        } else {
+          logForDebugging(
+            `Hooks: stdin error during prompt flow (likely process exited): ${err}`,
+          )
         }
-        resolve()
       })
+      // Explicitly specify UTF-8 encoding to ensure proper handling of Unicode characters
+      child.stdin.write(jsonInput + '\n', 'utf8')
+      // When requestPrompt is provided, keep stdin open for prompt responses
+      if (!requestPrompt) {
+        child.stdin.end()
+      }
+      resolve()
+    })
 
   // Create promise for child process error
   const childErrorPromise = new Promise<never>((_, reject) => {
@@ -1244,9 +1244,9 @@ async function execCommandHook(
           processedPromptLines.size === 0
             ? stdout
             : stdout
-                .split('\n')
-                .filter(line => !processedPromptLines.has(line.trim()))
-                .join('\n')
+              .split('\n')
+              .filter(line => !processedPromptLines.has(line.trim()))
+              .join('\n')
 
         resolve({
           stdout: finalStdout,
@@ -1447,7 +1447,7 @@ function isInternalHook(matched: MatchedHook): boolean {
  * Settings-file hooks (no pluginRoot/skillRoot) share the '' prefix so the
  * same command defined in user/project/local still collapses to one — the
  * original intent of the dedup. Plugin/skill hooks get their root as the
- * prefix, so two plugins sharing an unexpanded `${CLAUDE_PLUGIN_ROOT}/hook.sh`
+ * prefix, so two plugins sharing an unexpanded `${OMNICODE_PLUGIN_ROOT}/hook.sh`
  * template don't collapse: after expansion they point to different files.
  */
 function hookDedupKey(m: MatchedHook, payload: string): string {
@@ -1680,9 +1680,9 @@ export async function getMatchingHooks(
     // Extract hooks with their plugin context (if any)
     const filteredMatchers = matchQuery
       ? hookMatchers.filter(
-          matcher =>
-            !matcher.matcher || matchesPattern(matchQuery, matcher.matcher),
-        )
+        matcher =>
+          !matcher.matcher || matchesPattern(matchQuery, matcher.matcher),
+      )
       : hookMatchers
 
     const matchedHooks: MatchedHook[] = filteredMatchers.flatMap(matcher => {
@@ -1853,14 +1853,14 @@ export async function getMatchingHooks(
     const filteredHooks =
       hookEvent === 'SessionStart' || hookEvent === 'Setup'
         ? ifFilteredHooks.filter(h => {
-            if (h.hook.type === 'http') {
-              logForDebugging(
-                `Skipping HTTP hook ${(h.hook as { url: string }).url} — HTTP hooks are not supported for ${hookEvent}`,
-              )
-              return false
-            }
-            return true
-          })
+          if (h.hook.type === 'http') {
+            logForDebugging(
+              `Skipping HTTP hook ${(h.hook as { url: string }).url} — HTTP hooks are not supported for ${hookEvent}`,
+            )
+            return false
+          }
+          return true
+        })
         : ifFilteredHooks
 
     logForDebugging(
@@ -1979,7 +1979,7 @@ async function* executeHooks({
     return
   }
 
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+  if (isEnvTruthy(process.env.OMNICODE_SIMPLE)) {
     return
   }
 
@@ -2041,9 +2041,9 @@ async function* executeHooks({
     const batchStartTime = Date.now()
     const context = toolUseContext
       ? {
-          getAppState: toolUseContext.getAppState,
-          updateAttributionState: toolUseContext.updateAttributionState,
-        }
+        getAppState: toolUseContext.getAppState,
+        updateAttributionState: toolUseContext.updateAttributionState,
+      }
       : undefined
     for (const [i, { hook }] of matchingHooks.entries()) {
       if (hook.type === 'callback') {
@@ -2104,8 +2104,8 @@ async function* executeHooks({
           ...(hook.type === 'prompt' && { promptText: hook.prompt }),
           ...('statusMessage' in hook &&
             hook.statusMessage != null && {
-              statusMessage: hook.statusMessage,
-            }),
+            statusMessage: hook.statusMessage,
+          }),
         },
         parentToolUseID: toolUseID,
         toolUseID,
@@ -2850,8 +2850,8 @@ async function* executeHooks({
     if (permissionBehavior !== undefined) {
       const updatedInput =
         result.updatedInput &&
-        (result.permissionBehavior === 'allow' ||
-          result.permissionBehavior === 'ask')
+          (result.permissionBehavior === 'allow' ||
+            result.permissionBehavior === 'ask')
           ? result.updatedInput
           : undefined
       if (updatedInput) {
@@ -3013,7 +3013,7 @@ async function executeHooksOutsideREPL({
   signal?: AbortSignal
   timeoutMs: number
 }): Promise<HookOutsideReplResult[]> {
-  if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+  if (isEnvTruthy(process.env.OMNICODE_SIMPLE)) {
     return []
   }
 
@@ -3116,8 +3116,8 @@ async function executeHooksOutsideREPL({
 
           const output =
             hookEvent === 'WorktreeCreate' &&
-            isSyncHookJSONOutput(json) &&
-            json.hookSpecificOutput?.hookEventName === 'WorktreeCreate'
+              isSyncHookJSONOutput(json) &&
+              json.hookSpecificOutput?.hookEventName === 'WorktreeCreate'
               ? json.hookSpecificOutput.worktreePath
               : json.systemMessage || ''
           const blocked =
@@ -3339,9 +3339,9 @@ async function executeHooksOutsideREPL({
 
         const watchPaths =
           json &&
-          isSyncHookJSONOutput(json) &&
-          json.hookSpecificOutput &&
-          'watchPaths' in json.hookSpecificOutput
+            isSyncHookJSONOutput(json) &&
+            json.hookSpecificOutput &&
+            'watchPaths' in json.hookSpecificOutput
             ? json.hookSpecificOutput.watchPaths
             : undefined
 
@@ -3664,25 +3664,25 @@ export async function* executeStopHooks(
     : undefined
   const lastAssistantText = lastAssistantMessage
     ? extractTextContent(lastAssistantMessage.message.content, '\n').trim() ||
-      undefined
+    undefined
     : undefined
 
   const hookInput: StopHookInput | SubagentStopHookInput = subagentId
     ? {
-        ...createBaseHookInput(permissionMode),
-        hook_event_name: 'SubagentStop',
-        stop_hook_active: stopHookActive,
-        agent_id: subagentId,
-        agent_transcript_path: getAgentTranscriptPath(subagentId),
-        agent_type: agentType ?? '',
-        last_assistant_message: lastAssistantText,
-      }
+      ...createBaseHookInput(permissionMode),
+      hook_event_name: 'SubagentStop',
+      stop_hook_active: stopHookActive,
+      agent_id: subagentId,
+      agent_transcript_path: getAgentTranscriptPath(subagentId),
+      agent_type: agentType ?? '',
+      last_assistant_message: lastAssistantText,
+    }
     : {
-        ...createBaseHookInput(permissionMode),
-        hook_event_name: 'Stop',
-        stop_hook_active: stopHookActive,
-        last_assistant_message: lastAssistantText,
-      }
+      ...createBaseHookInput(permissionMode),
+      hook_event_name: 'Stop',
+      stop_hook_active: stopHookActive,
+      last_assistant_message: lastAssistantText,
+    }
 
   // Trust check is now centralized in executeHooks()
   yield* executeHooks({
@@ -4320,15 +4320,15 @@ export function hasInstructionsLoadedHook(): boolean {
 }
 
 /**
- * Execute InstructionsLoaded hooks when an instruction file (CLAUDE.md or
- * .claude/rules/*.md) is loaded into context. Fire-and-forget — this hook is
+ * Execute InstructionsLoaded hooks when an instruction file (OMNICODE.md or
+ * .omnicode/rules/*.md) is loaded into context. Fire-and-forget — this hook is
  * for observability/audit only and does not support blocking.
  *
  * Dispatch sites:
- * - Eager load at session start (getMemoryFiles in claudemd.ts)
+ * - Eager load at session start (getMemoryFiles in omnicodemd.ts)
  * - Eager reload after compaction (getMemoryFiles cache cleared by
  *   runPostCompactCleanup; next call reports load_reason: 'compact')
- * - Lazy load when Claude touches a file that triggers nested CLAUDE.md or
+ * - Lazy load when Omnicode touches a file that triggers nested OMNICODE.md or
  *   conditional rules with paths: frontmatter (memoryFilesToAttachments in
  *   attachments.ts)
  */
@@ -4857,9 +4857,9 @@ async function executeHookCallback({
   // Create context for callbacks that need state access
   const context = toolUseContext
     ? {
-        getAppState: toolUseContext.getAppState,
-        updateAttributionState: toolUseContext.updateAttributionState,
-      }
+      getAppState: toolUseContext.getAppState,
+      updateAttributionState: toolUseContext.updateAttributionState,
+    }
     : undefined
   const json = await hook.callback(
     hookInput,

@@ -11,7 +11,7 @@ import { getTotalAPIDuration, getTotalCost, getTotalDuration, getTotalInputToken
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
 import { type ReadonlySettings, useSettings } from '../hooks/useSettings.js';
 import { Ansi, Box, Text } from '../ink.js';
-import { getRawUtilization } from '../services/claudeAiLimits.js';
+import { getRawUtilization } from '../services/omnicodeAiLimits.js';
 import type { Message } from '../types/message.js';
 import type { StatusLineCommandInput } from '../types/statusLine.js';
 import type { VimMode } from '../types/textInputTypes.js';
@@ -151,7 +151,7 @@ function StatusLineInner({
   } = useNotifications();
   // AppState-sourced model — same source as API requests. getMainLoopModel()
   // re-reads settings.json on every call, so another session's /model write
-  // would leak into this session's statusline (anthropics/claude-code#37596).
+  // would leak into this session's statusline (anthropics/omnicode-code#37596).
   const mainLoopModel = useMainLoopModel();
 
   // Keep latest values in refs for stable callback access
@@ -311,10 +311,10 @@ function StatusLineInner({
   // a row from ScrollBox and shifts content. Reserve the row while loading
   // (same trick as PromptInputFooterLeftSide).
   return <Box paddingX={paddingX} gap={2}>
-      {statusLineText ? <Text dimColor wrap="truncate">
-          <Ansi>{statusLineText}</Ansi>
-        </Text> : isFullscreenEnvEnabled() ? <Text> </Text> : null}
-    </Box>;
+    {statusLineText ? <Text dimColor wrap="truncate">
+      <Ansi>{statusLineText}</Ansi>
+    </Text> : isFullscreenEnvEnabled() ? <Text> </Text> : null}
+  </Box>;
 }
 
 // Parent (PromptInputFooter) re-renders on every setMessages, but StatusLine's

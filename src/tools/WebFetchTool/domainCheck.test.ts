@@ -17,7 +17,7 @@ afterEach(() => {
 
 describe('checkDomainBlocklist', () => {
   test('returns allowed without API call in OpenAI mode', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const getSpy = mock(() =>
       Promise.resolve({ status: 200, data: { can_fetch: true } }),
     )
@@ -31,7 +31,7 @@ describe('checkDomainBlocklist', () => {
   })
 
   test('returns allowed without API call in Gemini mode', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.OMNICODE_USE_GEMINI = '1'
     const getSpy = mock(() =>
       Promise.resolve({ status: 200, data: { can_fetch: true } }),
     )
@@ -45,9 +45,9 @@ describe('checkDomainBlocklist', () => {
   })
 
   test('calls Anthropic domain check in first-party mode', async () => {
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.OMNICODE_USE_OPENAI
+    delete process.env.OMNICODE_USE_GEMINI
+    delete process.env.OMNICODE_USE_GITHUB
 
     const getSpy = mock(() =>
       Promise.resolve({ status: 200, data: { can_fetch: true } }),

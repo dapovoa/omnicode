@@ -22,7 +22,7 @@ const IfConditionSchema = lazySchema(() =>
     .optional()
     .describe(
       'Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). ' +
-        'Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.',
+      'Only runs if the tool call matches the pattern. Avoids spawning hooks for non-matching commands.',
     ),
 )
 
@@ -82,7 +82,7 @@ function buildHookSchemas() {
       .string()
       .optional()
       .describe(
-        'Model to use for this prompt hook (e.g., "claude-sonnet-4-6"). If not specified, uses the default small fast model.',
+        'Model to use for this prompt hook (e.g., "omnicode-sonnet-4-6"). If not specified, uses the default small fast model.',
       ),
     statusMessage: z
       .string()
@@ -150,7 +150,7 @@ function buildHookSchemas() {
       .string()
       .optional()
       .describe(
-        'Model to use for this agent hook (e.g., "claude-sonnet-4-6"). If not specified, uses Haiku.',
+        'Model to use for this agent hook (e.g., "omnicode-sonnet-4-6"). If not specified, uses Haiku.',
       ),
     statusMessage: z
       .string()

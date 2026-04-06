@@ -4,5 +4,5 @@ dist/
 .env
 .env.*
 !.env.example
-.openclaude-profile.json
+.openomnicode-profile.json
 reports/

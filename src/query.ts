@@ -191,7 +191,7 @@ export type QueryParams = {
   // API task_budget (output_config.task_budget, beta task-budgets-2026-03-13).
   // Distinct from the tokenBudget +500k auto-continue feature. `total` is the
   // budget for the whole agentic turn; `remaining` is computed per iteration
-  // from cumulative API usage. See configureTaskBudgetParams in claude.ts.
+  // from cumulative API usage. See configureTaskBudgetParams in omnicode.ts.
   taskBudget?: { total: number }
   deps?: QueryDeps
 }
@@ -344,13 +344,13 @@ async function* queryLoop(
     // Initialize or increment query chain tracking
     const queryTracking = toolUseContext.queryTracking
       ? {
-          chainId: toolUseContext.queryTracking.chainId,
-          depth: toolUseContext.queryTracking.depth + 1,
-        }
+        chainId: toolUseContext.queryTracking.chainId,
+        depth: toolUseContext.queryTracking.depth + 1,
+      }
       : {
-          chainId: deps.uuid(),
-          depth: 0,
-        }
+        chainId: deps.uuid(),
+        depth: 0,
+      }
 
     const queryChainIdForAnalytics =
       queryTracking.chainId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
@@ -379,10 +379,10 @@ async function* queryLoop(
       toolUseContext.contentReplacementState,
       persistReplacements
         ? records =>
-            void recordContentReplacement(
-              records,
-              toolUseContext.agentId,
-            ).catch(logError)
+          void recordContentReplacement(
+            records,
+            toolUseContext.agentId,
+          ).catch(logError)
         : undefined,
       new Set(
         toolUseContext.options.tools
@@ -496,9 +496,9 @@ async function* queryLoop(
           compactionUsage?.cache_creation_input_tokens ?? 0,
         compactionTotalTokens: compactionUsage
           ? compactionUsage.input_tokens +
-            (compactionUsage.cache_creation_input_tokens ?? 0) +
-            (compactionUsage.cache_read_input_tokens ?? 0) +
-            compactionUsage.output_tokens
+          (compactionUsage.cache_creation_input_tokens ?? 0) +
+          (compactionUsage.cache_read_input_tokens ?? 0) +
+          compactionUsage.output_tokens
           : 0,
 
         queryChainId: queryChainIdForAnalytics,
@@ -554,7 +554,7 @@ async function* queryLoop(
 
     const assistantMessages: AssistantMessage[] = []
     const toolResults: (UserMessage | AttachmentMessage)[] = []
-    // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    // @see https://docs.omnicode.com/en/docs/build-with-omnicode/tool-use
     // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
     // Set during streaming whenever a tool_use block arrives — the sole
     // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
@@ -565,10 +565,10 @@ async function* queryLoop(
     const useStreamingToolExecution = config.gates.streamingToolExecution
     let streamingToolExecutor = useStreamingToolExecution
       ? new StreamingToolExecutor(
-          toolUseContext.options.tools,
-          canUseTool,
-          toolUseContext,
-        )
+        toolUseContext.options.tools,
+        canUseTool,
+        toolUseContext,
+      )
       : null
 
     const appState = toolUseContext.getAppState()
@@ -873,7 +873,7 @@ async function* queryLoop(
             const usage = lastAssistant?.message.usage
             const cumulativeDeleted = usage
               ? ((usage as unknown as Record<string, number>)
-                  .cache_deleted_input_tokens ?? 0)
+                .cache_deleted_input_tokens ?? 0)
               : 0
             const deletedTokens = Math.max(
               0,
@@ -1137,7 +1137,7 @@ async function* queryLoop(
             taskBudgetRemaining = Math.max(
               0,
               (taskBudgetRemaining ?? params.taskBudget.total) -
-                preCompactContext,
+              preCompactContext,
             )
           }
 
@@ -1195,7 +1195,7 @@ async function* queryLoop(
         if (
           capEnabled &&
           maxOutputTokensOverride === undefined &&
-          !process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS
+          !process.env.OMNICODE_MAX_OUTPUT_TOKENS
         ) {
           logEvent('tengu_max_tokens_escalate', {
             escalatedTo: ESCALATED_MAX_TOKENS,
@@ -1445,11 +1445,11 @@ async function* queryLoop(
         )
         const resultContent =
           toolResult?.type === 'user' &&
-          Array.isArray(toolResult.message.content)
+            Array.isArray(toolResult.message.content)
             ? toolResult.message.content.find(
-                (c): c is ToolResultBlockParam =>
-                  c.type === 'tool_result' && c.tool_use_id === block.id,
-              )
+              (c): c is ToolResultBlockParam =>
+                c.type === 'tool_result' && c.tool_use_id === block.id,
+            )
             : undefined
         return {
           name: block.name,
@@ -1541,7 +1541,7 @@ async function* queryLoop(
     })
 
     // Get queued commands snapshot before processing attachments.
-    // These will be sent as attachments so Claude can respond to them in the current turn.
+    // These will be sent as attachments so Omnicode can respond to them in the current turn.
     //
     // Drain pending notifications. LocalShellTask completions are 'next'
     // (when MONITOR_TOOL is on) and drain without Sleep. Other task types
@@ -1674,7 +1674,7 @@ async function* queryLoop(
     // Each time we have tool results and are about to recurse, that's a turn
     const nextTurnCount = turnCount + 1
 
-    // Periodic task summary for `claude ps` — fires mid-turn so a
+    // Periodic task summary for `omnicode ps` — fires mid-turn so a
     // long-running agent still refreshes what it's working on. Gated
     // only on !agentId so every top-level conversation (REPL, SDK, HFI,
     // remote) generates summaries; subagents/forks don't.

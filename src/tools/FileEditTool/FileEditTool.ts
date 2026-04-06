@@ -207,8 +207,8 @@ export const FileEditTool = buildTool({
       const fileBuffer = await fs.readFileBytes(fullFilePath)
       const encoding: BufferEncoding =
         fileBuffer.length >= 2 &&
-        fileBuffer[0] === 0xff &&
-        fileBuffer[1] === 0xfe
+          fileBuffer[0] === 0xff &&
+          fileBuffer[1] === 0xfe
           ? 'utf16le'
           : 'utf8'
       fileContent = fileBuffer.toString(encoding).replaceAll('\r\n', '\n')
@@ -342,7 +342,7 @@ export const FileEditTool = buildTool({
       }
     }
 
-    // Additional validation for Claude settings files
+    // Additional validation for Omnicode settings files
     const settingsValidationResult = validateInputForSettingsFileEdit(
       fullFilePath,
       file,
@@ -404,7 +404,7 @@ export const FileEditTool = buildTool({
     // Discover skills from this file's path (fire-and-forget, non-blocking)
     // Skip in simple mode - no skills available
     const cwd = getCwd()
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
+    if (!isEnvTruthy(process.env.OMNICODE_SIMPLE)) {
       const newSkillDirs = await discoverSkillDirsForPaths(
         [absoluteFilePath],
         cwd,
@@ -415,7 +415,7 @@ export const FileEditTool = buildTool({
           dynamicSkillDirTriggers?.add(dir)
         }
         // Don't await - let skill loading happen in the background
-        addSkillDirectories(newSkillDirs).catch(() => {})
+        addSkillDirectories(newSkillDirs).catch(() => { })
       }
 
       // Activate conditional skills whose path patterns match this file
@@ -525,8 +525,8 @@ export const FileEditTool = buildTool({
     })
 
     // 7. Log events
-    if (absoluteFilePath.endsWith(`${sep}CLAUDE.md`)) {
-      logEvent('tengu_write_claudemd', {})
+    if (absoluteFilePath.endsWith(`${sep}OMNICODE.md`)) {
+      logEvent('tengu_write_omnicodemd', {})
     }
     countLinesChanged(patch)
 
@@ -544,7 +544,7 @@ export const FileEditTool = buildTool({
 
     let gitDiff: ToolUseDiff | undefined
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) &&
+      isEnvTruthy(process.env.OMNICODE_REMOTE) &&
       getFeatureValue_CACHED_MAY_BE_STALE('tengu_quartz_lantern', false)
     ) {
       const startTime = Date.now()

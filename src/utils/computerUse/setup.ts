@@ -10,7 +10,7 @@ import { getChicagoCoordinateMode } from './gates.js'
 
 /**
  * Build the dynamic MCP config + allowed tool names. Mirror of
- * `setupClaudeInChrome`. The `mcp__computer-use__*` tools are added to
+ * `setupOmnicodeInChrome`. The `mcp__computer-use__*` tools are added to
  * `allowedTools` so they bypass the normal permission prompt — the package's
  * `request_access` handles approval for the whole session.
  *
@@ -35,9 +35,9 @@ export function setupComputerUseMCP(): {
   const args = isInBundledMode()
     ? ['--computer-use-mcp']
     : [
-        join(fileURLToPath(import.meta.url), '..', 'cli.js'),
-        '--computer-use-mcp',
-      ]
+      join(fileURLToPath(import.meta.url), '..', 'cli.js'),
+      '--computer-use-mcp',
+    ]
 
   return {
     mcpConfig: {

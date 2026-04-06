@@ -1,5 +1,5 @@
 /**
- * REPL integration hook for `claude ssh` sessions.
+ * REPL integration hook for `omnicode ssh` sessions.
  *
  * Sibling to useDirectConnect — same shape (isRemoteMode/sendMessage/
  * cancelRequest/disconnect), same REPL wiring, but drives an SSH child
@@ -120,7 +120,7 @@ export function useSSHSession({
           toolUseID: request.tool_use_id,
           permissionResult,
           permissionPromptStartTimeMs: Date.now(),
-          onUserInteraction() {},
+          onUserInteraction() { },
           onAbort() {
             manager.respondToPermissionRequest(requestId, {
               behavior: 'deny',
@@ -149,7 +149,7 @@ export function useSSHSession({
               q.filter(i => i.toolUseID !== request.tool_use_id),
             )
           },
-          async recheckPermission() {},
+          async recheckPermission() { },
         }
 
         setToolUseConfirmQueue(q => [...q, toolUseConfirm])

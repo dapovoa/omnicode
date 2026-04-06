@@ -1,65 +1,65 @@
-// Content for the claude-api bundled skill.
+// Content for the omnicode-api bundled skill.
 // Each .md file is inlined as a string at build time via Bun's text loader.
 
-import csharpClaudeApi from './claude-api/csharp/claude-api.md'
-import curlExamples from './claude-api/curl/examples.md'
-import goClaudeApi from './claude-api/go/claude-api.md'
-import javaClaudeApi from './claude-api/java/claude-api.md'
-import phpClaudeApi from './claude-api/php/claude-api.md'
-import pythonAgentSdkPatterns from './claude-api/python/agent-sdk/patterns.md'
-import pythonAgentSdkReadme from './claude-api/python/agent-sdk/README.md'
-import pythonClaudeApiBatches from './claude-api/python/claude-api/batches.md'
-import pythonClaudeApiFilesApi from './claude-api/python/claude-api/files-api.md'
-import pythonClaudeApiReadme from './claude-api/python/claude-api/README.md'
-import pythonClaudeApiStreaming from './claude-api/python/claude-api/streaming.md'
-import pythonClaudeApiToolUse from './claude-api/python/claude-api/tool-use.md'
-import rubyClaudeApi from './claude-api/ruby/claude-api.md'
-import skillPrompt from './claude-api/SKILL.md'
-import sharedErrorCodes from './claude-api/shared/error-codes.md'
-import sharedLiveSources from './claude-api/shared/live-sources.md'
-import sharedModels from './claude-api/shared/models.md'
-import sharedPromptCaching from './claude-api/shared/prompt-caching.md'
-import sharedToolUseConcepts from './claude-api/shared/tool-use-concepts.md'
-import typescriptAgentSdkPatterns from './claude-api/typescript/agent-sdk/patterns.md'
-import typescriptAgentSdkReadme from './claude-api/typescript/agent-sdk/README.md'
-import typescriptClaudeApiBatches from './claude-api/typescript/claude-api/batches.md'
-import typescriptClaudeApiFilesApi from './claude-api/typescript/claude-api/files-api.md'
-import typescriptClaudeApiReadme from './claude-api/typescript/claude-api/README.md'
-import typescriptClaudeApiStreaming from './claude-api/typescript/claude-api/streaming.md'
-import typescriptClaudeApiToolUse from './claude-api/typescript/claude-api/tool-use.md'
+import csharpOmnicodeApi from './omnicode-api/csharp/omnicode-api.md'
+import curlExamples from './omnicode-api/curl/examples.md'
+import goOmnicodeApi from './omnicode-api/go/omnicode-api.md'
+import javaOmnicodeApi from './omnicode-api/java/omnicode-api.md'
+import phpOmnicodeApi from './omnicode-api/php/omnicode-api.md'
+import pythonAgentSdkPatterns from './omnicode-api/python/agent-sdk/patterns.md'
+import pythonAgentSdkReadme from './omnicode-api/python/agent-sdk/README.md'
+import pythonOmnicodeApiBatches from './omnicode-api/python/omnicode-api/batches.md'
+import pythonOmnicodeApiFilesApi from './omnicode-api/python/omnicode-api/files-api.md'
+import pythonOmnicodeApiReadme from './omnicode-api/python/omnicode-api/README.md'
+import pythonOmnicodeApiStreaming from './omnicode-api/python/omnicode-api/streaming.md'
+import pythonOmnicodeApiToolUse from './omnicode-api/python/omnicode-api/tool-use.md'
+import rubyOmnicodeApi from './omnicode-api/ruby/omnicode-api.md'
+import skillPrompt from './omnicode-api/SKILL.md'
+import sharedErrorCodes from './omnicode-api/shared/error-codes.md'
+import sharedLiveSources from './omnicode-api/shared/live-sources.md'
+import sharedModels from './omnicode-api/shared/models.md'
+import sharedPromptCaching from './omnicode-api/shared/prompt-caching.md'
+import sharedToolUseConcepts from './omnicode-api/shared/tool-use-concepts.md'
+import typescriptAgentSdkPatterns from './omnicode-api/typescript/agent-sdk/patterns.md'
+import typescriptAgentSdkReadme from './omnicode-api/typescript/agent-sdk/README.md'
+import typescriptOmnicodeApiBatches from './omnicode-api/typescript/omnicode-api/batches.md'
+import typescriptOmnicodeApiFilesApi from './omnicode-api/typescript/omnicode-api/files-api.md'
+import typescriptOmnicodeApiReadme from './omnicode-api/typescript/omnicode-api/README.md'
+import typescriptOmnicodeApiStreaming from './omnicode-api/typescript/omnicode-api/streaming.md'
+import typescriptOmnicodeApiToolUse from './omnicode-api/typescript/omnicode-api/tool-use.md'
 
 // @[MODEL LAUNCH]: Update the model IDs/names below. These are substituted into {{VAR}}
 // placeholders in the .md files at runtime before the skill prompt is sent.
 // After updating these constants, manually update the two files that still hardcode models:
-//   - claude-api/SKILL.md (Current Models pricing table)
-//   - claude-api/shared/models.md (full model catalog with legacy versions and alias mappings)
+//   - omnicode-api/SKILL.md (Current Models pricing table)
+//   - omnicode-api/shared/models.md (full model catalog with legacy versions and alias mappings)
 export const SKILL_MODEL_VARS = {
-  OPUS_ID: 'claude-opus-4-6',
-  OPUS_NAME: 'Claude Opus 4.6',
-  SONNET_ID: 'claude-sonnet-4-6',
-  SONNET_NAME: 'Claude Sonnet 4.6',
-  HAIKU_ID: 'claude-haiku-4-5',
-  HAIKU_NAME: 'Claude Haiku 4.5',
+  OPUS_ID: 'omnicode-opus-4-6',
+  OPUS_NAME: 'Omnicode Opus 4.6',
+  SONNET_ID: 'omnicode-sonnet-4-6',
+  SONNET_NAME: 'Omnicode Sonnet 4.6',
+  HAIKU_ID: 'omnicode-haiku-4-5',
+  HAIKU_NAME: 'Omnicode Haiku 4.5',
   // Previous Sonnet ID — used in "do not append date suffixes" example in SKILL.md.
-  PREV_SONNET_ID: 'claude-sonnet-4-5',
+  PREV_SONNET_ID: 'omnicode-sonnet-4-5',
 } satisfies Record<string, string>
 
 export const SKILL_PROMPT: string = skillPrompt
 
 export const SKILL_FILES: Record<string, string> = {
-  'csharp/claude-api.md': csharpClaudeApi,
+  'csharp/omnicode-api.md': csharpOmnicodeApi,
   'curl/examples.md': curlExamples,
-  'go/claude-api.md': goClaudeApi,
-  'java/claude-api.md': javaClaudeApi,
-  'php/claude-api.md': phpClaudeApi,
+  'go/omnicode-api.md': goOmnicodeApi,
+  'java/omnicode-api.md': javaOmnicodeApi,
+  'php/omnicode-api.md': phpOmnicodeApi,
   'python/agent-sdk/README.md': pythonAgentSdkReadme,
   'python/agent-sdk/patterns.md': pythonAgentSdkPatterns,
-  'python/claude-api/README.md': pythonClaudeApiReadme,
-  'python/claude-api/batches.md': pythonClaudeApiBatches,
-  'python/claude-api/files-api.md': pythonClaudeApiFilesApi,
-  'python/claude-api/streaming.md': pythonClaudeApiStreaming,
-  'python/claude-api/tool-use.md': pythonClaudeApiToolUse,
-  'ruby/claude-api.md': rubyClaudeApi,
+  'python/omnicode-api/README.md': pythonOmnicodeApiReadme,
+  'python/omnicode-api/batches.md': pythonOmnicodeApiBatches,
+  'python/omnicode-api/files-api.md': pythonOmnicodeApiFilesApi,
+  'python/omnicode-api/streaming.md': pythonOmnicodeApiStreaming,
+  'python/omnicode-api/tool-use.md': pythonOmnicodeApiToolUse,
+  'ruby/omnicode-api.md': rubyOmnicodeApi,
   'shared/error-codes.md': sharedErrorCodes,
   'shared/live-sources.md': sharedLiveSources,
   'shared/models.md': sharedModels,
@@ -67,9 +67,9 @@ export const SKILL_FILES: Record<string, string> = {
   'shared/tool-use-concepts.md': sharedToolUseConcepts,
   'typescript/agent-sdk/README.md': typescriptAgentSdkReadme,
   'typescript/agent-sdk/patterns.md': typescriptAgentSdkPatterns,
-  'typescript/claude-api/README.md': typescriptClaudeApiReadme,
-  'typescript/claude-api/batches.md': typescriptClaudeApiBatches,
-  'typescript/claude-api/files-api.md': typescriptClaudeApiFilesApi,
-  'typescript/claude-api/streaming.md': typescriptClaudeApiStreaming,
-  'typescript/claude-api/tool-use.md': typescriptClaudeApiToolUse,
+  'typescript/omnicode-api/README.md': typescriptOmnicodeApiReadme,
+  'typescript/omnicode-api/batches.md': typescriptOmnicodeApiBatches,
+  'typescript/omnicode-api/files-api.md': typescriptOmnicodeApiFilesApi,
+  'typescript/omnicode-api/streaming.md': typescriptOmnicodeApiStreaming,
+  'typescript/omnicode-api/tool-use.md': typescriptOmnicodeApiToolUse,
 }

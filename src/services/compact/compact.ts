@@ -99,7 +99,7 @@ import {
 import {
   getMaxOutputTokensForModel,
   queryModelWithStreaming,
-} from '../api/claude.js'
+} from '../api/omnicode.js'
 import {
   getPromptTooLongTokenGap,
   PROMPT_TOO_LONG_ERROR_MESSAGE,
@@ -121,7 +121,7 @@ import {
 export const POST_COMPACT_MAX_FILES_TO_RESTORE = 5
 export const POST_COMPACT_TOKEN_BUDGET = 50_000
 export const POST_COMPACT_MAX_TOKENS_PER_FILE = 5_000
-// Skills can be large (verify=18.7KB, claude-api=20.1KB). Previously re-injected
+// Skills can be large (verify=18.7KB, omnicode-api=20.1KB). Previously re-injected
 // unbounded on every compact → 5-10K tok/compact. Per-skill truncation beats
 // dropping — instructions at the top of a skill file are usually the critical
 // part. Budget sized to hold ~5 skills at the per-skill cap.
@@ -248,8 +248,8 @@ export function truncateHeadForPTLRetry(
   // (drops only the marker, re-adds it, zero progress on retry 2+).
   const input =
     messages[0]?.type === 'user' &&
-    messages[0].isMeta &&
-    messages[0].message.content === PTL_RETRY_MARKER
+      messages[0].isMeta &&
+      messages[0].message.content === PTL_RETRY_MARKER
       ? messages.slice(1)
       : messages
 
@@ -445,7 +445,7 @@ export async function compactConversation(
     let summaryResponse: AssistantMessage
     let summary: string | null
     let ptlAttempts = 0
-    for (;;) {
+    for (; ;) {
       summaryResponse = await streamCompactSummary({
         messages: messagesToSummarize,
         summaryRequest,
@@ -672,9 +672,9 @@ export async function compactConversation(
         compactionUsage?.cache_creation_input_tokens ?? 0,
       compactionTotalTokens: compactionUsage
         ? compactionUsage.input_tokens +
-          (compactionUsage.cache_creation_input_tokens ?? 0) +
-          (compactionUsage.cache_read_input_tokens ?? 0) +
-          compactionUsage.output_tokens
+        (compactionUsage.cache_creation_input_tokens ?? 0) +
+        (compactionUsage.cache_read_input_tokens ?? 0) +
+        compactionUsage.output_tokens
         : 0,
       promptCacheSharingEnabled,
       // analyzeContext walks every content block (~11ms on a 4.5K-message
@@ -788,13 +788,13 @@ export async function partialCompactConversation(
     const messagesToKeep =
       direction === 'up_to'
         ? allMessages
-            .slice(pivotIndex)
-            .filter(
-              m =>
-                m.type !== 'progress' &&
-                !isCompactBoundaryMessage(m) &&
-                !(m.type === 'user' && m.isCompactSummary),
-            )
+          .slice(pivotIndex)
+          .filter(
+            m =>
+              m.type !== 'progress' &&
+              !isCompactBoundaryMessage(m) &&
+              !(m.type === 'user' && m.isCompactSummary),
+          )
         : allMessages.slice(0, pivotIndex).filter(m => m.type !== 'progress')
 
     if (messagesToSummarize.length === 0) {
@@ -857,7 +857,7 @@ export async function partialCompactConversation(
     let summaryResponse: AssistantMessage
     let summary: string | null
     let ptlAttempts = 0
-    for (;;) {
+    for (; ;) {
       summaryResponse = await streamCompactSummary({
         messages: apiMessages,
         summaryRequest,
@@ -1007,7 +1007,7 @@ export async function partialCompactConversation(
     const lastPreCompactUuid =
       direction === 'up_to'
         ? allMessages.slice(0, pivotIndex).findLast(m => m.type !== 'progress')
-            ?.uuid
+          ?.uuid
         : messagesToKeep.at(-1)?.uuid
     const boundaryMarker = createCompactBoundaryMessage(
       'manual',
@@ -1032,12 +1032,12 @@ export async function partialCompactConversation(
         isCompactSummary: true,
         ...(messagesToKeep.length > 0
           ? {
-              summarizeMetadata: {
-                messagesSummarized: messagesToSummarize.length,
-                userContext: userFeedback,
-                direction,
-              },
-            }
+            summarizeMetadata: {
+              messagesSummarized: messagesToSummarize.length,
+              userContext: userFeedback,
+              direction,
+            },
+          }
           : { isVisibleInTranscriptOnly: true as const }),
       }),
     ]
@@ -1164,13 +1164,13 @@ async function streamCompactSummary({
   // and the server doesn't consider the session stale.
   const activityInterval = isSessionActivityTrackingActive()
     ? setInterval(
-        (statusSetter?: (status: 'compacting' | null) => void) => {
-          sendSessionActivitySignal()
-          statusSetter?.('compacting')
-        },
-        30_000,
-        context.setSDKStatus,
-      )
+      (statusSetter?: (status: 'compacting' | null) => void) => {
+        sendSessionActivitySignal()
+        statusSetter?.('compacting')
+      },
+      30_000,
+      context.setSDKStatus,
+    )
     : undefined
 
   try {
@@ -1179,7 +1179,7 @@ async function streamCompactSummary({
         // DO NOT set maxOutputTokens here. The fork piggybacks on the main thread's
         // prompt cache by sending identical cache-key params (system, tools, model,
         // messages prefix, thinking config). Setting maxOutputTokens would clamp
-        // budget_tokens via Math.min(budget, maxOutputTokens-1) in claude.ts,
+        // budget_tokens via Math.min(budget, maxOutputTokens-1) in omnicode.ts,
         // creating a thinking config mismatch that invalidates the cache.
         // The streaming fallback path (below) can safely set maxOutputTokensOverride
         // since it doesn't share cache with the main thread.
@@ -1218,9 +1218,9 @@ async function streamCompactSummary({
               cacheHitRate:
                 result.totalUsage.cache_read_input_tokens > 0
                   ? result.totalUsage.cache_read_input_tokens /
-                    (result.totalUsage.cache_read_input_tokens +
-                      result.totalUsage.cache_creation_input_tokens +
-                      result.totalUsage.input_tokens)
+                  (result.totalUsage.cache_read_input_tokens +
+                    result.totalUsage.cache_creation_input_tokens +
+                    result.totalUsage.input_tokens)
                   : 0,
             })
           }
@@ -1278,13 +1278,13 @@ async function streamCompactSummary({
       // Deduplicate by name to avoid API errors when MCP tools share names with built-in tools.
       const tools: Tool[] = useToolSearch
         ? uniqBy(
-            [
-              FileReadTool,
-              ToolSearchTool,
-              ...context.options.tools.filter(t => t.isMcp),
-            ],
-            'name',
-          )
+          [
+            FileReadTool,
+            ToolSearchTool,
+            ...context.options.tools.filter(t => t.isMcp),
+          ],
+          'name',
+        )
         : [FileReadTool]
 
       const streamingGen = queryModelWithStreaming({
@@ -1684,9 +1684,9 @@ function shouldExcludeFromPostCompactRestore(
     // If we can't get plan file path, continue with other checks
   }
 
-  // Exclude all types of claude.md files
-  // TODO: Refactor to use isMemoryFilePath() from claudemd.ts for consistency
-  // and to also match child directory memory files (.claude/rules/*.md, etc.)
+  // Exclude all types of omnicode.md files
+  // TODO: Refactor to use isMemoryFilePath() from omnicodemd.ts for consistency
+  // and to also match child directory memory files (.omnicode/rules/*.md, etc.)
   try {
     const normalizedMemoryPaths = new Set(
       MEMORY_TYPE_VALUES.map(type => expandPath(getMemoryPath(type))),

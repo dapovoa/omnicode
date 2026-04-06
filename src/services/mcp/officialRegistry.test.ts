@@ -17,7 +17,7 @@ afterEach(() => {
 
 describe('prefetchOfficialMcpUrls', () => {
   test('does not fetch registry when using OpenAI mode', async () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const getSpy = mock(() => Promise.resolve({ data: { servers: [] } }))
     axios.get = getSpy as typeof axios.get
 
@@ -28,7 +28,7 @@ describe('prefetchOfficialMcpUrls', () => {
   })
 
   test('does not fetch registry when using Gemini mode', async () => {
-    process.env.CLAUDE_CODE_USE_GEMINI = '1'
+    process.env.OMNICODE_USE_GEMINI = '1'
     const getSpy = mock(() => Promise.resolve({ data: { servers: [] } }))
     axios.get = getSpy as typeof axios.get
 
@@ -39,9 +39,9 @@ describe('prefetchOfficialMcpUrls', () => {
   })
 
   test('fetches registry in first-party mode', async () => {
-    delete process.env.CLAUDE_CODE_USE_OPENAI
-    delete process.env.CLAUDE_CODE_USE_GEMINI
-    delete process.env.CLAUDE_CODE_USE_GITHUB
+    delete process.env.OMNICODE_USE_OPENAI
+    delete process.env.OMNICODE_USE_GEMINI
+    delete process.env.OMNICODE_USE_GITHUB
 
     const getSpy = mock(() =>
       Promise.resolve({

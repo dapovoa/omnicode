@@ -18,12 +18,12 @@ function makeError(headers: Record<string, string>): APIError {
 const originalEnv = { ...process.env }
 afterEach(() => {
   for (const key of [
-    'CLAUDE_CODE_USE_OPENAI',
-    'CLAUDE_CODE_USE_GEMINI',
-    'CLAUDE_CODE_USE_GITHUB',
-    'CLAUDE_CODE_USE_BEDROCK',
-    'CLAUDE_CODE_USE_VERTEX',
-    'CLAUDE_CODE_USE_FOUNDRY',
+    'OMNICODE_USE_OPENAI',
+    'OMNICODE_USE_GEMINI',
+    'OMNICODE_USE_GITHUB',
+    'OMNICODE_USE_BEDROCK',
+    'OMNICODE_USE_VERTEX',
+    'OMNICODE_USE_FOUNDRY',
   ]) {
     if (originalEnv[key] === undefined) delete process.env[key]
     else process.env[key] = originalEnv[key]
@@ -90,14 +90,14 @@ describe('getRateLimitResetDelayMs - Anthropic (firstParty)', () => {
 
 describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   test('reads x-ratelimit-reset-requests duration string', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const error = makeError({ 'x-ratelimit-reset-requests': '30s' })
     const delay = getRateLimitResetDelayMs(error)
     expect(delay).toBe(30_000)
   })
 
   test('reads x-ratelimit-reset-tokens and picks the larger delay', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const error = makeError({
       'x-ratelimit-reset-requests': '10s',
       'x-ratelimit-reset-tokens': '1m0s',
@@ -108,13 +108,13 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
   })
 
   test('returns null when no openai rate limit headers present', () => {
-    process.env.CLAUDE_CODE_USE_OPENAI = '1'
+    process.env.OMNICODE_USE_OPENAI = '1'
     const error = makeError({})
     expect(getRateLimitResetDelayMs(error)).toBeNull()
   })
 
   test('works for github provider too', () => {
-    process.env.CLAUDE_CODE_USE_GITHUB = '1'
+    process.env.OMNICODE_USE_GITHUB = '1'
     const error = makeError({ 'x-ratelimit-reset-requests': '5s' })
     expect(getRateLimitResetDelayMs(error)).toBe(5_000)
   })
@@ -122,14 +122,14 @@ describe('getRateLimitResetDelayMs - OpenAI provider', () => {
 
 describe('getRateLimitResetDelayMs - providers without reset headers', () => {
   test('returns null for bedrock', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.OMNICODE_USE_BEDROCK = '1'
     const error = makeError({ 'anthropic-ratelimit-unified-reset': String(Math.floor(Date.now() / 1000) + 60) })
     // Bedrock doesn't use this header — should still return null
     expect(getRateLimitResetDelayMs(error)).toBeNull()
   })
 
   test('returns null for vertex', () => {
-    process.env.CLAUDE_CODE_USE_VERTEX = '1'
+    process.env.OMNICODE_USE_VERTEX = '1'
     const error = makeError({})
     expect(getRateLimitResetDelayMs(error)).toBeNull()
   })

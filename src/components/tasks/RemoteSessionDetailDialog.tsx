@@ -44,7 +44,7 @@ type Props = {
 export function formatToolUseSummary(name: string, input: unknown): string {
   // plan_ready phase is only reached via ExitPlanMode tool
   if (name === EXIT_PLAN_MODE_V2_TOOL_NAME) {
-    return 'Review the plan in Claude Code on the web';
+    return 'Review the plan in Omnicode Code on the web';
   }
   if (!input || typeof input !== 'object') return name;
   // AskUserQuestion: show the question text as a CTA, not the tool name.
@@ -168,7 +168,7 @@ function UltraplanSessionDetail(t0) {
     }
     let t7;
     if ($[12] === Symbol.for("react.memo_cache_sentinel")) {
-      t7 = <Text dimColor={true}>This will terminate the Claude Code on the web session.</Text>;
+      t7 = <Text dimColor={true}>This will terminate the Omnicode Code on the web session.</Text>;
       $[12] = t7;
     } else {
       t7 = $[12];
@@ -196,13 +196,13 @@ function UltraplanSessionDetail(t0) {
     let t10;
     if ($[15] !== goBackOrClose || $[16] !== onKill) {
       t10 = <Dialog title="Stop ultraplan?" onCancel={t6} color="background"><Box flexDirection="column" gap={1}>{t7}<Select options={t9} onChange={v => {
-            if (v === "stop") {
-              onKill?.();
-              goBackOrClose();
-            } else {
-              setConfirmingStop(false);
-            }
-          }} /></Box></Dialog>;
+        if (v === "stop") {
+          onKill?.();
+          goBackOrClose();
+        } else {
+          setConfirmingStop(false);
+        }
+      }} /></Box></Dialog>;
       $[15] = goBackOrClose;
       $[16] = onKill;
       $[17] = t10;
@@ -311,7 +311,7 @@ function UltraplanSessionDetail(t0) {
   let t19;
   if ($[47] === Symbol.for("react.memo_cache_sentinel")) {
     t19 = {
-      label: "Review in Claude Code on the web",
+      label: "Review in Omnicode Code on the web",
       value: "open" as const
     };
     $[47] = t19;
@@ -577,13 +577,13 @@ function ReviewSessionDetail(t0) {
     let t7;
     if ($[8] !== goBackOrClose || $[9] !== onKill) {
       t7 = <Dialog title="Stop ultrareview?" onCancel={t3} color="background"><Box flexDirection="column" gap={1}>{t4}<Select options={t6} onChange={v => {
-            if (v === "stop") {
-              onKill?.();
-              goBackOrClose();
-            } else {
-              setConfirmingStop(false);
-            }
-          }} /></Box></Dialog>;
+        if (v === "stop") {
+          onKill?.();
+          goBackOrClose();
+        } else {
+          setConfirmingStop(false);
+        }
+      }} /></Box></Dialog>;
       $[8] = goBackOrClose;
       $[9] = onKill;
       $[10] = t7;
@@ -595,13 +595,13 @@ function ReviewSessionDetail(t0) {
   let t3;
   if ($[11] !== completed || $[12] !== onKill || $[13] !== running) {
     t3 = completed ? [{
-      label: "Open in Claude Code on the web",
+      label: "Open in Omnicode Code on the web",
       value: "open"
     }, {
       label: "Dismiss",
       value: "dismiss"
     }] : [{
-      label: "Open in Claude Code on the web",
+      label: "Open in Omnicode Code on the web",
       value: "open"
     }, ...(onKill && running ? [{
       label: "Stop ultrareview",
@@ -846,58 +846,58 @@ export function RemoteSessionDetailDialog({
   // Map TaskStatus to display status (handle 'pending')
   const displayStatus = session.status === 'pending' ? 'starting' : session.status;
   return <Box flexDirection="column" tabIndex={0} autoFocus onKeyDown={handleKeyDown}>
-      <Dialog title="Remote session details" onCancel={handleClose} color="background" inputGuide={exitState => exitState.pending ? <Text>Press {exitState.keyName} again to exit</Text> : <Byline>
-              {onBack && <KeyboardShortcutHint shortcut="←" action="go back" />}
-              <KeyboardShortcutHint shortcut="Esc/Enter/Space" action="close" />
-              {!isTeleporting && <KeyboardShortcutHint shortcut="t" action="teleport" />}
-            </Byline>}>
-        <Box flexDirection="column">
-          <Text>
-            <Text bold>Status</Text>:{' '}
-            {displayStatus === 'running' || displayStatus === 'starting' ? <Text color="background">{displayStatus}</Text> : displayStatus === 'completed' ? <Text color="success">{displayStatus}</Text> : <Text color="error">{displayStatus}</Text>}
-          </Text>
-          <Text>
-            <Text bold>Runtime</Text>:{' '}
-            {formatDuration((session.endTime ?? Date.now()) - session.startTime)}
-          </Text>
-          <Text wrap="truncate-end">
-            <Text bold>Title</Text>: {displayTitle}
-          </Text>
-          <Text>
-            <Text bold>Progress</Text>:{' '}
-            <RemoteSessionProgress session={session} />
-          </Text>
-          <Text>
-            <Text bold>Session URL</Text>:{' '}
-            <Link url={getRemoteTaskSessionUrl(session.sessionId)}>
-              <Text dimColor>{getRemoteTaskSessionUrl(session.sessionId)}</Text>
-            </Link>
+    <Dialog title="Remote session details" onCancel={handleClose} color="background" inputGuide={exitState => exitState.pending ? <Text>Press {exitState.keyName} again to exit</Text> : <Byline>
+      {onBack && <KeyboardShortcutHint shortcut="←" action="go back" />}
+      <KeyboardShortcutHint shortcut="Esc/Enter/Space" action="close" />
+      {!isTeleporting && <KeyboardShortcutHint shortcut="t" action="teleport" />}
+    </Byline>}>
+      <Box flexDirection="column">
+        <Text>
+          <Text bold>Status</Text>:{' '}
+          {displayStatus === 'running' || displayStatus === 'starting' ? <Text color="background">{displayStatus}</Text> : displayStatus === 'completed' ? <Text color="success">{displayStatus}</Text> : <Text color="error">{displayStatus}</Text>}
+        </Text>
+        <Text>
+          <Text bold>Runtime</Text>:{' '}
+          {formatDuration((session.endTime ?? Date.now()) - session.startTime)}
+        </Text>
+        <Text wrap="truncate-end">
+          <Text bold>Title</Text>: {displayTitle}
+        </Text>
+        <Text>
+          <Text bold>Progress</Text>:{' '}
+          <RemoteSessionProgress session={session} />
+        </Text>
+        <Text>
+          <Text bold>Session URL</Text>:{' '}
+          <Link url={getRemoteTaskSessionUrl(session.sessionId)}>
+            <Text dimColor>{getRemoteTaskSessionUrl(session.sessionId)}</Text>
+          </Link>
+        </Text>
+      </Box>
+
+      {/* Remote session messages section */}
+      {session.log.length > 0 && <Box flexDirection="column" marginTop={1}>
+        <Text>
+          <Text bold>Recent messages</Text>:
+        </Text>
+        <Box flexDirection="column" height={10} overflowY="hidden">
+          {lastMessages.map((msg, i) => <Message key={i} message={msg} lookups={EMPTY_LOOKUPS} addMargin={i > 0} tools={toolUseContext.options.tools} commands={toolUseContext.options.commands} verbose={toolUseContext.options.verbose} inProgressToolUseIDs={new Set()} progressMessagesForMessage={[]} shouldAnimate={false} shouldShowDot={false} style="condensed" isTranscriptMode={false} isStatic={true} />)}
+        </Box>
+        <Box marginTop={1}>
+          <Text dimColor italic>
+            Showing last {lastMessages.length} of {session.log.length}{' '}
+            messages
           </Text>
         </Box>
+      </Box>}
 
-        {/* Remote session messages section */}
-        {session.log.length > 0 && <Box flexDirection="column" marginTop={1}>
-            <Text>
-              <Text bold>Recent messages</Text>:
-            </Text>
-            <Box flexDirection="column" height={10} overflowY="hidden">
-              {lastMessages.map((msg, i) => <Message key={i} message={msg} lookups={EMPTY_LOOKUPS} addMargin={i > 0} tools={toolUseContext.options.tools} commands={toolUseContext.options.commands} verbose={toolUseContext.options.verbose} inProgressToolUseIDs={new Set()} progressMessagesForMessage={[]} shouldAnimate={false} shouldShowDot={false} style="condensed" isTranscriptMode={false} isStatic={true} />)}
-            </Box>
-            <Box marginTop={1}>
-              <Text dimColor italic>
-                Showing last {lastMessages.length} of {session.log.length}{' '}
-                messages
-              </Text>
-            </Box>
-          </Box>}
+      {/* Teleport error message */}
+      {teleportError && <Box marginTop={1}>
+        <Text color="error">Teleport failed: {teleportError}</Text>
+      </Box>}
 
-        {/* Teleport error message */}
-        {teleportError && <Box marginTop={1}>
-            <Text color="error">Teleport failed: {teleportError}</Text>
-          </Box>}
-
-        {/* Teleporting status */}
-        {isTeleporting && <Text color="background">Teleporting to session…</Text>}
-      </Dialog>
-    </Box>;
+      {/* Teleporting status */}
+      {isTeleporting && <Text color="background">Teleporting to session…</Text>}
+    </Dialog>
+  </Box>;
 }

@@ -149,7 +149,7 @@ export function loadMcpServerUserConfig(
 
     const sensitive =
       getSecureStorage().read()?.pluginSecrets?.[
-        serverSecretsKey(pluginId, serverName)
+      serverSecretsKey(pluginId, serverName)
       ]
 
     if (!nonSensitive && !sensitive) {
@@ -233,16 +233,16 @@ export function saveMcpServerUserConfig(
       storage.read()?.pluginSecrets?.[k] ?? undefined
     const secureScrubbed = existingInSecureStorage
       ? Object.fromEntries(
-          Object.entries(existingInSecureStorage).filter(
-            ([key]) => !nonSensitiveKeysInThisSave.has(key),
-          ),
-        )
+        Object.entries(existingInSecureStorage).filter(
+          ([key]) => !nonSensitiveKeysInThisSave.has(key),
+        ),
+      )
       : undefined
     const needSecureScrub =
       secureScrubbed &&
       existingInSecureStorage &&
       Object.keys(secureScrubbed).length !==
-        Object.keys(existingInSecureStorage).length
+      Object.keys(existingInSecureStorage).length
     if (Object.keys(sensitive).length > 0 || needSecureScrub) {
       const existing = storage.read() ?? {}
       if (!existing.pluginSecrets) {
@@ -267,9 +267,8 @@ export function saveMcpServerUserConfig(
       }
       if (needSecureScrub) {
         logForDebugging(
-          `saveMcpServerUserConfig: scrubbed ${
-            Object.keys(existingInSecureStorage!).length -
-            Object.keys(secureScrubbed!).length
+          `saveMcpServerUserConfig: scrubbed ${Object.keys(existingInSecureStorage!).length -
+          Object.keys(secureScrubbed!).length
           } stale non-sensitive key(s) from secureStorage for ${k}`,
         )
       }
@@ -309,7 +308,7 @@ export function saveMcpServerUserConfig(
       // include undefined, but updateSettingsForSource's mergeWith customizer
       // needs explicit undefined to delete — cast is deliberate internal
       // plumbing (same rationale as deletePluginOptions in
-      // pluginOptionsStorage.ts:184, see CLAUDE.md's 10% case).
+      // pluginOptionsStorage.ts:184, see OMNICODE.md's 10% case).
       const scrubbed = Object.fromEntries(
         keysToScrubFromSettings.map(k => [k, undefined]),
       ) as Record<string, undefined>
@@ -601,7 +600,7 @@ async function extractMcpbContents(
     if (mode && mode & 0o111) {
       // Swallow EPERM/ENOTSUP (NFS root_squash, some FUSE mounts) — losing +x
       // is the pre-PR behavior and better than aborting mid-extraction.
-      await chmod(fullPath, mode & 0o777).catch(() => {})
+      await chmod(fullPath, mode & 0o777).catch(() => { })
     }
 
     filesWritten++

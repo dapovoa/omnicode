@@ -150,10 +150,10 @@ export function BrowseMarketplace({
           }
         }
 
-        // Sort so claude-plugin-directory is always first
+        // Sort so omnicode-plugin-directory is always first
         marketplaceInfos.sort((a, b) => {
-          if (a.name === 'claude-plugin-directory') return -1;
-          if (b.name === 'claude-plugin-directory') return 1;
+          if (a.name === 'omnicode-plugin-directory') return -1;
+          if (b.name === 'omnicode-plugin-directory') return 1;
           return 0;
         });
         setMarketplaces(marketplaceInfos);
@@ -579,57 +579,57 @@ export function BrowseMarketplace({
   if (viewState === 'marketplace-list') {
     if (marketplaces.length === 0) {
       return <Box flexDirection="column">
-          <Box marginBottom={1}>
-            <Text bold>Select marketplace</Text>
-          </Box>
-          <Text>No marketplaces configured.</Text>
-          <Text dimColor>
-            Add a marketplace first using {"'Add marketplace'"}.
-          </Text>
-          <Box marginTop={1} paddingLeft={1}>
-            <Text dimColor>
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
-            </Text>
-          </Box>
-        </Box>;
-    }
-    return <Box flexDirection="column">
         <Box marginBottom={1}>
           <Text bold>Select marketplace</Text>
         </Box>
-
-        {/* Warning banner for marketplace load failures */}
-        {warning && <Box marginBottom={1} flexDirection="column">
-            <Text color="warning">
-              {figures.warning} {warning}
-            </Text>
-          </Box>}
-        {marketplaces.map((marketplace_3, index) => <Box key={marketplace_3.name} flexDirection="column" marginBottom={index < marketplaces.length - 1 ? 1 : 0}>
-            <Box>
-              <Text color={selectedIndex === index ? 'suggestion' : undefined}>
-                {selectedIndex === index ? figures.pointer : ' '}{' '}
-                {marketplace_3.name}
-              </Text>
-            </Box>
-            <Box marginLeft={2}>
-              <Text dimColor>
-                {marketplace_3.totalPlugins}{' '}
-                {plural(marketplace_3.totalPlugins, 'plugin')} available
-                {marketplace_3.installedCount > 0 && ` · ${marketplace_3.installedCount} already installed`}
-                {marketplace_3.source && ` · ${marketplace_3.source}`}
-              </Text>
-            </Box>
-          </Box>)}
-
-        <Box marginTop={1}>
-          <Text dimColor italic>
-            <Byline>
-              <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
-            </Byline>
+        <Text>No marketplaces configured.</Text>
+        <Text dimColor>
+          Add a marketplace first using {"'Add marketplace'"}.
+        </Text>
+        <Box marginTop={1} paddingLeft={1}>
+          <Text dimColor>
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
           </Text>
         </Box>
       </Box>;
+    }
+    return <Box flexDirection="column">
+      <Box marginBottom={1}>
+        <Text bold>Select marketplace</Text>
+      </Box>
+
+      {/* Warning banner for marketplace load failures */}
+      {warning && <Box marginBottom={1} flexDirection="column">
+        <Text color="warning">
+          {figures.warning} {warning}
+        </Text>
+      </Box>}
+      {marketplaces.map((marketplace_3, index) => <Box key={marketplace_3.name} flexDirection="column" marginBottom={index < marketplaces.length - 1 ? 1 : 0}>
+        <Box>
+          <Text color={selectedIndex === index ? 'suggestion' : undefined}>
+            {selectedIndex === index ? figures.pointer : ' '}{' '}
+            {marketplace_3.name}
+          </Text>
+        </Box>
+        <Box marginLeft={2}>
+          <Text dimColor>
+            {marketplace_3.totalPlugins}{' '}
+            {plural(marketplace_3.totalPlugins, 'plugin')} available
+            {marketplace_3.installedCount > 0 && ` · ${marketplace_3.installedCount} already installed`}
+            {marketplace_3.source && ` · ${marketplace_3.source}`}
+          </Text>
+        </Box>
+      </Box>)}
+
+      <Box marginTop={1}>
+        <Text dimColor italic>
+          <Byline>
+            <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
+          </Byline>
+        </Text>
+      </Box>
+    </Box>;
   }
 
   // Plugin details view
@@ -638,164 +638,164 @@ export function BrowseMarketplace({
     const githubRepo_1 = extractGitHubRepo(selectedPlugin);
     const menuOptions = buildPluginDetailsMenuOptions(hasHomepage_1, githubRepo_1);
     return <Box flexDirection="column">
-        <Box marginBottom={1}>
-          <Text bold>Plugin Details</Text>
-        </Box>
+      <Box marginBottom={1}>
+        <Text bold>Plugin Details</Text>
+      </Box>
 
-        {/* Plugin metadata */}
-        <Box flexDirection="column" marginBottom={1}>
-          <Text bold>{selectedPlugin.entry.name}</Text>
-          {selectedPlugin.entry.version && <Text dimColor>Version: {selectedPlugin.entry.version}</Text>}
-          {selectedPlugin.entry.description && <Box marginTop={1}>
-              <Text>{selectedPlugin.entry.description}</Text>
-            </Box>}
-          {selectedPlugin.entry.author && <Box marginTop={1}>
-              <Text dimColor>
-                By:{' '}
-                {typeof selectedPlugin.entry.author === 'string' ? selectedPlugin.entry.author : selectedPlugin.entry.author.name}
-              </Text>
-            </Box>}
-        </Box>
-
-        {/* What will be installed */}
-        <Box flexDirection="column" marginBottom={1}>
-          <Text bold>Will install:</Text>
-          {selectedPlugin.entry.commands && <Text dimColor>
-              · Commands:{' '}
-              {Array.isArray(selectedPlugin.entry.commands) ? selectedPlugin.entry.commands.join(', ') : Object.keys(selectedPlugin.entry.commands).join(', ')}
-            </Text>}
-          {selectedPlugin.entry.agents && <Text dimColor>
-              · Agents:{' '}
-              {Array.isArray(selectedPlugin.entry.agents) ? selectedPlugin.entry.agents.join(', ') : Object.keys(selectedPlugin.entry.agents).join(', ')}
-            </Text>}
-          {selectedPlugin.entry.hooks && <Text dimColor>
-              · Hooks: {Object.keys(selectedPlugin.entry.hooks).join(', ')}
-            </Text>}
-          {selectedPlugin.entry.mcpServers && <Text dimColor>
-              · MCP Servers:{' '}
-              {Array.isArray(selectedPlugin.entry.mcpServers) ? selectedPlugin.entry.mcpServers.join(', ') : typeof selectedPlugin.entry.mcpServers === 'object' ? Object.keys(selectedPlugin.entry.mcpServers).join(', ') : 'configured'}
-            </Text>}
-          {!selectedPlugin.entry.commands && !selectedPlugin.entry.agents && !selectedPlugin.entry.hooks && !selectedPlugin.entry.mcpServers && <>
-                {typeof selectedPlugin.entry.source === 'object' && 'source' in selectedPlugin.entry.source && (selectedPlugin.entry.source.source === 'github' || selectedPlugin.entry.source.source === 'url' || selectedPlugin.entry.source.source === 'npm' || selectedPlugin.entry.source.source === 'pip') ? <Text dimColor>
-                    · Component summary not available for remote plugin
-                  </Text> :
-          // TODO: Actually scan local plugin directories to show real components
-          // This would require accessing the filesystem to check for:
-          // - commands/ directory and list files
-          // - agents/ directory and list files
-          // - hooks/ directory and list files
-          // - .mcp.json or mcp-servers.json files
+      {/* Plugin metadata */}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold>{selectedPlugin.entry.name}</Text>
+        {selectedPlugin.entry.version && <Text dimColor>Version: {selectedPlugin.entry.version}</Text>}
+        {selectedPlugin.entry.description && <Box marginTop={1}>
+          <Text>{selectedPlugin.entry.description}</Text>
+        </Box>}
+        {selectedPlugin.entry.author && <Box marginTop={1}>
           <Text dimColor>
-                    · Components will be discovered at installation
-                  </Text>}
-              </>}
-        </Box>
-
-        <PluginTrustWarning />
-
-        {/* Error message */}
-        {installError && <Box marginBottom={1}>
-            <Text color="error">Error: {installError}</Text>
-          </Box>}
-
-        {/* Menu options */}
-        <Box flexDirection="column">
-          {menuOptions.map((option, index_0) => <Box key={option.action}>
-              {detailsMenuIndex === index_0 && <Text>{'> '}</Text>}
-              {detailsMenuIndex !== index_0 && <Text>{'  '}</Text>}
-              <Text bold={detailsMenuIndex === index_0}>
-                {isInstalling && option.action === 'install' ? 'Installing…' : option.label}
-              </Text>
-            </Box>)}
-        </Box>
-
-        <Box marginTop={1} paddingLeft={1}>
-          <Text dimColor>
-            <Byline>
-              <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
-            </Byline>
+            By:{' '}
+            {typeof selectedPlugin.entry.author === 'string' ? selectedPlugin.entry.author : selectedPlugin.entry.author.name}
           </Text>
-        </Box>
-      </Box>;
+        </Box>}
+      </Box>
+
+      {/* What will be installed */}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text bold>Will install:</Text>
+        {selectedPlugin.entry.commands && <Text dimColor>
+          · Commands:{' '}
+          {Array.isArray(selectedPlugin.entry.commands) ? selectedPlugin.entry.commands.join(', ') : Object.keys(selectedPlugin.entry.commands).join(', ')}
+        </Text>}
+        {selectedPlugin.entry.agents && <Text dimColor>
+          · Agents:{' '}
+          {Array.isArray(selectedPlugin.entry.agents) ? selectedPlugin.entry.agents.join(', ') : Object.keys(selectedPlugin.entry.agents).join(', ')}
+        </Text>}
+        {selectedPlugin.entry.hooks && <Text dimColor>
+          · Hooks: {Object.keys(selectedPlugin.entry.hooks).join(', ')}
+        </Text>}
+        {selectedPlugin.entry.mcpServers && <Text dimColor>
+          · MCP Servers:{' '}
+          {Array.isArray(selectedPlugin.entry.mcpServers) ? selectedPlugin.entry.mcpServers.join(', ') : typeof selectedPlugin.entry.mcpServers === 'object' ? Object.keys(selectedPlugin.entry.mcpServers).join(', ') : 'configured'}
+        </Text>}
+        {!selectedPlugin.entry.commands && !selectedPlugin.entry.agents && !selectedPlugin.entry.hooks && !selectedPlugin.entry.mcpServers && <>
+          {typeof selectedPlugin.entry.source === 'object' && 'source' in selectedPlugin.entry.source && (selectedPlugin.entry.source.source === 'github' || selectedPlugin.entry.source.source === 'url' || selectedPlugin.entry.source.source === 'npm' || selectedPlugin.entry.source.source === 'pip') ? <Text dimColor>
+            · Component summary not available for remote plugin
+          </Text> :
+            // TODO: Actually scan local plugin directories to show real components
+            // This would require accessing the filesystem to check for:
+            // - commands/ directory and list files
+            // - agents/ directory and list files
+            // - hooks/ directory and list files
+            // - .mcp.json or mcp-servers.json files
+            <Text dimColor>
+              · Components will be discovered at installation
+            </Text>}
+        </>}
+      </Box>
+
+      <PluginTrustWarning />
+
+      {/* Error message */}
+      {installError && <Box marginBottom={1}>
+        <Text color="error">Error: {installError}</Text>
+      </Box>}
+
+      {/* Menu options */}
+      <Box flexDirection="column">
+        {menuOptions.map((option, index_0) => <Box key={option.action}>
+          {detailsMenuIndex === index_0 && <Text>{'> '}</Text>}
+          {detailsMenuIndex !== index_0 && <Text>{'  '}</Text>}
+          <Text bold={detailsMenuIndex === index_0}>
+            {isInstalling && option.action === 'install' ? 'Installing…' : option.label}
+          </Text>
+        </Box>)}
+      </Box>
+
+      <Box marginTop={1} paddingLeft={1}>
+        <Text dimColor>
+          <Byline>
+            <ConfigurableShortcutHint action="select:accept" context="Select" fallback="Enter" description="select" />
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          </Byline>
+        </Text>
+      </Box>
+    </Box>;
   }
 
   // Plugin installation view
   if (availablePlugins.length === 0) {
     return <Box flexDirection="column">
-        <Box marginBottom={1}>
-          <Text bold>Install plugins</Text>
-        </Box>
-        <Text dimColor>No new plugins available to install.</Text>
-        <Text dimColor>
-          All plugins from this marketplace are already installed.
+      <Box marginBottom={1}>
+        <Text bold>Install plugins</Text>
+      </Box>
+      <Text dimColor>No new plugins available to install.</Text>
+      <Text dimColor>
+        All plugins from this marketplace are already installed.
+      </Text>
+      <Box marginLeft={3}>
+        <Text dimColor italic>
+          <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
         </Text>
-        <Box marginLeft={3}>
-          <Text dimColor italic>
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="go back" />
-          </Text>
-        </Box>
-      </Box>;
+      </Box>
+    </Box>;
   }
 
   // Get visible plugins from pagination
   const visiblePlugins = pagination.getVisibleItems(availablePlugins);
   return <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text bold>Install Plugins</Text>
-      </Box>
+    <Box marginBottom={1}>
+      <Text bold>Install Plugins</Text>
+    </Box>
 
-      {/* Scroll up indicator */}
-      {pagination.scrollPosition.canScrollUp && <Box>
-          <Text dimColor> {figures.arrowUp} more above</Text>
-        </Box>}
+    {/* Scroll up indicator */}
+    {pagination.scrollPosition.canScrollUp && <Box>
+      <Text dimColor> {figures.arrowUp} more above</Text>
+    </Box>}
 
-      {/* Plugin list */}
-      {visiblePlugins.map((plugin_6, visibleIndex) => {
+    {/* Plugin list */}
+    {visiblePlugins.map((plugin_6, visibleIndex) => {
       const actualIndex = pagination.toActualIndex(visibleIndex);
       const isSelected = selectedIndex === actualIndex;
       const isSelectedForInstall = selectedForInstall.has(plugin_6.pluginId);
       const isInstalling_0 = installingPlugins.has(plugin_6.pluginId);
       const isLast = visibleIndex === visiblePlugins.length - 1;
       return <Box key={plugin_6.pluginId} flexDirection="column" marginBottom={isLast && !error ? 0 : 1}>
-            <Box>
-              <Text color={isSelected ? 'suggestion' : undefined}>
-                {isSelected ? figures.pointer : ' '}{' '}
-              </Text>
-              <Text color={plugin_6.isInstalled ? 'success' : undefined}>
-                {plugin_6.isInstalled ? figures.tick : isInstalling_0 ? figures.ellipsis : isSelectedForInstall ? figures.radioOn : figures.radioOff}{' '}
-                {plugin_6.entry.name}
-                {plugin_6.entry.category && <Text dimColor> [{plugin_6.entry.category}]</Text>}
-                {plugin_6.entry.tags?.includes('community-managed') && <Text dimColor> [Community Managed]</Text>}
-                {plugin_6.isInstalled && <Text dimColor> (installed)</Text>}
-                {installCounts && selectedMarketplace === OFFICIAL_MARKETPLACE_NAME && <Text dimColor>
-                      {' · '}
-                      {formatInstallCount(installCounts.get(plugin_6.pluginId) ?? 0)}{' '}
-                      installs
-                    </Text>}
-              </Text>
-            </Box>
-            {plugin_6.entry.description && <Box marginLeft={4}>
-                <Text dimColor>
-                  {truncateToWidth(plugin_6.entry.description, 60)}
-                </Text>
-                {plugin_6.entry.version && <Text dimColor> · v{plugin_6.entry.version}</Text>}
-              </Box>}
-          </Box>;
+        <Box>
+          <Text color={isSelected ? 'suggestion' : undefined}>
+            {isSelected ? figures.pointer : ' '}{' '}
+          </Text>
+          <Text color={plugin_6.isInstalled ? 'success' : undefined}>
+            {plugin_6.isInstalled ? figures.tick : isInstalling_0 ? figures.ellipsis : isSelectedForInstall ? figures.radioOn : figures.radioOff}{' '}
+            {plugin_6.entry.name}
+            {plugin_6.entry.category && <Text dimColor> [{plugin_6.entry.category}]</Text>}
+            {plugin_6.entry.tags?.includes('community-managed') && <Text dimColor> [Community Managed]</Text>}
+            {plugin_6.isInstalled && <Text dimColor> (installed)</Text>}
+            {installCounts && selectedMarketplace === OFFICIAL_MARKETPLACE_NAME && <Text dimColor>
+              {' · '}
+              {formatInstallCount(installCounts.get(plugin_6.pluginId) ?? 0)}{' '}
+              installs
+            </Text>}
+          </Text>
+        </Box>
+        {plugin_6.entry.description && <Box marginLeft={4}>
+          <Text dimColor>
+            {truncateToWidth(plugin_6.entry.description, 60)}
+          </Text>
+          {plugin_6.entry.version && <Text dimColor> · v{plugin_6.entry.version}</Text>}
+        </Box>}
+      </Box>;
     })}
 
-      {/* Scroll down indicator */}
-      {pagination.scrollPosition.canScrollDown && <Box>
-          <Text dimColor> {figures.arrowDown} more below</Text>
-        </Box>}
+    {/* Scroll down indicator */}
+    {pagination.scrollPosition.canScrollDown && <Box>
+      <Text dimColor> {figures.arrowDown} more below</Text>
+    </Box>}
 
-      {/* Error messages shown in the UI */}
-      {error && <Box marginTop={1}>
-          <Text color="error">
-            {figures.cross} {error}
-          </Text>
-        </Box>}
+    {/* Error messages shown in the UI */}
+    {error && <Box marginTop={1}>
+      <Text color="error">
+        {figures.cross} {error}
+      </Text>
+    </Box>}
 
-      <PluginSelectionKeyHint hasSelection={selectedForInstall.size > 0} />
-    </Box>;
+    <PluginSelectionKeyHint hasSelection={selectedForInstall.size > 0} />
+  </Box>;
 }

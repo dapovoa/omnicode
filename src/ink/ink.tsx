@@ -107,12 +107,12 @@ export default class Ink {
     cacheHits: number;
     live: number;
   } = {
-    ms: 0,
-    visited: 0,
-    measured: 0,
-    cacheHits: 0,
-    live: 0
-  };
+      ms: 0,
+      visited: 0,
+      measured: 0,
+      cacheHits: 0,
+      live: 0
+    };
   private altScreenParkPatch: Readonly<{
     type: 'stdout';
     content: string;
@@ -370,9 +370,9 @@ export default class Ink {
       this.render(this.currentNode);
     }
   };
-  resolveExitPromise: () => void = () => {};
-  rejectExitPromise: (reason?: Error) => void = () => {};
-  unsubscribeExit: () => void = () => {};
+  resolveExitPromise: () => void = () => { };
+  rejectExitPromise: (reason?: Error) => void = () => { };
+  unsubscribeExit: () => void = () => { };
 
   /**
    * Pause Ink and hand the terminal over to an external TUI (e.g. git
@@ -384,22 +384,22 @@ export default class Ink {
     this.pause();
     this.suspendStdin();
     this.options.stdout.write(
-    // Disable extended key reporting first — editors that don't speak
-    // CSI-u (e.g. nano) show "Unknown sequence" for every Ctrl-<key> if
-    // kitty/modifyOtherKeys stays active. exitAlternateScreen re-enables.
-    DISABLE_KITTY_KEYBOARD + DISABLE_MODIFY_OTHER_KEYS + (this.altScreenMouseTracking ? DISABLE_MOUSE_TRACKING : '') + (
-    // disable mouse (no-op if off)
-    this.altScreenActive ? '' : '\x1b[?1049h') +
-    // enter alt (already in alt if fullscreen)
-    '\x1b[?1004l' +
-    // disable focus reporting
-    '\x1b[0m' +
-    // reset attributes
-    '\x1b[?25h' +
-    // show cursor
-    '\x1b[2J' +
-    // clear screen
-    '\x1b[H' // cursor home
+      // Disable extended key reporting first — editors that don't speak
+      // CSI-u (e.g. nano) show "Unknown sequence" for every Ctrl-<key> if
+      // kitty/modifyOtherKeys stays active. exitAlternateScreen re-enables.
+      DISABLE_KITTY_KEYBOARD + DISABLE_MODIFY_OTHER_KEYS + (this.altScreenMouseTracking ? DISABLE_MOUSE_TRACKING : '') + (
+        // disable mouse (no-op if off)
+        this.altScreenActive ? '' : '\x1b[?1049h') +
+      // enter alt (already in alt if fullscreen)
+      '\x1b[?1004l' +
+      // disable focus reporting
+      '\x1b[0m' +
+      // reset attributes
+      '\x1b[?25h' +
+      // show cursor
+      '\x1b[2J' +
+      // clear screen
+      '\x1b[H' // cursor home
     );
   }
 
@@ -417,16 +417,16 @@ export default class Ink {
    */
   exitAlternateScreen(): void {
     this.options.stdout.write((this.altScreenActive ? ENTER_ALT_SCREEN : '') +
-    // re-enter alt — vim's rmcup dropped us to main
-    '\x1b[2J' +
-    // clear screen (now alt if fullscreen)
-    '\x1b[H' + (
-    // cursor home
-    this.altScreenMouseTracking ? ENABLE_MOUSE_TRACKING : '') + (
-    // re-enable mouse (skip if CLAUDE_CODE_DISABLE_MOUSE)
-    this.altScreenActive ? '' : '\x1b[?1049l') +
-    // exit alt (non-fullscreen only)
-    '\x1b[?25l' // hide cursor (Ink manages)
+      // re-enter alt — vim's rmcup dropped us to main
+      '\x1b[2J' +
+      // clear screen (now alt if fullscreen)
+      '\x1b[H' + (
+        // cursor home
+        this.altScreenMouseTracking ? ENABLE_MOUSE_TRACKING : '') + (
+        // re-enable mouse (skip if OMNICODE_DISABLE_MOUSE)
+        this.altScreenActive ? '' : '\x1b[?1049l') +
+      // exit alt (non-fullscreen only)
+      '\x1b[?25l' // hide cursor (Ink manages)
     );
     this.resumeStdin();
     if (this.altScreenActive) {
@@ -487,13 +487,13 @@ export default class Ink {
     // anchored and move as a block.
     const follow = consumeFollowScroll();
     if (follow && this.selection.anchor &&
-    // Only translate if the selection is ON scrollbox content. Selections
-    // in the footer/prompt/StickyPromptHeader are on static text — the
-    // scroll doesn't move what's under them. Without this guard, a
-    // footer selection would be shifted by -delta then clamped to
-    // viewportBottom, teleporting it into the scrollbox. Mirror the
-    // bounds check the deleted check() in ScrollKeybindingHandler had.
-    this.selection.anchor.row >= follow.viewportTop && this.selection.anchor.row <= follow.viewportBottom) {
+      // Only translate if the selection is ON scrollbox content. Selections
+      // in the footer/prompt/StickyPromptHeader are on static text — the
+      // scroll doesn't move what's under them. Without this guard, a
+      // footer selection would be shifted by -delta then clamped to
+      // viewportBottom, teleporting it into the scrollbox. Mirror the
+      // bounds check the deleted check() in ScrollKeybindingHandler had.
+      this.selection.anchor.row >= follow.viewportTop && this.selection.anchor.row <= follow.viewportBottom) {
       const {
         delta,
         viewportTop,
@@ -512,19 +512,19 @@ export default class Ink {
         }
         shiftAnchor(this.selection, -delta, viewportTop, viewportBottom);
       } else if (
-      // Flag-3 guard: the anchor check above only proves ONE endpoint is
-      // on scrollbox content. A drag from row 3 (scrollbox) into the
-      // footer at row 6, then release, leaves focus outside the viewport
-      // — shiftSelectionForFollow would clamp it to viewportBottom,
-      // teleporting the highlight from static footer into the scrollbox.
-      // Symmetric check: require BOTH ends inside to translate. A
-      // straddling selection falls through to NEITHER shift NOR capture:
-      // the footer endpoint pins the selection, text scrolls away under
-      // the highlight, and getSelectedText reads the CURRENT screen
-      // contents — no accumulation. Dragging branch doesn't need this:
-      // shiftAnchor ignores focus, and the anchor DOES shift (so capture
-      // is correct there even when focus is in the footer).
-      !this.selection.focus || this.selection.focus.row >= viewportTop && this.selection.focus.row <= viewportBottom) {
+        // Flag-3 guard: the anchor check above only proves ONE endpoint is
+        // on scrollbox content. A drag from row 3 (scrollbox) into the
+        // footer at row 6, then release, leaves focus outside the viewport
+        // — shiftSelectionForFollow would clamp it to viewportBottom,
+        // teleporting the highlight from static footer into the scrollbox.
+        // Symmetric check: require BOTH ends inside to translate. A
+        // straddling selection falls through to NEITHER shift NOR capture:
+        // the footer endpoint pins the selection, text scrolls away under
+        // the highlight, and getSelectedText reads the CURRENT screen
+        // contents — no accumulation. Dragging branch doesn't need this:
+        // shiftAnchor ignores focus, and the anchor DOES shift (so capture
+        // is correct there even when focus is in the footer).
+        !this.selection.focus || this.selection.focus.row >= viewportTop && this.selection.focus.row <= viewportBottom) {
         if (hasSelection(this.selection)) {
           captureScrolledRows(this.selection, this.frontFrame.screen, viewportTop, viewportTop + delta - 1, 'above');
         }
@@ -610,11 +610,11 @@ export default class Ink {
     }
     const tDiff = performance.now();
     const diff = this.log.render(prevFrame, frame, this.altScreenActive,
-    // DECSTBM needs BSU/ESU atomicity — without it the outer terminal
-    // renders the scrolled-but-not-yet-repainted intermediate state.
-    // tmux is the main case (re-emits DECSTBM with its own timing and
-    // doesn't implement DEC 2026, so SYNC_OUTPUT_SUPPORTED is false).
-    SYNC_OUTPUT_SUPPORTED);
+      // DECSTBM needs BSU/ESU atomicity — without it the outer terminal
+      // renders the scrolled-but-not-yet-repainted intermediate state.
+      // tmux is the main case (re-emits DECSTBM with its own timing and
+      // doesn't implement DEC 2026, so SYNC_OUTPUT_SUPPORTED is false).
+      SYNC_OUTPUT_SUPPORTED);
     const diffMs = performance.now() - tDiff;
     // Swap buffers
     this.backFrame = this.frontFrame;
@@ -1229,13 +1229,13 @@ export default class Ink {
     } = focus;
     switch (move) {
       case 'left':
-        if (col > 0) col--;else if (row > 0) {
+        if (col > 0) col--; else if (row > 0) {
           col = maxCol;
           row--;
         }
         break;
       case 'right':
-        if (col < maxCol) col++;else if (row < maxRow) {
+        if (col < maxCol) col++; else if (row < maxRow) {
           col = 0;
           row++;
         }
@@ -1358,7 +1358,7 @@ export default class Ink {
     // a char-mode selection so the press still starts a drag even if the
     // word/line scan finds nothing selectable.
     startSelection(this.selection, col, row);
-    if (count === 2) selectWordAt(this.selection, screen, col, row);else selectLineAt(this.selection, screen, row);
+    if (count === 2) selectWordAt(this.selection, screen, col, row); else selectLineAt(this.selection, screen, row);
     // Ensure hasSelection is true so release doesn't re-dispatch onClickAt.
     // selectWordAt no-ops on noSelect; selectLineAt no-ops out-of-bounds.
     if (!this.selection.focus) this.selection.focus = this.selection.anchor;
@@ -1469,10 +1469,10 @@ export default class Ink {
     logForDebugging('[Ink:render] start');
     this.currentNode = node;
     const tree = <App stdin={this.options.stdin} stdout={this.options.stdout} stderr={this.options.stderr} exitOnCtrlC={this.options.exitOnCtrlC} onExit={this.unmount} terminalColumns={this.terminalColumns} terminalRows={this.terminalRows} selection={this.selection} onSelectionChange={this.notifySelectionChange} onClickAt={this.dispatchClick} onHoverAt={this.dispatchHover} getHyperlinkAt={this.getHyperlinkAt} onOpenHyperlink={this.openHyperlink} onMultiClick={this.handleMultiClick} onSelectionDrag={this.handleSelectionDrag} onStdinResume={this.reassertTerminalModes} onCursorDeclaration={this.setCursorDeclaration} dispatchKeyboardEvent={this.dispatchKeyboardEvent}>
-        <TerminalWriteProvider value={this.writeRaw}>
-          {node}
-        </TerminalWriteProvider>
-      </App>;
+      <TerminalWriteProvider value={this.writeRaw}>
+        {node}
+      </TerminalWriteProvider>
+    </App>;
 
     // @ts-expect-error updateContainerSync exists in react-reconciler but not in @types/react-reconciler
     reconciler.updateContainerSync(tree, this.container, null, noop);

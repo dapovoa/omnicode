@@ -25,31 +25,31 @@ export function renderToolResultMessage(output: Output, _progressMessages: Progr
   // SendUserMessage is visually distinct from the surrounding text blocks.
   if (options?.isTranscriptMode) {
     return <Box flexDirection="row" marginTop={1}>
-        <Box minWidth={2}>
-          <Text color="text">{BLACK_CIRCLE}</Text>
-        </Box>
-        <Box flexDirection="column">
-          {output.message ? <Markdown>{output.message}</Markdown> : null}
-          <AttachmentList attachments={output.attachments} />
-        </Box>
-      </Box>;
+      <Box minWidth={2}>
+        <Text color="text">{BLACK_CIRCLE}</Text>
+      </Box>
+      <Box flexDirection="column">
+        {output.message ? <Markdown>{output.message}</Markdown> : null}
+        <AttachmentList attachments={output.attachments} />
+      </Box>
+    </Box>;
   }
 
-  // Brief-only (chat) view: "Claude" label + 2-col indent, matching the "You"
+  // Brief-only (chat) view: "Omnicode" label + 2-col indent, matching the "You"
   // label UserPromptMessage applies to user input (#20889). The "N in background"
   // spinner status lives in BriefSpinner (Spinner.tsx) — stateless label here.
   if (options?.isBriefOnly) {
     const ts = output.sentAt ? formatBriefTimestamp(output.sentAt) : '';
     return <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-        <Box flexDirection="row">
-          <Text color="briefLabelClaude">Claude</Text>
-          {ts ? <Text dimColor> {ts}</Text> : null}
-        </Box>
-        <Box flexDirection="column">
-          {output.message ? <Markdown>{output.message}</Markdown> : null}
-          <AttachmentList attachments={output.attachments} />
-        </Box>
-      </Box>;
+      <Box flexDirection="row">
+        <Text color="briefLabelOmnicode">Omnicode</Text>
+        {ts ? <Text dimColor> {ts}</Text> : null}
+      </Box>
+      <Box flexDirection="column">
+        {output.message ? <Markdown>{output.message}</Markdown> : null}
+        <AttachmentList attachments={output.attachments} />
+      </Box>
+    </Box>;
   }
 
   // Default view: dropTextInBriefTurns (Messages.tsx) hides the redundant
@@ -59,12 +59,12 @@ export function renderToolResultMessage(output: Output, _progressMessages: Progr
   // width constraint and AssistantToolUseMessage renders null (no tool chrome).
   // Empty minWidth={2} box mirrors AssistantTextMessage's ⏺ gutter spacing.
   return <Box flexDirection="row" marginTop={1}>
-      <Box minWidth={2} />
-      <Box flexDirection="column">
-        {output.message ? <Markdown>{output.message}</Markdown> : null}
-        <AttachmentList attachments={output.attachments} />
-      </Box>
-    </Box>;
+    <Box minWidth={2} />
+    <Box flexDirection="column">
+      {output.message ? <Markdown>{output.message}</Markdown> : null}
+      <AttachmentList attachments={output.attachments} />
+    </Box>
+  </Box>;
 }
 type AttachmentListProps = {
   attachments: Output['attachments'];

@@ -3,7 +3,7 @@ import addDir from './commands/add-dir/index.js'
 import autofixPr from './commands/autofix-pr/index.js'
 import backfillSessions from './commands/backfill-sessions/index.js'
 import btw from './commands/btw/index.js'
-import goodClaude from './commands/good-claude/index.js'
+import goodOmnicode from './commands/good-omnicode/index.js'
 import issue from './commands/issue/index.js'
 import feedback from './commands/feedback/index.js'
 import clear from './commands/clear/index.js'
@@ -88,18 +88,18 @@ const forceSnip = feature('HISTORY_SNIP')
   : null
 const workflowsCmd = feature('WORKFLOW_SCRIPTS')
   ? (
-      require('./commands/workflows/index.js') as typeof import('./commands/workflows/index.js')
-    ).default
+    require('./commands/workflows/index.js') as typeof import('./commands/workflows/index.js')
+  ).default
   : null
 const webCmd = feature('CCR_REMOTE_SETUP')
   ? (
-      require('./commands/remote-setup/index.js') as typeof import('./commands/remote-setup/index.js')
-    ).default
+    require('./commands/remote-setup/index.js') as typeof import('./commands/remote-setup/index.js')
+  ).default
   : null
 const clearSkillIndexCache = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? (
-      require('./services/skillSearch/localSearch.js') as typeof import('./services/skillSearch/localSearch.js')
-    ).clearSkillIndexCache
+    require('./services/skillSearch/localSearch.js') as typeof import('./services/skillSearch/localSearch.js')
+  ).clearSkillIndexCache
   : null
 const subscribePr = feature('KAIROS_GITHUB_WEBHOOKS')
   ? require('./commands/subscribe-pr.js').default
@@ -110,18 +110,18 @@ const ultraplan = feature('ULTRAPLAN')
 const torch = feature('TORCH') ? require('./commands/torch.js').default : null
 const peersCmd = feature('UDS_INBOX')
   ? (
-      require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
-    ).default
+    require('./commands/peers/index.js') as typeof import('./commands/peers/index.js')
+  ).default
   : null
 const forkCmd = feature('FORK_SUBAGENT')
   ? (
-      require('./commands/fork/index.js') as typeof import('./commands/fork/index.js')
-    ).default
+    require('./commands/fork/index.js') as typeof import('./commands/fork/index.js')
+  ).default
   : null
 const buddy = isBuddyEnabled()
   ? (
-      require('./commands/buddy/index.js') as typeof import('./commands/buddy/index.js')
-    ).default
+    require('./commands/buddy/index.js') as typeof import('./commands/buddy/index.js')
+  ).default
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import thinkback from './commands/thinkback/index.js'
@@ -171,7 +171,7 @@ import {
   clearPluginSkillsCache,
 } from './utils/plugins/loadPluginCommands.js'
 import memoize from 'lodash-es/memoize.js'
-import { isUsing3PServices, isClaudeAISubscriber } from './utils/auth.js'
+import { isUsing3PServices, isOmnicodeAISubscriber } from './utils/auth.js'
 import { isFirstPartyAnthropicBaseUrl } from './utils/model/providers.js'
 import env from './commands/env/index.js'
 import exit from './commands/exit/index.js'
@@ -194,7 +194,7 @@ import stats from './commands/stats/index.js'
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: 'Generate a report analyzing your Omnicode Code sessions',
   contentLength: 0,
   progressMessage: 'analyzing your sessions',
   source: 'builtin',
@@ -233,7 +233,7 @@ export const INTERNAL_ONLY_COMMANDS = [
   commit,
   commitPushPr,
   ctx_viz,
-  goodClaude,
+  goodOmnicode,
   issue,
   initVerifiers,
   ...(forceSnip ? [forceSnip] : []),
@@ -407,8 +407,8 @@ async function getSkills(cwd: string): Promise<{
 /* eslint-disable @typescript-eslint/no-require-imports */
 const getWorkflowCommands = feature('WORKFLOW_SCRIPTS')
   ? (
-      require('./tools/WorkflowTool/createWorkflowCommand.js') as typeof import('./tools/WorkflowTool/createWorkflowCommand.js')
-    ).getWorkflowCommands
+    require('./tools/WorkflowTool/createWorkflowCommand.js') as typeof import('./tools/WorkflowTool/createWorkflowCommand.js')
+  ).getWorkflowCommands
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -425,15 +425,15 @@ export function meetsAvailabilityRequirement(cmd: Command): boolean {
   if (!cmd.availability) return true
   for (const a of cmd.availability) {
     switch (a) {
-      case 'claude-ai':
-        if (isClaudeAISubscriber()) return true
+      case 'omnicode-ai':
+        if (isOmnicodeAISubscriber()) return true
         break
       case 'console':
-        // Console API key user = direct 1P API customer (not 3P, not claude.ai).
+        // Console API key user = direct 1P API customer (not 3P, not omnicode.ai).
         // Excludes 3P (Bedrock/Vertex/Foundry) who don't set ANTHROPIC_BASE_URL
         // and gateway users who proxy through a custom base URL.
         if (
-          !isClaudeAISubscriber() &&
+          !isOmnicodeAISubscriber() &&
           !isUsing3PServices() &&
           isFirstPartyAnthropicBaseUrl()
         )

@@ -1,5 +1,5 @@
 import {
-  getClaudeAiBaseUrl,
+  getOmnicodeAiBaseUrl,
   getRemoteSessionUrl,
 } from '../constants/product.js'
 import { stringWidth } from '../ink/stringWidth.js'
@@ -40,7 +40,7 @@ export function buildBridgeConnectUrl(
   environmentId: string,
   ingressUrl?: string,
 ): string {
-  const baseUrl = getClaudeAiBaseUrl(undefined, ingressUrl)
+  const baseUrl = getOmnicodeAiBaseUrl(undefined, ingressUrl)
   return `${baseUrl}/code?bridge=${environmentId}`
 }
 
@@ -113,10 +113,10 @@ export function computeShimmerSegments(
 /** Computed bridge status label and color from connection state. */
 export type BridgeStatusInfo = {
   label:
-    | 'Remote Control failed'
-    | 'Remote Control reconnecting'
-    | 'Remote Control active'
-    | 'Remote Control connecting\u2026'
+  | 'Remote Control failed'
+  | 'Remote Control reconnecting'
+  | 'Remote Control active'
+  | 'Remote Control connecting\u2026'
   color: 'error' | 'warning' | 'success'
 }
 
@@ -142,12 +142,12 @@ export function getBridgeStatus({
 
 /** Footer text shown when bridge is idle (Ready state). */
 export function buildIdleFooterText(url: string): string {
-  return `Code everywhere with the Claude app or ${url}`
+  return `Code everywhere with the Omnicode app or ${url}`
 }
 
 /** Footer text shown when a session is active (Connected state). */
 export function buildActiveFooterText(url: string): string {
-  return `Continue coding in the Claude app or ${url}`
+  return `Continue coding in the Omnicode app or ${url}`
 }
 
 /** Footer text shown when the bridge has failed. */

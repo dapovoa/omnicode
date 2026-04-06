@@ -107,7 +107,7 @@ async function initializeAgentMcpServers(
     return {
       clients: parentClients,
       tools: [],
-      cleanup: async () => {},
+      cleanup: async () => { },
     }
   }
 
@@ -124,7 +124,7 @@ async function initializeAgentMcpServers(
     return {
       clients: parentClients,
       tools: [],
-      cleanup: async () => {},
+      cleanup: async () => { },
     }
   }
 
@@ -396,18 +396,18 @@ export async function* runAgent({
   ])
 
   // Read-only agents (Explore, Plan) don't act on commit/PR/lint rules from
-  // CLAUDE.md — the main agent has full context and interprets their output.
-  // Dropping claudeMd here saves ~5-15 Gtok/week across 34M+ Explore spawns.
+  // OMNICODE.md — the main agent has full context and interprets their output.
+  // Dropping omnicodeMd here saves ~5-15 Gtok/week across 34M+ Explore spawns.
   // Explicit override.userContext from callers is preserved untouched.
-  // Kill-switch defaults true; flip tengu_slim_subagent_claudemd=false to revert.
-  const shouldOmitClaudeMd =
-    agentDefinition.omitClaudeMd &&
+  // Kill-switch defaults true; flip tengu_slim_subagent_omnicodemd=false to revert.
+  const shouldOmitOmnicodeMd =
+    agentDefinition.omitOmnicodeMd &&
     !override?.userContext &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_slim_subagent_claudemd', true)
-  const { claudeMd: _omittedClaudeMd, ...userContextNoClaudeMd } =
+    getFeatureValue_CACHED_MAY_BE_STALE('tengu_slim_subagent_omnicodemd', true)
+  const { omnicodeMd: _omittedOmnicodeMd, ...userContextNoOmnicodeMd } =
     baseUserContext
-  const resolvedUserContext = shouldOmitClaudeMd
-    ? userContextNoClaudeMd
+  const resolvedUserContext = shouldOmitOmnicodeMd
+    ? userContextNoOmnicodeMd
     : baseUserContext
 
   // Explore/Plan are read-only search agents — the parent-session-start
@@ -418,7 +418,7 @@ export async function* runAgent({
     baseSystemContext
   const resolvedSystemContext =
     agentDefinition.agentType === 'Explore' ||
-    agentDefinition.agentType === 'Plan'
+      agentDefinition.agentType === 'Plan'
       ? systemContextNoGit
       : baseSystemContext
 
@@ -521,14 +521,14 @@ export async function* runAgent({
   const agentSystemPrompt = override?.systemPrompt
     ? override.systemPrompt
     : asSystemPrompt(
-        await getAgentSystemPrompt(
-          agentDefinition,
-          toolUseContext,
-          resolvedAgentModel,
-          additionalWorkingDirectories,
-          resolvedTools,
-        ),
-      )
+      await getAgentSystemPrompt(
+        agentDefinition,
+        toolUseContext,
+        resolvedAgentModel,
+        additionalWorkingDirectories,
+        resolvedTools,
+      ),
+    )
 
   // Determine abortController:
   // - Override takes precedence

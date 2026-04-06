@@ -1,15 +1,15 @@
 import { feature } from 'bun:bundle'
 import memoize from 'lodash-es/memoize.js'
 import {
-  getAdditionalDirectoriesForClaudeMd,
-  setCachedClaudeMdContent,
+  getAdditionalDirectoriesForOmnicodeMd,
+  setCachedOmnicodeMdContent,
 } from './bootstrap/state.js'
 import { getLocalISODate } from './constants/common.js'
 import {
   filterInjectedMemoryFiles,
-  getClaudeMds,
+  getOmnicodeMds,
   getMemoryFiles,
-} from './utils/claudemd.js'
+} from './utils/omnicodemd.js'
 import { logForDiagnosticsNoPII } from './utils/diagLogs.js'
 import { isBareMode, isEnvTruthy } from './utils/envUtils.js'
 import { execFileNoThrow } from './utils/execFileNoThrow.js'
@@ -85,7 +85,7 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
     const truncatedStatus =
       status.length > MAX_STATUS_CHARS
         ? status.substring(0, MAX_STATUS_CHARS) +
-          '\n... (truncated because it exceeds 2k characters. If you need more information, run "git status" using BashTool)'
+        '\n... (truncated because it exceeds 2k characters. If you need more information, run "git status" using BashTool)'
         : status
 
     logForDiagnosticsNoPII('info', 'git_status_completed', {
@@ -122,8 +122,8 @@ export const getSystemContext = memoize(
 
     // Skip git status in CCR (unnecessary overhead on resume) or when git instructions are disabled
     const gitStatus =
-      isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ||
-      !shouldIncludeGitInstructions()
+      isEnvTruthy(process.env.OMNICODE_REMOTE) ||
+        !shouldIncludeGitInstructions()
         ? null
         : await getGitStatus()
 
@@ -142,8 +142,8 @@ export const getSystemContext = memoize(
       ...(gitStatus && { gitStatus }),
       ...(feature('BREAK_CACHE_COMMAND') && injection
         ? {
-            cacheBreaker: `[CACHE_BREAKER: ${injection}]`,
-          }
+          cacheBreaker: `[CACHE_BREAKER: ${injection}]`,
+        }
         : {}),
     }
   },
@@ -159,30 +159,30 @@ export const getUserContext = memoize(
     const startTime = Date.now()
     logForDiagnosticsNoPII('info', 'user_context_started')
 
-    // CLAUDE_CODE_DISABLE_CLAUDE_MDS: hard off, always.
+    // OMNICODE_DISABLE_OMNICODE_MDS: hard off, always.
     // --bare: skip auto-discovery (cwd walk), BUT honor explicit --add-dir.
     // --bare means "skip what I didn't ask for", not "ignore what I asked for".
-    const shouldDisableClaudeMd =
-      isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_CLAUDE_MDS) ||
-      (isBareMode() && getAdditionalDirectoriesForClaudeMd().length === 0)
+    const shouldDisableOmnicodeMd =
+      isEnvTruthy(process.env.OMNICODE_DISABLE_OMNICODE_MDS) ||
+      (isBareMode() && getAdditionalDirectoriesForOmnicodeMd().length === 0)
     // Await the async I/O (readFile/readdir directory walk) so the event
     // loop yields naturally at the first fs.readFile.
-    const claudeMd = shouldDisableClaudeMd
+    const omnicodeMd = shouldDisableOmnicodeMd
       ? null
-      : getClaudeMds(filterInjectedMemoryFiles(await getMemoryFiles()))
+      : getOmnicodeMds(filterInjectedMemoryFiles(await getMemoryFiles()))
     // Cache for the auto-mode classifier (yoloClassifier.ts reads this
-    // instead of importing claudemd.ts directly, which would create a
+    // instead of importing omnicodemd.ts directly, which would create a
     // cycle through permissions/filesystem → permissions → yoloClassifier).
-    setCachedClaudeMdContent(claudeMd || null)
+    setCachedOmnicodeMdContent(omnicodeMd || null)
 
     logForDiagnosticsNoPII('info', 'user_context_completed', {
       duration_ms: Date.now() - startTime,
-      claudemd_length: claudeMd?.length ?? 0,
-      claudemd_disabled: Boolean(shouldDisableClaudeMd),
+      omnicodemd_length: omnicodeMd?.length ?? 0,
+      omnicodemd_disabled: Boolean(shouldDisableOmnicodeMd),
     })
 
     return {
-      ...(claudeMd && { claudeMd }),
+      ...(omnicodeMd && { omnicodeMd }),
       currentDate: `Today's date is ${getLocalISODate()}.`,
     }
   },

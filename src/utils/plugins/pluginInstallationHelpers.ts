@@ -110,7 +110,7 @@ export function validatePathWithinBase(
  * Cache a plugin (local or external) and add it to installed_plugins.json
  *
  * This function combines the common pattern of:
- * 1. Caching a plugin to ~/.claude/plugins/cache/
+ * 1. Caching a plugin to ~/.omnicode/plugins/cache/
  * 2. Adding it to the installed plugins registry
  *
  * Both local plugins (with string source like "./path") and external plugins
@@ -189,7 +189,7 @@ export async function cacheAndRegisterPlugin(
       // errors when /tmp is on a different filesystem (e.g., tmpfs)
       const tempPath = join(
         dirname(cacheResult.path),
-        `.claude-plugin-temp-${Date.now()}-${randomBytes(4).toString('hex')}`,
+        `.omnicode-plugin-temp-${Date.now()}-${randomBytes(4).toString('hex')}`,
       )
       await rename(cacheResult.path, tempPath)
       await getFsImplementation().mkdir(dirname(versionedPath))
@@ -284,17 +284,17 @@ export type InstallCoreResult =
   | { ok: false; reason: 'local-source-no-location'; pluginName: string }
   | { ok: false; reason: 'settings-write-failed'; message: string }
   | {
-      ok: false
-      reason: 'resolution-failed'
-      resolution: ResolutionResult & { ok: false }
-    }
+    ok: false
+    reason: 'resolution-failed'
+    resolution: ResolutionResult & { ok: false }
+  }
   | { ok: false; reason: 'blocked-by-policy'; pluginName: string }
   | {
-      ok: false
-      reason: 'dependency-blocked-by-policy'
-      pluginName: string
-      blockedDependency: string
-    }
+    ok: false
+    reason: 'dependency-blocked-by-policy'
+    pluginName: string
+    blockedDependency: string
+  }
 
 /**
  * Format a failed ResolutionResult into a user-facing message. Unified on
@@ -392,7 +392,7 @@ export async function installResolvedPlugin({
   const allowedCrossMarketplaces = new Set(
     (rootMarketplace
       ? (await getMarketplaceCacheOnly(rootMarketplace))
-          ?.allowCrossMarketplaceDependenciesOn
+        ?.allowCrossMarketplaceDependenciesOn
       : undefined) ?? [],
   )
   const resolution = await resolveDependencyClosure(
@@ -556,7 +556,7 @@ export async function installPluginFromMarketplace({
 
     // _PROTO_* routes to PII-tagged plugin_name/marketplace_name BQ columns.
     // plugin_id kept in additional_metadata (redacted to 'third-party' for
-    // non-official) because dbt external_claude_code_plugin_installs.sql
+    // non-official) because dbt external_omnicode_code_plugin_installs.sql
     // extracts $.plugin_id for official-marketplace install tracking. Other
     // plugin lifecycle events drop the blob key — no downstream consumers.
     logEvent('tengu_plugin_installed', {

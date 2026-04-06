@@ -20,7 +20,7 @@ interface InvalidConfigDialogProps {
 }
 
 /**
- * Dialog shown when the Claude config file contains invalid JSON
+ * Dialog shown when the Omnicode config file contains invalid JSON
  */
 function InvalidConfigDialog(t0) {
   const $ = _c(19);
@@ -135,8 +135,8 @@ export async function showInvalidConfigDialog({
     const {
       unmount
     } = await render(<AppStateProvider>
-        <KeybindingSetup>
-          <InvalidConfigDialog filePath={error.filePath} errorDescription={error.message} onExit={() => {
+      <KeybindingSetup>
+        <InvalidConfigDialog filePath={error.filePath} errorDescription={error.message} onExit={() => {
           unmount();
           void resolve();
           process.exit(1);
@@ -149,7 +149,7 @@ export async function showInvalidConfigDialog({
           void resolve();
           process.exit(0);
         }} />
-        </KeybindingSetup>
-      </AppStateProvider>, renderOptions);
+      </KeybindingSetup>
+    </AppStateProvider>, renderOptions);
   });
 }

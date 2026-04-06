@@ -186,27 +186,27 @@ export function TaskListV2({
     hiddenSummary = ` … +${parts.join(', ')}`;
   }
   const content = <>
-      {visibleTasks.map(task_0 => <TaskItem key={task_0.id} task={task_0} ownerColor={task_0.owner ? teammateColors[task_0.owner] : undefined} openBlockers={task_0.blockedBy.filter(id_3 => unresolvedTaskIds.has(id_3))} activity={task_0.owner ? teammateActivity[task_0.owner] : undefined} ownerActive={task_0.owner ? activeTeammates.has(task_0.owner) : false} columns={columns} />)}
-      {maxDisplay > 0 && hiddenSummary && <FullWidthRow><Text dimColor>{hiddenSummary}</Text></FullWidthRow>}
-    </>;
+    {visibleTasks.map(task_0 => <TaskItem key={task_0.id} task={task_0} ownerColor={task_0.owner ? teammateColors[task_0.owner] : undefined} openBlockers={task_0.blockedBy.filter(id_3 => unresolvedTaskIds.has(id_3))} activity={task_0.owner ? teammateActivity[task_0.owner] : undefined} ownerActive={task_0.owner ? activeTeammates.has(task_0.owner) : false} columns={columns} />)}
+    {maxDisplay > 0 && hiddenSummary && <FullWidthRow><Text dimColor>{hiddenSummary}</Text></FullWidthRow>}
+  </>;
   if (isStandalone) {
     return <Box flexDirection="column" marginTop={1} marginLeft={2} width="100%">
-        <Box width="100%">
-          <Text dimColor>
-            <Text bold>{tasks.length}</Text>
-            {' tasks ('}
-            <Text bold>{completedCount}</Text>
-            {' done, '}
-            {inProgressCount > 0 && <>
-                <Text bold>{inProgressCount}</Text>
-                {' in progress, '}
-              </>}
-            <Text bold>{pendingCount}</Text>
-            {' open)'}
-          </Text>
-        </Box>
-        {content}
-      </Box>;
+      <Box width="100%">
+        <Text dimColor>
+          <Text bold>{tasks.length}</Text>
+          {' tasks ('}
+          <Text bold>{completedCount}</Text>
+          {' done, '}
+          {inProgressCount > 0 && <>
+            <Text bold>{inProgressCount}</Text>
+            {' in progress, '}
+          </>}
+          <Text bold>{pendingCount}</Text>
+          {' open)'}
+        </Text>
+      </Box>
+      {content}
+    </Box>;
   }
   return <Box flexDirection="column" width="100%">{content}</Box>;
 }
@@ -231,7 +231,7 @@ function getTaskIcon(status: Task['status']): {
     case 'in_progress':
       return {
         icon: figures.squareSmallFilled,
-        color: 'claude'
+        color: 'omnicode'
       };
     case 'pending':
       return {

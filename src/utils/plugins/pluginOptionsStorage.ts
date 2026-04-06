@@ -116,16 +116,16 @@ export function savePluginOptions(
     storage.read()?.pluginSecrets?.[pluginId] ?? undefined
   const secureScrubbed = existingInSecureStorage
     ? Object.fromEntries(
-        Object.entries(existingInSecureStorage).filter(
-          ([k]) => !nonSensitiveKeysInThisSave.has(k),
-        ),
-      )
+      Object.entries(existingInSecureStorage).filter(
+        ([k]) => !nonSensitiveKeysInThisSave.has(k),
+      ),
+    )
     : undefined
   const needSecureScrub =
     secureScrubbed &&
     existingInSecureStorage &&
     Object.keys(secureScrubbed).length !==
-      Object.keys(existingInSecureStorage).length
+    Object.keys(existingInSecureStorage).length
   if (Object.keys(sensitive).length > 0 || needSecureScrub) {
     const existing = storage.read() ?? {}
     if (!existing.pluginSecrets) {
@@ -155,7 +155,7 @@ export function savePluginOptions(
   //
   // TODO: getSettings_DEPRECATED returns MERGED settings across all scopes.
   // Mutating that and writing to userSettings can leak project-scope
-  // pluginConfigs into ~/.claude/settings.json. Same pattern exists in
+  // pluginConfigs into ~/.omnicode/settings.json. Same pattern exists in
   // saveMcpServerUserConfig. Safe today since pluginConfigs is only ever
   // written here (user-scope), but will bite if we add project-scoped
   // plugin options.
@@ -213,7 +213,7 @@ export function deletePluginOptions(pluginId: string): void {
   //
   // Use `undefined` (not `delete`) because `updateSettingsForSource` merges
   // via `mergeWith` — absent keys are ignored, only `undefined` triggers
-  // removal. Cast is deliberate (CLAUDE.md's 10% case): adding z.undefined()
+  // removal. Cast is deliberate (OMNICODE.md's 10% case): adding z.undefined()
   // to the schema instead (like enabledPlugins:466 does) leaks
   // `| {[k: string]: unknown}` into the public SDK type, which subsumes the
   // real object arm and kills excess-property checks for SDK consumers. The
@@ -310,12 +310,12 @@ export function getUnconfiguredOptions(
 }
 
 /**
- * Substitute ${CLAUDE_PLUGIN_ROOT} and ${CLAUDE_PLUGIN_DATA} with their paths.
+ * Substitute ${OMNICODE_PLUGIN_ROOT} and ${OMNICODE_PLUGIN_DATA} with their paths.
  * On Windows, normalizes backslashes to forward slashes so shell commands
  * don't interpret them as escape characters.
  *
- * ${CLAUDE_PLUGIN_ROOT} — version-scoped install dir (recreated on update)
- * ${CLAUDE_PLUGIN_DATA} — persistent state dir (survives updates)
+ * ${OMNICODE_PLUGIN_ROOT} — version-scoped install dir (recreated on update)
+ * ${OMNICODE_PLUGIN_DATA} — persistent state dir (survives updates)
  *
  * Both patterns use the function-replacement form of .replace(): ROOT so
  * `$`-patterns in NTFS paths ($$, $', $`, $&) aren't interpreted; DATA so
@@ -329,14 +329,14 @@ export function substitutePluginVariables(
 ): string {
   const normalize = (p: string) =>
     process.platform === 'win32' ? p.replace(/\\/g, '/') : p
-  let out = value.replace(/\$\{CLAUDE_PLUGIN_ROOT\}/g, () =>
+  let out = value.replace(/\$\{OMNICODE_PLUGIN_ROOT\}/g, () =>
     normalize(plugin.path),
   )
   // source can be absent (e.g. hooks where pluginRoot is a skill root without
-  // a plugin context). In that case ${CLAUDE_PLUGIN_DATA} is left literal.
+  // a plugin context). In that case ${OMNICODE_PLUGIN_DATA} is left literal.
   if (plugin.source) {
     const source = plugin.source
-    out = out.replace(/\$\{CLAUDE_PLUGIN_DATA\}/g, () =>
+    out = out.replace(/\$\{OMNICODE_PLUGIN_DATA\}/g, () =>
       normalize(getPluginDataDir(source)),
     )
   }
@@ -362,7 +362,7 @@ export function substituteUserConfigVariables(
     if (configValue === undefined) {
       throw new Error(
         `Missing required user configuration value: ${key}. ` +
-          `This should have been validated before variable substitution.`,
+        `This should have been validated before variable substitution.`,
       )
     }
     return String(configValue)

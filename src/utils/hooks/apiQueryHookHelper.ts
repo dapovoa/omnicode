@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { QuerySource } from '../../constants/querySource.js'
-import { queryModelWithoutStreaming } from '../../services/api/claude.js'
+import { queryModelWithoutStreaming } from '../../services/api/omnicode.js'
 import type { Message } from '../../types/message.js'
 import { createAbortController } from '../../utils/abortController.js'
 import { logError } from '../../utils/log.js'
@@ -39,19 +39,19 @@ export type ApiQueryHookConfig<TResult> = {
 
 export type ApiQueryResult<TResult> =
   | {
-      type: 'success'
-      queryName: string
-      result: TResult
-      messageId: string
-      model: string
-      uuid: string
-    }
+    type: 'success'
+    queryName: string
+    result: TResult
+    messageId: string
+    model: string
+    uuid: string
+  }
   | {
-      type: 'error'
-      queryName: string
-      error: Error
-      uuid: string
-    }
+    type: 'error'
+    queryName: string
+    error: Error
+    uuid: string
+  }
 
 export function createApiQueryHook<TResult>(
   config: ApiQueryHookConfig<TResult>,

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useNotifications } from 'src/context/notifications.js';
 import { getIsRemoteMode } from '../../bootstrap/state.js';
 import { Text } from '../../ink.js';
-import { hasClaudeAiMcpEverConnected } from '../../services/mcp/claudeai.js';
+import { hasOmnicodeAiMcpEverConnected } from '../../services/mcp/omnicodeai.js';
 import type { MCPServerConnection } from '../../services/mcp/types.js';
 type Props = {
   mcpClients?: MCPServerConnection[];
@@ -29,10 +29,10 @@ export function useMcpConnectivityStatus(t0) {
           return;
         }
         const failedLocalClients = mcpClients.filter(_temp);
-        const failedClaudeAiClients = mcpClients.filter(_temp2);
+        const failedOmnicodeAiClients = mcpClients.filter(_temp2);
         const needsAuthLocalServers = mcpClients.filter(_temp3);
-        const needsAuthClaudeAiServers = mcpClients.filter(_temp4);
-        if (failedLocalClients.length === 0 && failedClaudeAiClients.length === 0 && needsAuthLocalServers.length === 0 && needsAuthClaudeAiServers.length === 0) {
+        const needsAuthOmnicodeAiServers = mcpClients.filter(_temp4);
+        if (failedLocalClients.length === 0 && failedOmnicodeAiClients.length === 0 && needsAuthLocalServers.length === 0 && needsAuthOmnicodeAiServers.length === 0) {
           return;
         }
         if (failedLocalClients.length > 0) {
@@ -42,10 +42,10 @@ export function useMcpConnectivityStatus(t0) {
             priority: "medium"
           });
         }
-        if (failedClaudeAiClients.length > 0) {
+        if (failedOmnicodeAiClients.length > 0) {
           addNotification({
-            key: "mcp-claudeai-failed",
-            jsx: <><Text color="error">{failedClaudeAiClients.length} claude.ai{" "}{failedClaudeAiClients.length === 1 ? "connector" : "connectors"}{" "}unavailable</Text><Text dimColor={true}> · /mcp</Text></>,
+            key: "mcp-omnicodeai-failed",
+            jsx: <><Text color="error">{failedOmnicodeAiClients.length} omnicode.ai{" "}{failedOmnicodeAiClients.length === 1 ? "connector" : "connectors"}{" "}unavailable</Text><Text dimColor={true}> · /mcp</Text></>,
             priority: "medium"
           });
         }
@@ -56,10 +56,10 @@ export function useMcpConnectivityStatus(t0) {
             priority: "medium"
           });
         }
-        if (needsAuthClaudeAiServers.length > 0) {
+        if (needsAuthOmnicodeAiServers.length > 0) {
           addNotification({
-            key: "mcp-claudeai-needs-auth",
-            jsx: <><Text color="warning">{needsAuthClaudeAiServers.length} claude.ai{" "}{needsAuthClaudeAiServers.length === 1 ? "connector needs" : "connectors need"}{" "}auth</Text><Text dimColor={true}> · /mcp</Text></>,
+            key: "mcp-omnicodeai-needs-auth",
+            jsx: <><Text color="warning">{needsAuthOmnicodeAiServers.length} omnicode.ai{" "}{needsAuthOmnicodeAiServers.length === 1 ? "connector needs" : "connectors need"}{" "}auth</Text><Text dimColor={true}> · /mcp</Text></>,
             priority: "medium"
           });
         }
@@ -79,14 +79,14 @@ export function useMcpConnectivityStatus(t0) {
   useEffect(t2, t3);
 }
 function _temp4(client_2) {
-  return client_2.type === "needs-auth" && client_2.config.type === "claudeai-proxy" && hasClaudeAiMcpEverConnected(client_2.name);
+  return client_2.type === "needs-auth" && client_2.config.type === "omnicodeai-proxy" && hasOmnicodeAiMcpEverConnected(client_2.name);
 }
 function _temp3(client_1) {
-  return client_1.type === "needs-auth" && client_1.config.type !== "claudeai-proxy";
+  return client_1.type === "needs-auth" && client_1.config.type !== "omnicodeai-proxy";
 }
 function _temp2(client_0) {
-  return client_0.type === "failed" && client_0.config.type === "claudeai-proxy" && hasClaudeAiMcpEverConnected(client_0.name);
+  return client_0.type === "failed" && client_0.config.type === "omnicodeai-proxy" && hasOmnicodeAiMcpEverConnected(client_0.name);
 }
 function _temp(client) {
-  return client.type === "failed" && client.config.type !== "sse-ide" && client.config.type !== "ws-ide" && client.config.type !== "claudeai-proxy";
+  return client.type === "failed" && client.config.type !== "sse-ide" && client.config.type !== "ws-ide" && client.config.type !== "omnicodeai-proxy";
 }

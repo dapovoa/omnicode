@@ -91,9 +91,9 @@ function extractTranscript(messages: SerializedMessage[]): string {
     messages.length <= MAX_MESSAGES_TO_SCAN
       ? messages
       : [
-          ...messages.slice(0, MAX_MESSAGES_TO_SCAN / 2),
-          ...messages.slice(-MAX_MESSAGES_TO_SCAN / 2),
-        ]
+        ...messages.slice(0, MAX_MESSAGES_TO_SCAN / 2),
+        ...messages.slice(-MAX_MESSAGES_TO_SCAN / 2),
+      ]
 
   const text = messagesToScan
     .map(extractMessageText)
@@ -140,7 +140,7 @@ function logContainsQuery(log: LogOption, queryLower: string): boolean {
 }
 
 /**
- * Performs an agentic search using Claude to find relevant sessions
+ * Performs an agentic search using Omnicode to find relevant sessions
  * based on semantic understanding of the query.
  */
 export async function agenticSessionSearch(
@@ -177,7 +177,7 @@ export async function agenticSessionSearch(
   // Debug: log what data we have
   logForDebugging(
     `Agentic search: ${logsToSearch.length}/${logs.length} logs, query="${query}", ` +
-      `matching: ${matchingLogs.length}, with messages: ${count(logsToSearch, l => l.messages?.length > 0)}`,
+    `matching: ${matchingLogs.length}, with messages: ${count(logsToSearch, l => l.messages?.length > 0)}`,
   )
 
   // Load full logs for lite logs to get transcript content

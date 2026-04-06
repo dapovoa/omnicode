@@ -29,12 +29,12 @@ type BundleScope = 'all' | 'head' | 'squashed'
 
 export type BundleUploadResult =
   | {
-      success: true
-      fileId: string
-      bundleSizeBytes: number
-      scope: BundleScope
-      hasWip: boolean
-    }
+    success: true
+    fileId: string
+    bundleSizeBytes: number
+    scope: BundleScope
+    hasWip: boolean
+  }
   | { success: false; error: string; failReason?: BundleFailReason }
 
 type BundleFailReason = 'git_error' | 'too_large' | 'empty_repo'
@@ -140,7 +140,7 @@ async function _bundleWithFallback(
   return {
     ok: false,
     error:
-      'Repo is too large to bundle. Please setup GitHub on https://claude.ai/code',
+      'Repo is too large to bundle. Please setup GitHub on https://omnicode.ai/code',
     failReason: 'too_large',
   }
 }

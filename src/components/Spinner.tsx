@@ -68,8 +68,8 @@ export function SpinnerWithVerb(props: Props): React.ReactNode {
   const viewingAgentTaskId = useAppState(s_0 => s_0.viewingAgentTaskId);
   // Hoisted to mount-time — this component re-renders at animation framerate.
   const briefEnvEnabled = feature('KAIROS') || feature('KAIROS_BRIEF') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_BRIEF), []) : false;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useMemo(() => isEnvTruthy(process.env.OMNICODE_BRIEF), []) : false;
 
   // Runtime gate mirrors isBriefEnabled() but inlined — importing from
   // BriefTool.ts would leak tool-name strings into external builds. Single
@@ -208,8 +208,8 @@ function SpinnerWithVerbInner({
   // the ref. The tree is only shown when teammates are running; teammate
   // progress updates to s.tasks trigger re-renders that keep this fresh.
   const leaderTokenCount = Math.round(responseLengthRef.current / 4);
-  const defaultColor: keyof Theme = 'claude';
-  const defaultShimmerColor = 'claudeShimmer';
+  const defaultColor: keyof Theme = 'omnicode';
+  const defaultShimmerColor = 'omnicodeShimmer';
   const messageColor = overrideColor ?? defaultColor;
   const shimmerColor = overrideShimmerColor ?? defaultShimmerColor;
 
@@ -228,25 +228,25 @@ function SpinnerWithVerbInner({
   // useStalledAnimation detects no new tokens after 3s and turns the spinner red.
   if (leaderIsIdle && hasRunningTeammates && !foregroundedTeammate) {
     return <Box flexDirection="column" width="100%" alignItems="flex-start">
-        <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
-          <Text dimColor>
-            {TEARDROP_ASTERISK} Idle
-            {!allIdle && ' · teammates running'}
-          </Text>
-        </Box>
-        {showSpinnerTree && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderTokenCount={leaderTokenCount} leaderIdleText="Idle" />}
-      </Box>;
+      <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
+        <Text dimColor>
+          {TEARDROP_ASTERISK} Idle
+          {!allIdle && ' · teammates running'}
+        </Text>
+      </Box>
+      {showSpinnerTree && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderTokenCount={leaderTokenCount} leaderIdleText="Idle" />}
+    </Box>;
   }
 
   // When viewing an idle teammate, show static idle display instead of animated spinner
   if (foregroundedTeammate?.isIdle) {
     const idleText = allIdle ? `${TEARDROP_ASTERISK} Worked for ${formatDuration(Date.now() - foregroundedTeammate.startTime)}` : `${TEARDROP_ASTERISK} Idle`;
     return <Box flexDirection="column" width="100%" alignItems="flex-start">
-        <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
-          <Text dimColor>{idleText}</Text>
-        </Box>
-        {showSpinnerTree && hasRunningTeammates && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} />}
-      </Box>;
+      <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
+        <Text dimColor>{idleText}</Text>
+      </Box>
+      {showSpinnerTree && hasRunningTeammates && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} />}
+    </Box>;
   }
 
   // Time-based tip overrides: coarse thresholds so a stale ref read (we're
@@ -256,7 +256,7 @@ function SpinnerWithVerbInner({
   const tipsEnabled = settings.spinnerTipsEnabled !== false;
   const showClearTip = tipsEnabled && elapsedSnapshot > 1_800_000;
   const showBtwTip = tipsEnabled && elapsedSnapshot > 30_000 && !getGlobalConfig().btwUseCount;
-  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? 'Use /clear to start fresh when switching topics and free up context' : showBtwTip && !nextTask ? "Use /btw to ask a quick side question without interrupting Claude's current work" : spinnerTip;
+  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? 'Use /clear to start fresh when switching topics and free up context' : showBtwTip && !nextTask ? "Use /btw to ask a quick side question without interrupting Omnicode's current work" : spinnerTip;
 
   // Budget text (internal-only) — shown above the tip line
   let budgetText: string | null = null;
@@ -278,26 +278,26 @@ function SpinnerWithVerbInner({
     }
   }
   return <Box flexDirection="column" width="100%" alignItems="flex-start">
-      <SpinnerAnimationRow mode={mode} reducedMotion={reducedMotion} hasActiveTools={hasActiveTools} responseLengthRef={responseLengthRef} message={message} messageColor={messageColor} shimmerColor={shimmerColor} overrideColor={overrideColor} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} spinnerSuffix={spinnerSuffix} verbose={verbose} columns={columns} hasRunningTeammates={hasRunningTeammates} teammateTokens={teammateTokens} foregroundedTeammate={foregroundedTeammate} leaderIsIdle={leaderIsIdle} thinkingStatus={thinkingStatus} effortSuffix={effortSuffix} />
-      {showSpinnerTree && hasRunningTeammates ? <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} /> : showExpandedTodos && tasksV2 && tasksV2.length > 0 ? <Box width="100%" flexDirection="column">
-          <MessageResponse>
-            <TaskListV2 tasks={tasksV2} />
-          </MessageResponse>
-        </Box> : nextTask || effectiveTip || budgetText ?
-    // IMPORTANT: we need this width="100%" to avoid an Ink bug where the
-    // tip gets duplicated over and over while the spinner is running if
-    // the terminal is very small. TODO: fix this in Ink.
-    <Box width="100%" flexDirection="column">
-          {budgetText && <MessageResponse>
-              <Text dimColor>{budgetText}</Text>
-            </MessageResponse>}
-          {(nextTask || effectiveTip) && <MessageResponse>
-              <Text dimColor>
-                {nextTask ? `Next: ${nextTask.subject}` : `Tip: ${effectiveTip}`}
-              </Text>
-            </MessageResponse>}
-        </Box> : null}
-    </Box>;
+    <SpinnerAnimationRow mode={mode} reducedMotion={reducedMotion} hasActiveTools={hasActiveTools} responseLengthRef={responseLengthRef} message={message} messageColor={messageColor} shimmerColor={shimmerColor} overrideColor={overrideColor} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} spinnerSuffix={spinnerSuffix} verbose={verbose} columns={columns} hasRunningTeammates={hasRunningTeammates} teammateTokens={teammateTokens} foregroundedTeammate={foregroundedTeammate} leaderIsIdle={leaderIsIdle} thinkingStatus={thinkingStatus} effortSuffix={effortSuffix} />
+    {showSpinnerTree && hasRunningTeammates ? <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} /> : showExpandedTodos && tasksV2 && tasksV2.length > 0 ? <Box width="100%" flexDirection="column">
+      <MessageResponse>
+        <TaskListV2 tasks={tasksV2} />
+      </MessageResponse>
+    </Box> : nextTask || effectiveTip || budgetText ?
+      // IMPORTANT: we need this width="100%" to avoid an Ink bug where the
+      // tip gets duplicated over and over while the spinner is running if
+      // the terminal is very small. TODO: fix this in Ink.
+      <Box width="100%" flexDirection="column">
+        {budgetText && <MessageResponse>
+          <Text dimColor>{budgetText}</Text>
+        </MessageResponse>}
+        {(nextTask || effectiveTip) && <MessageResponse>
+          <Text dimColor>
+            {nextTask ? `Next: ${nextTask.subject}` : `Tip: ${effectiveTip}`}
+          </Text>
+        </MessageResponse>}
+      </Box> : null}
+  </Box>;
 }
 
 // Brief/assistant mode spinner: single status line. PromptInput drops its

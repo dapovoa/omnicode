@@ -172,7 +172,7 @@ export function getOwnerChain(fiber: unknown): string[] {
     const name =
       typeof t === 'function'
         ? (t as { displayName?: string; name?: string }).displayName ||
-          (t as { displayName?: string; name?: string }).name
+        (t as { displayName?: string; name?: string }).name
         : typeof t === 'string'
           ? undefined // host element (ink-box etc) — skip
           : t?.displayName || t?.name
@@ -185,7 +185,7 @@ export function getOwnerChain(fiber: unknown): string[] {
 let debugRepaints: boolean | undefined
 export function isDebugRepaintsEnabled(): boolean {
   if (debugRepaints === undefined) {
-    debugRepaints = isEnvTruthy(process.env.CLAUDE_CODE_DEBUG_REPAINTS)
+    debugRepaints = isEnvTruthy(process.env.OMNICODE_DEBUG_REPAINTS)
   }
   return debugRepaints
 }
@@ -194,7 +194,7 @@ export const dispatcher = new Dispatcher()
 
 // --- COMMIT INSTRUMENTATION (temp debugging) ---
 // eslint-disable-next-line custom-rules/no-process-env-top-level -- debug instrumentation, read-once is fine
-const COMMIT_LOG = process.env.CLAUDE_CODE_COMMIT_LOG
+const COMMIT_LOG = process.env.OMNICODE_COMMIT_LOG
 let _commits = 0
 let _lastLog = 0
 let _lastCommitAt = 0
@@ -376,7 +376,7 @@ const reconciler = createReconciler<
 
     return createTextNode(text)
   },
-  resetTextContent() {},
+  resetTextContent() { },
   hideTextInstance(node) {
     setTextNodeValue(node, '')
   },
@@ -436,11 +436,11 @@ const reconciler = createReconciler<
   supportsMicrotasks: true,
   scheduleMicrotask: queueMicrotask,
   getCurrentUpdatePriority: () => dispatcher.currentUpdatePriority,
-  beforeActiveInstanceBlur() {},
-  afterActiveInstanceBlur() {},
-  detachDeletedInstance() {},
+  beforeActiveInstanceBlur() { },
+  afterActiveInstanceBlur() { },
+  detachDeletedInstance() { },
   getInstanceFromNode: () => null,
-  prepareScopeUpdate() {},
+  prepareScopeUpdate() { },
   getInstanceFromScope: () => null,
   appendChildToContainer: appendChildNode,
   insertInContainerBefore: insertBeforeNode,
@@ -505,8 +505,8 @@ const reconciler = createReconciler<
   preloadInstance(): boolean {
     return true
   },
-  startSuspendingCommit(): void {},
-  suspendInstance(): void {},
+  startSuspendingCommit(): void { },
+  suspendInstance(): void { },
   waitForCommitToBeReady(): null {
     return null
   },
@@ -521,12 +521,12 @@ const reconciler = createReconciler<
   resolveUpdatePriority(): number {
     return dispatcher.resolveEventPriority()
   },
-  resetFormInstance(): void {},
-  requestPostPaintCallback(): void {},
+  resetFormInstance(): void { },
+  requestPostPaintCallback(): void { },
   shouldAttemptEagerTransition(): boolean {
     return false
   },
-  trackSchedulerEvent(): void {},
+  trackSchedulerEvent(): void { },
   resolveEventType(): string | null {
     return dispatcher.currentEvent?.type ?? null
   },

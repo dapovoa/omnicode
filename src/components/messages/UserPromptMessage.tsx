@@ -18,12 +18,12 @@ type Props = {
 };
 
 // Hard cap on displayed prompt text. Piping large files via stdin
-// (e.g. `cat 11k-line-file | claude`) creates a single user message whose
+// (e.g. `cat 11k-line-file | omnicode`) creates a single user message whose
 // <Text> node the fullscreen Ink renderer must wrap/output on every frame,
 // causing 500ms+ keystroke latency. React.memo skips the React render but
 // the Ink output pass still iterates the full mounted text. Non-fullscreen
 // avoids this via <Static> (print-and-forget to terminal scrollback).
-// Head+tail because `{ cat file; echo prompt; } | claude` puts the user's
+// Head+tail because `{ cat file; echo prompt; } | omnicode` puts the user's
 // actual question at the end.
 const MAX_DISPLAY_CHARS = 10_000;
 const TRUNCATE_HEAD_CHARS = 2_500;
@@ -49,15 +49,15 @@ export function UserPromptMessage({
   // to avoid pulling BriefTool.ts → prompt.ts tool-name strings into
   // external builds.
   const isBriefOnly = feature('KAIROS') || feature('KAIROS_BRIEF') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useAppState(s => s.isBriefOnly) : false;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useAppState(s => s.isBriefOnly) : false;
   const viewingAgentTaskId = feature('KAIROS') || feature('KAIROS_BRIEF') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useAppState(s_0 => s_0.viewingAgentTaskId) : null;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useAppState(s_0 => s_0.viewingAgentTaskId) : null;
   // Hoisted to mount-time — per-message component, re-renders on every scroll.
   const briefEnvEnabled = feature('KAIROS') || feature('KAIROS_BRIEF') ?
-  // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
-  useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_BRIEF), []) : false;
+    // biome-ignore lint/correctness/useHookAtTopLevel: feature() is a compile-time constant
+    useMemo(() => isEnvTruthy(process.env.OMNICODE_BRIEF), []) : false;
   const useBriefLayout = feature('KAIROS') || feature('KAIROS_BRIEF') ? (getKairosActive() || getUserMsgOptIn() && (briefEnvEnabled || getFeatureValue_CACHED_MAY_BE_STALE('tengu_kairos_brief', false))) && isBriefOnly && !isTranscriptMode && !viewingAgentTaskId : false;
 
   // Truncate before the early return so the hook order is stable.
@@ -74,6 +74,6 @@ export function UserPromptMessage({
     return null;
   }
   return <Box flexDirection="column" marginTop={addMargin ? 1 : 0} backgroundColor={isSelected ? 'messageActionsBackground' : useBriefLayout ? undefined : 'userMessageBackground'} paddingRight={useBriefLayout ? 0 : 1}>
-      <HighlightedThinkingText text={displayText} useBriefLayout={useBriefLayout} timestamp={useBriefLayout ? timestamp : undefined} />
-    </Box>;
+    <HighlightedThinkingText text={displayText} useBriefLayout={useBriefLayout} timestamp={useBriefLayout ? timestamp : undefined} />
+  </Box>;
 }

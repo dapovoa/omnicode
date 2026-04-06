@@ -7,7 +7,7 @@ import { type MessageUpdateLazy, runToolUse } from './toolExecution.js'
 
 function getMaxToolUseConcurrency(): number {
   return (
-    parseInt(process.env.CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY || '', 10) || 10
+    parseInt(process.env.OMNICODE_MAX_TOOL_USE_CONCURRENCY || '', 10) || 10
   )
 }
 
@@ -97,14 +97,14 @@ function partitionToolCalls(
     const parsedInput = tool?.inputSchema.safeParse(toolUse.input)
     const isConcurrencySafe = parsedInput?.success
       ? (() => {
-          try {
-            return Boolean(tool?.isConcurrencySafe(parsedInput.data))
-          } catch {
-            // If isConcurrencySafe throws (e.g., due to shell-quote parse failure),
-            // treat as not concurrency-safe to be conservative
-            return false
-          }
-        })()
+        try {
+          return Boolean(tool?.isConcurrencySafe(parsedInput.data))
+        } catch {
+          // If isConcurrencySafe throws (e.g., due to shell-quote parse failure),
+          // treat as not concurrency-safe to be conservative
+          return false
+        }
+      })()
       : false
     if (isConcurrencySafe && acc[acc.length - 1]?.isConcurrencySafe) {
       acc[acc.length - 1]!.blocks.push(toolUse)

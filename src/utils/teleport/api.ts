@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto'
 import { getOauthConfig } from 'src/constants/oauth.js'
 import { getOrganizationUUID } from 'src/services/oauth/client.js'
 import z from 'zod/v4'
-import { getClaudeAIOAuthTokens } from '../auth.js'
+import { getOmnicodeAIOAuthTokens } from '../auth.js'
 import { logForDebugging } from '../debug.js'
 import { parseGitHubRepository } from '../detectRepository.js'
 import { errorMessage, toError } from '../errors.js'
@@ -182,10 +182,10 @@ export async function prepareApiRequest(): Promise<{
   accessToken: string
   orgUUID: string
 }> {
-  const accessToken = getClaudeAIOAuthTokens()?.accessToken
+  const accessToken = getOmnicodeAIOAuthTokens()?.accessToken
   if (accessToken === undefined) {
     throw new Error(
-      'Claude Code web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.',
+      'Omnicode Code web sessions require authentication with a Omnicode.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.',
     )
   }
 
@@ -319,7 +319,7 @@ export async function fetchSession(
 
     throw new Error(
       apiMessage ||
-        `Failed to fetch session: ${response.status} ${response.statusText}`,
+      `Failed to fetch session: ${response.status} ${response.statusText}`,
     )
   }
 
@@ -348,7 +348,7 @@ export function getBranchFromSession(
  */
 export type RemoteMessageContent =
   | string
-  | Array<{ type: string; [key: string]: unknown }>
+  | Array<{ type: string;[key: string]: unknown }>
 
 /**
  * Sends a user message event to an existing remote session via the Sessions API

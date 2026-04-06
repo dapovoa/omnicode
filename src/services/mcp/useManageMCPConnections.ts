@@ -21,13 +21,13 @@ import type {
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fetchMcpSkillsForClient = feature('MCP_SKILLS')
   ? (
-      require('../../skills/mcpSkills.js') as typeof import('../../skills/mcpSkills.js')
-    ).fetchMcpSkillsForClient
+    require('../../skills/mcpSkills.js') as typeof import('../../skills/mcpSkills.js')
+  ).fetchMcpSkillsForClient
   : null
 const clearSkillIndexCache = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? (
-      require('../skillSearch/localSearch.js') as typeof import('../skillSearch/localSearch.js')
-    ).clearSkillIndexCache
+    require('../skillSearch/localSearch.js') as typeof import('../skillSearch/localSearch.js')
+  ).clearSkillIndexCache
   : null
 
 import {
@@ -42,10 +42,10 @@ import {
   logEvent,
 } from 'src/services/analytics/index.js'
 import {
-  dedupClaudeAiMcpServers,
+  dedupOmnicodeAiMcpServers,
   doesEnterpriseMcpConfigExist,
   filterMcpServersByPolicy,
-  getClaudeCodeMcpConfigs,
+  getOmnicodeCodeMcpConfigs,
   isMcpServerDisabled,
   setMcpServerEnabled,
 } from 'src/services/mcp/config.js'
@@ -77,9 +77,9 @@ import {
   isChannelPermissionRelayEnabled,
 } from './channelPermissions.js'
 import {
-  clearClaudeAIMcpConfigsCache,
-  fetchClaudeAIMcpConfigsIfEligible,
-} from './claudeai.js'
+  clearOmnicodeAIMcpConfigsCache,
+  fetchOmnicodeAIMcpConfigsIfEligible,
+} from './omnicodeai.js'
 import { registerElicitationHandler } from './elicitationHandler.js'
 import { getMcpPrefix } from './mcpStringUtils.js'
 import { commandBelongsToServer, excludeStalePluginClients } from './utils.js'
@@ -147,7 +147,7 @@ export function useManageMCPConnections(
   const store = useAppStateStore()
   const _authVersion = useAppState(s => s.authVersion)
   // Incremented by /reload-plugins (refreshActivePlugins) to pick up newly
-  // enabled plugin MCP servers. getClaudeCodeMcpConfigs() reads loadAllPlugins()
+  // enabled plugin MCP servers. getOmnicodeCodeMcpConfigs() reads loadAllPlugins()
   // which has been cleared by refreshActivePlugins, so the effects below see
   // fresh plugin data on re-run.
   const _pluginReconnectKey = useAppState(s => s.mcp.pluginReconnectKey)
@@ -184,7 +184,7 @@ export function useManageMCPConnections(
       // ship without this. Checked at mount; mid-session flips need restart.
       // If off, callbacks never go into AppState → interactiveHandler sees
       // undefined → never sends → intercept has nothing pending → "yes tbxkq"
-      // flows to Claude as normal chat. One gate, full disable.
+      // flows to Omnicode as normal chat. One gate, full disable.
       if (!isChannelPermissionRelayEnabled()) return
       setAppState(prev => {
         if (prev.channelPermissionCallbacks === callbacks) return prev
@@ -261,21 +261,21 @@ export function useManageMCPConnections(
           commands === undefined
             ? mcp.commands
             : [
-                ...reject(mcp.commands, c =>
-                  commandBelongsToServer(c, client.name),
-                ),
-                ...commands,
-              ]
+              ...reject(mcp.commands, c =>
+                commandBelongsToServer(c, client.name),
+              ),
+              ...commands,
+            ]
 
         const updatedResources =
           resources === undefined
             ? mcp.resources
             : {
-                ...mcp.resources,
-                ...(resources.length > 0
-                  ? { [client.name]: resources }
-                  : omit(mcp.resources, client.name)),
-              }
+              ...mcp.resources,
+              ...(resources.length > 0
+                ? { [client.name]: resources }
+                : omit(mcp.resources, client.name)),
+            }
 
         mcp = {
           ...mcp,
@@ -467,7 +467,7 @@ export function useManageMCPConnections(
             }
           }
 
-          // Channel push: notifications/claude/channel → enqueue().
+          // Channel push: notifications/omnicode/channel → enqueue().
           // Gate decides whether to register the handler; connection stays
           // up either way (allowedMcpServers controls that).
           if (feature('KAIROS') || feature('KAIROS_CHANNELS')) {
@@ -510,7 +510,7 @@ export function useManageMCPConnections(
                     const { content, meta } = notification.params
                     logMCPDebug(
                       client.name,
-                      `notifications/claude/channel: ${content.slice(0, 80)}`,
+                      `notifications/omnicode/channel: ${content.slice(0, 80)}`,
                     )
                     logEvent('tengu_mcp_channel_message', {
                       content_length: content.length,
@@ -532,13 +532,13 @@ export function useManageMCPConnections(
                 )
                 // Permission-reply handler — separate event, separate
                 // capability. Only registers if the server declares
-                // claude/channel/permission (same opt-in check as the send
+                // omnicode/channel/permission (same opt-in check as the send
                 // path in interactiveHandler.ts). Server parses the user's
                 // reply and emits {request_id, behavior}; no regex on our
                 // side, text in the general channel can't accidentally match.
                 if (
                   client.capabilities?.experimental?.[
-                    'claude/channel/permission'
+                  'omnicode/channel/permission'
                   ] !== undefined
                 ) {
                   client.client.setNotificationHandler(
@@ -553,7 +553,7 @@ export function useManageMCPConnections(
                         ) ?? false
                       logMCPDebug(
                         client.name,
-                        `notifications/claude/channel/permission: ${request_id} → ${behavior} (${resolved ? 'matched pending' : 'no pending entry — stale or unknown ID'})`,
+                        `notifications/omnicode/channel/permission: ${request_id} → ${behavior} (${resolved ? 'matched pending' : 'no pending entry — stale or unknown ID'})`,
                       )
                     },
                   )
@@ -566,7 +566,7 @@ export function useManageMCPConnections(
                 // the gate says skip but the earlier handler keeps enqueuing.
                 // Map.delete — safe when never registered.
                 client.client.removeNotificationHandler(
-                  'notifications/claude/channel',
+                  'notifications/omnicode/channel',
                 )
                 client.client.removeNotificationHandler(
                   CHANNEL_PERMISSION_METHOD,
@@ -597,7 +597,7 @@ export function useManageMCPConnections(
                     gate.kind === 'disabled'
                       ? 'Channels are not currently available'
                       : gate.kind === 'auth'
-                        ? 'Channels require claude.ai authentication · run /login'
+                        ? 'Channels require omnicode.ai authentication · run /login'
                         : gate.kind === 'policy'
                           ? 'Channels are not enabled for your org · have an administrator set channelsEnabled: true in managed settings'
                           : gate.reason
@@ -766,14 +766,14 @@ export function useManageMCPConnections(
   // Re-runs on session change (/clear) and on /reload-plugins (pluginReconnectKey).
   // On plugin reload, also disconnects stale plugin MCP servers (scope 'dynamic')
   // that no longer appear in configs — prevents ghost tools from disabled plugins.
-  // Skip claude.ai dedup here to avoid blocking on the network fetch; the connect
+  // Skip omnicode.ai dedup here to avoid blocking on the network fetch; the connect
   // useEffect below runs immediately after and dedups before connecting.
   const sessionId = getSessionId()
   useEffect(() => {
     async function initializeServersAsPending() {
       const { servers: existingConfigs, errors: mcpErrors } = isStrictMcpConfig
         ? { servers: {}, errors: [] }
-        : await getClaudeCodeMcpConfigs(dynamicMcpConfig)
+        : await getOmnicodeCodeMcpConfigs(dynamicMcpConfig)
       const configs = { ...existingConfigs, ...dynamicMcpConfig }
 
       // Add MCP errors to plugin errors for UI visibility (deduplicated)
@@ -807,7 +807,7 @@ export function useManageMCPConnections(
           }
           if (s.type === 'connected') {
             s.client.onclose = undefined
-            void clearServerCache(s.name, s.config).catch(() => {})
+            void clearServerCache(s.name, s.config).catch(() => { })
           }
         }
 
@@ -854,39 +854,39 @@ export function useManageMCPConnections(
   ])
 
   // Load MCP configs and connect to servers
-  // Two-phase loading: Claude Code configs first (fast), then claude.ai configs (may be slow)
+  // Two-phase loading: Omnicode Code configs first (fast), then omnicode.ai configs (may be slow)
   useEffect(() => {
     let cancelled = false
 
     async function loadAndConnectMcpConfigs() {
-      // Clear claude.ai MCP cache so we fetch fresh configs with current auth
+      // Clear omnicode.ai MCP cache so we fetch fresh configs with current auth
       // state. This is important when authVersion changes (e.g., after login/
       // logout). Kick off the fetch now so it overlaps with loadAllPlugins()
-      // inside getClaudeCodeMcpConfigs; it's awaited only at the dedup step.
+      // inside getOmnicodeCodeMcpConfigs; it's awaited only at the dedup step.
       // Phase 2 below awaits the same promise — no second network call.
-      let claudeaiPromise: Promise<Record<string, ScopedMcpServerConfig>>
+      let omnicodeaiPromise: Promise<Record<string, ScopedMcpServerConfig>>
       if (isStrictMcpConfig || doesEnterpriseMcpConfigExist()) {
-        claudeaiPromise = Promise.resolve({})
+        omnicodeaiPromise = Promise.resolve({})
       } else {
-        clearClaudeAIMcpConfigsCache()
-        claudeaiPromise = fetchClaudeAIMcpConfigsIfEligible()
+        clearOmnicodeAIMcpConfigsCache()
+        omnicodeaiPromise = fetchOmnicodeAIMcpConfigsIfEligible()
       }
 
-      // Phase 1: Load Claude Code configs. Plugin MCP servers that duplicate a
-      // --mcp-config entry or a claude.ai connector are suppressed here so they
+      // Phase 1: Load Omnicode Code configs. Plugin MCP servers that duplicate a
+      // --mcp-config entry or a omnicode.ai connector are suppressed here so they
       // don't connect alongside the connector in Phase 2.
-      const { servers: claudeCodeConfigs, errors: mcpErrors } =
+      const { servers: omnicodeCodeConfigs, errors: mcpErrors } =
         isStrictMcpConfig
           ? { servers: {}, errors: [] }
-          : await getClaudeCodeMcpConfigs(dynamicMcpConfig, claudeaiPromise)
+          : await getOmnicodeCodeMcpConfigs(dynamicMcpConfig, omnicodeaiPromise)
       if (cancelled) return
 
       // Add MCP errors to plugin errors for UI visibility (deduplicated)
       addErrorsToAppState(setAppState, mcpErrors)
 
-      const configs = { ...claudeCodeConfigs, ...dynamicMcpConfig }
+      const configs = { ...omnicodeCodeConfigs, ...dynamicMcpConfig }
 
-      // Start connecting to Claude Code servers (don't wait - runs concurrently with Phase 2)
+      // Start connecting to Omnicode Code servers (don't wait - runs concurrently with Phase 2)
       // Filter out disabled servers to avoid unnecessary connection attempts
       const enabledConfigs = Object.fromEntries(
         Object.entries(configs).filter(([name]) => !isMcpServerDisabled(name)),
@@ -901,32 +901,32 @@ export function useManageMCPConnections(
         )
       })
 
-      // Phase 2: Await claude.ai configs (started above; memoized — no second fetch)
-      let claudeaiConfigs: Record<string, ScopedMcpServerConfig> = {}
+      // Phase 2: Await omnicode.ai configs (started above; memoized — no second fetch)
+      let omnicodeaiConfigs: Record<string, ScopedMcpServerConfig> = {}
       if (!isStrictMcpConfig) {
-        claudeaiConfigs = filterMcpServersByPolicy(
-          await claudeaiPromise,
+        omnicodeaiConfigs = filterMcpServersByPolicy(
+          await omnicodeaiPromise,
         ).allowed
         if (cancelled) return
 
-        // Suppress claude.ai connectors that duplicate an enabled manual server.
-        // Keys never collide (`slack` vs `claude.ai Slack`) so the merge below
+        // Suppress omnicode.ai connectors that duplicate an enabled manual server.
+        // Keys never collide (`slack` vs `omnicode.ai Slack`) so the merge below
         // won't catch this — need content-based dedup by URL signature.
-        if (Object.keys(claudeaiConfigs).length > 0) {
-          const { servers: dedupedClaudeAi } = dedupClaudeAiMcpServers(
-            claudeaiConfigs,
+        if (Object.keys(omnicodeaiConfigs).length > 0) {
+          const { servers: dedupedOmnicodeAi } = dedupOmnicodeAiMcpServers(
+            omnicodeaiConfigs,
             configs,
           )
-          claudeaiConfigs = dedupedClaudeAi
+          omnicodeaiConfigs = dedupedOmnicodeAi
         }
 
-        if (Object.keys(claudeaiConfigs).length > 0) {
-          // Add claude.ai servers as pending immediately so they show up in UI
+        if (Object.keys(omnicodeaiConfigs).length > 0) {
+          // Add omnicode.ai servers as pending immediately so they show up in UI
           setAppState(prevState => {
             const existingServerNames = new Set(
               prevState.mcp.clients.map(c => c.name),
             )
-            const newClients = Object.entries(claudeaiConfigs)
+            const newClients = Object.entries(omnicodeaiConfigs)
               .filter(([name]) => !existingServerNames.has(name))
               .map(([name, config]) => ({
                 name,
@@ -946,32 +946,32 @@ export function useManageMCPConnections(
           })
 
           // Now start connecting (only enabled servers)
-          const enabledClaudeaiConfigs = Object.fromEntries(
-            Object.entries(claudeaiConfigs).filter(
+          const enabledOmnicodeaiConfigs = Object.fromEntries(
+            Object.entries(omnicodeaiConfigs).filter(
               ([name]) => !isMcpServerDisabled(name),
             ),
           )
           getMcpToolsCommandsAndResources(
             onConnectionAttempt,
-            enabledClaudeaiConfigs,
+            enabledOmnicodeaiConfigs,
           ).catch(error => {
             logMCPError(
               'useManageMcpConnections',
-              `Failed to get claude.ai MCP resources: ${errorMessage(error)}`,
+              `Failed to get omnicode.ai MCP resources: ${errorMessage(error)}`,
             )
           })
         }
       }
 
       // Log server counts after both phases complete
-      const allConfigs = { ...configs, ...claudeaiConfigs }
+      const allConfigs = { ...configs, ...omnicodeaiConfigs }
       const counts = {
         enterprise: 0,
         global: 0,
         project: 0,
         user: 0,
         plugin: 0,
-        claudeai: 0,
+        omnicodeai: 0,
       }
       // Ant-only: collect stdio command basenames to correlate with RSS/FPS
       // metrics. Stdio servers like rust-analyzer can be heavy and we want to
@@ -983,7 +983,7 @@ export function useManageMCPConnections(
         else if (serverConfig.scope === 'project') counts.project++
         else if (serverConfig.scope === 'local') counts.user++
         else if (serverConfig.scope === 'dynamic') counts.plugin++
-        else if (serverConfig.scope === 'claudeai') counts.claudeai++
+        else if (serverConfig.scope === 'omnicodeai') counts.omnicodeai++
 
         if (
           process.env.USER_TYPE === 'ant' &&
@@ -998,12 +998,12 @@ export function useManageMCPConnections(
         ...counts,
         ...(process.env.USER_TYPE === 'ant' && stdioCommands.length > 0
           ? {
-              stdio_commands: stdioCommands
-                .sort()
-                .join(
-                  ',',
-                ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-            }
+            stdio_commands: stdioCommands
+              .sort()
+              .join(
+                ',',
+              ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          }
           : {}),
       })
     }

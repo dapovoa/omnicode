@@ -116,12 +116,12 @@ export function checkDangerousRemovalPaths(
  * `!arg.startsWith('-')` filtering drops these, causing path validation to be
  * silently skipped for attack payloads like:
  *
- *   rm -- -/../.claude/settings.local.json
+ *   rm -- -/../.omnicode/settings.local.json
  *
- * Here `-/../.claude/settings.local.json` starts with `-` so the naive filter
+ * Here `-/../.omnicode/settings.local.json` starts with `-` so the naive filter
  * drops it, validation sees zero paths, returns passthrough, and the file is
  * deleted without a prompt. With `--` handling, the path IS extracted and
- * validated (blocked by isClaudeConfigFilePath / pathInAllowedWorkingPath).
+ * validated (blocked by isOmnicodeConfigFilePath / pathInAllowedWorkingPath).
  */
 function filterOutFlags(args: string[]): string[] {
   const result: string[] = []
@@ -619,7 +619,7 @@ function validateCommandPaths(
   if (validator && !validator(args)) {
     return {
       behavior: 'ask',
-      message: `${command} with flags requires manual approval to ensure path safety. For security, Claude Code cannot automatically validate ${command} commands that use flags, as some flags like --target-directory=PATH can bypass path validation.`,
+      message: `${command} with flags requires manual approval to ensure path safety. For security, Omnicode Code cannot automatically validate ${command} commands that use flags, as some flags like --target-directory=PATH can bypass path validation.`,
       decisionReason: {
         type: 'other',
         reason: `${command} command with flags requires manual approval`,
@@ -629,13 +629,13 @@ function validateCommandPaths(
 
   // SECURITY: Block write operations in compound commands containing 'cd'
   // This prevents bypassing path safety checks via directory changes before operations.
-  // Example attack: cd .claude/ && mv test.txt settings.json
-  // This would bypass the check for .claude/settings.json because paths are resolved
+  // Example attack: cd .omnicode/ && mv test.txt settings.json
+  // This would bypass the check for .omnicode/settings.json because paths are resolved
   // relative to the original CWD, not accounting for the cd's effect.
   //
   // ALTERNATIVE APPROACH: Instead of blocking all writes with cd, we could track the
-  // effective CWD through the command chain (e.g., after "cd .claude/", subsequent
-  // commands would be validated with CWD=".claude/"). This would be more permissive
+  // effective CWD through the command chain (e.g., after "cd .omnicode/", subsequent
+  // commands would be validated with CWD=".omnicode/"). This would be more permissive
   // but requires careful handling of:
   // - Relative paths (cd ../foo)
   // - Special cd targets (cd ~, cd -, cd with no args)
@@ -645,7 +645,7 @@ function validateCommandPaths(
   if (compoundCommandHasCd && operationType !== 'read') {
     return {
       behavior: 'ask',
-      message: `Commands that change directories and perform write operations require explicit approval to ensure paths are evaluated correctly. For security, Claude Code cannot automatically determine the final working directory when 'cd' is used in compound commands.`,
+      message: `Commands that change directories and perform write operations require explicit approval to ensure paths are evaluated correctly. For security, Omnicode Code cannot automatically determine the final working directory when 'cd' is used in compound commands.`,
       decisionReason: {
         type: 'other',
         reason:
@@ -672,9 +672,9 @@ function validateCommandPaths(
       // Otherwise use the standard "was blocked" message
       const message =
         decisionReason?.type === 'other' ||
-        decisionReason?.type === 'safetyCheck'
+          decisionReason?.type === 'safetyCheck'
           ? decisionReason.reason
-          : `${command} in '${resolvedPath}' was blocked. For security, Claude Code may only ${ACTION_VERBS[command]} the allowed working directories for this session: ${dirListStr}.`
+          : `${command} in '${resolvedPath}' was blocked. For security, Omnicode Code may only ${ACTION_VERBS[command]} the allowed working directories for this session: ${dirListStr}.`
 
       if (decisionReason?.type === 'rule') {
         return {
@@ -911,7 +911,7 @@ function validateSinglePathCommandArgv(
   // `timeout 5 ` prefix), so strip here too.
   const operationTypeOverride =
     baseCmd === 'sed' &&
-    sedCommandIsAllowedByAllowlist(stripSafeWrappers(cmd.text))
+      sedCommandIsAllowedByAllowlist(stripSafeWrappers(cmd.text))
       ? ('read' as FileOperationType)
       : undefined
   const pathChecker = createPathChecker(
@@ -929,13 +929,13 @@ function validateOutputRedirections(
 ): PermissionResult {
   // SECURITY: Block output redirections in compound commands containing 'cd'
   // This prevents bypassing path safety checks via directory changes before redirections.
-  // Example attack: cd .claude/ && echo "malicious" > settings.json
+  // Example attack: cd .omnicode/ && echo "malicious" > settings.json
   // The redirection target would be validated relative to the original CWD, but the
   // actual write happens in the changed directory after 'cd' executes.
   if (compoundCommandHasCd && redirections.length > 0) {
     return {
       behavior: 'ask',
-      message: `Commands that change directories and write via output redirection require explicit approval to ensure paths are evaluated correctly. For security, Claude Code cannot automatically determine the final working directory when 'cd' is used in compound commands.`,
+      message: `Commands that change directories and write via output redirection require explicit approval to ensure paths are evaluated correctly. For security, Omnicode Code cannot automatically determine the final working directory when 'cd' is used in compound commands.`,
       decisionReason: {
         type: 'other',
         reason:
@@ -965,11 +965,11 @@ function validateOutputRedirections(
       // Otherwise use the standard message for deny rules or working directory restrictions
       const message =
         decisionReason?.type === 'other' ||
-        decisionReason?.type === 'safetyCheck'
+          decisionReason?.type === 'safetyCheck'
           ? decisionReason.reason
           : decisionReason?.type === 'rule'
             ? `Output redirection to '${resolvedPath}' was blocked by a deny rule.`
-            : `Output redirection to '${resolvedPath}' was blocked. For security, Claude Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
+            : `Output redirection to '${resolvedPath}' was blocked. For security, Omnicode Code may only write to files in the allowed working directories for this session: ${dirListStr}.`
 
       // If denied by a deny rule, return 'deny' behavior
       if (decisionReason?.type === 'rule') {
@@ -1262,7 +1262,7 @@ function skipEnvFlags(a: readonly string[]): number {
  */
 export function stripWrappersFromArgv(argv: string[]): string[] {
   let a = argv
-  for (;;) {
+  for (; ;) {
     if (a[0] === 'time' || a[0] === 'nohup') {
       a = a.slice(a[1] === '--' ? 2 : 1)
     } else if (a[0] === 'timeout') {

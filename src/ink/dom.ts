@@ -85,7 +85,7 @@ export type DOMElement = {
   focusManager?: FocusManager
   // React component stack captured at createInstance time (reconciler.ts),
   // e.g. ['ToolUseLoader', 'Messages', 'REPL']. Only populated when
-  // CLAUDE_CODE_DEBUG_REPAINTS is set. Used by findOwnerChainAtRow to
+  // OMNICODE_DEBUG_REPAINTS is set. Used by findOwnerChainAtRow to
   // attribute scrollback-diff full-resets to the component that caused them.
   debugOwnerChain?: string[]
 } & InkNode
@@ -100,8 +100,8 @@ export type DOMNode<T = { nodeName: NodeNames }> = T extends {
   nodeName: infer U
 }
   ? U extends '#text'
-    ? TextNode
-    : DOMElement
+  ? TextNode
+  : DOMElement
   : never
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -399,7 +399,7 @@ export const markDirty = (node?: DOMNode): void => {
 
   while (current) {
     if (current.nodeName !== '#text') {
-      ;(current as DOMElement).dirty = true
+      ; (current as DOMElement).dirty = true
       // Only mark yoga dirty on leaf nodes that have measure functions
       if (
         !markedYoga &&
@@ -462,7 +462,7 @@ export const clearYogaNodeReferences = (node: DOMElement | TextNode): void => {
  * the deepest node whose bounding box contains `y`. Called from ink.tsx when
  * log-update triggers a full reset, to attribute the flicker to its source.
  *
- * Only useful when CLAUDE_CODE_DEBUG_REPAINTS is set (otherwise chains are
+ * Only useful when OMNICODE_DEBUG_REPAINTS is set (otherwise chains are
  * undefined and this returns []).
  */
 export function findOwnerChainAtRow(root: DOMElement, y: number): string[] {
