@@ -172,10 +172,15 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
 
     // Step 2: Provider selection
     await showSetupDialog(root, done => {
-      return <ProviderWizard onComplete={() => {
-        completeOnboarding();
-        void done();
-      }} />;
+      return <Box flexDirection="column">
+        <WelcomeV2 />
+        <Box flexDirection="column" marginTop={1} marginX={1}>
+          <ProviderWizard onComplete={() => {
+            completeOnboarding();
+            void done();
+          }} />
+        </Box>
+      </Box>;
     }, {
       onChangeAppState
     });
