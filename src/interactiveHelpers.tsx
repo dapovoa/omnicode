@@ -19,7 +19,7 @@ import { handleMcpjsonServerApprovals } from './services/mcpServerApproval.js';
 import { AppStateProvider } from './state/AppState.js';
 import { onChangeAppState } from './state/onChangeAppState.js';
 import { normalizeApiKeyForConfig } from './utils/authPortable.js';
-import { getExternalClaudeMdIncludes, getMemoryFiles, shouldShowClaudeMdExternalIncludesWarning } from './utils/claudemd.js';
+import { getExternalOmnicodeMdIncludes, getMemoryFiles, shouldShowOmnicodeMdExternalIncludesWarning } from './utils/omnicodemd.js';
 import { checkHasTrustDialogAccepted, getCustomApiKeyStatus, getGlobalConfig, saveGlobalConfig } from './utils/config.js';
 import { updateDeepLinkTerminalPreference } from './utils/deepLink/terminalPreference.js';
 import { isEnvTruthy, isRunningOnHomespace } from './utils/envUtils.js';
@@ -105,8 +105,8 @@ export function showSetupDialog<T = void>(root: Root, renderer: (done: (result: 
   onChangeAppState?: typeof onChangeAppState;
 }): Promise<T> {
   return showDialog<T>(root, done => <AppStateProvider onChangeAppState={options?.onChangeAppState}>
-      <KeybindingSetup>{renderer(done)}</KeybindingSetup>
-    </AppStateProvider>);
+    <KeybindingSetup>{renderer(done)}</KeybindingSetup>
+  </AppStateProvider>);
 }
 
 /**
@@ -119,7 +119,7 @@ export async function renderAndRun(root: Root, element: React.ReactNode): Promis
   await root.waitUntilExit();
   await gracefulShutdown(0);
 }
-export async function showSetupScreens(root: Root, permissionMode: PermissionMode, allowDangerouslySkipPermissions: boolean, commands?: Command[], claudeInChrome?: boolean, devChannels?: ChannelEntry[]): Promise<boolean> {
+export async function showSetupScreens(root: Root, permissionMode: PermissionMode, allowDangerouslySkipPermissions: boolean, commands?: Command[], omnicodeInChrome?: boolean, devChannels?: ChannelEntry[]): Promise<boolean> {
   if ("production" === 'test' || isEnvTruthy(false) || process.env.IS_DEMO // Skip onboarding in demo mode
   ) {
     return false;
@@ -129,24 +129,41 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
   const config = getGlobalConfig();
   let onboardingShown = false;
 
-  // Skip onboarding dialog for third-party providers (no Anthropic account needed)
-  if (usesAnthropicSetup && (!config.theme || !config.hasCompletedOnboarding) // always show onboarding at least once
-  ) {
+  if (!config.theme || !config.hasCompletedOnboarding) {
     onboardingShown = true;
     const {
-      Onboarding
-    } = await import('./components/Onboarding.js');
-    await showSetupDialog(root, done => <Onboarding onDone={() => {
-      completeOnboarding();
-      void done();
-    }} />, {
+      WelcomeV2
+    } = await import('./components/LogoV2/WelcomeV2.js');
+    const {
+      ThemePicker
+    } = await import('./components/ThemePicker.js');
+    const {
+      Box,
+      useTheme
+    } = await import('./ink.js');
+    await showSetupDialog(root, done => {
+      const ThemeOnboarding = () => {
+        const [, setTheme] = useTheme();
+        return <Box flexDirection="column">
+          <WelcomeV2 />
+          <Box flexDirection="column" marginTop={1} marginX={1}>
+            <ThemePicker onThemeSelect={setting => {
+              setTheme(setting);
+              completeOnboarding();
+              void done();
+            }} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} />
+          </Box>
+        </Box>;
+      };
+      return <ThemeOnboarding />;
+    }, {
       onChangeAppState
     });
   }
 
   // Always show the trust dialog in interactive sessions, regardless of permission mode.
   // The trust dialog is the workspace trust boundary — it warns about untrusted repos
-  // and checks CLAUDE.md external includes. bypassPermissions mode
+  // and checks OMNICODE.md external includes. bypassPermissions mode
   // only affects tool execution permissions, not workspace trust.
   // Note: non-interactive sessions (CI/CD with -p) never reach showSetupScreens at all.
   // Skip permission checks in claubbit
@@ -185,13 +202,13 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
         await handleMcpjsonServerApprovals(root);
       }
 
-      // Check for claude.md includes that need approval
-      if (await shouldShowClaudeMdExternalIncludesWarning()) {
-        const externalIncludes = getExternalClaudeMdIncludes(await getMemoryFiles(true));
+      // Check for omnicode.md includes that need approval
+      if (await shouldShowOmnicodeMdExternalIncludesWarning()) {
+        const externalIncludes = getExternalOmnicodeMdIncludes(await getMemoryFiles(true));
         const {
-          ClaudeMdExternalIncludesDialog
-        } = await import('./components/ClaudeMdExternalIncludesDialog.js');
-        await showSetupDialog(root, done => <ClaudeMdExternalIncludesDialog onDone={done} isStandaloneDialog externalIncludes={externalIncludes} />);
+          OmnicodeMdExternalIncludesDialog
+        } = await import('./components/OmnicodeMdExternalIncludesDialog.js');
+        await showSetupDialog(root, done => <OmnicodeMdExternalIncludesDialog onDone={done} isStandaloneDialog externalIncludes={externalIncludes} />);
       }
     }
   }
@@ -228,7 +245,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
 
   // Check for custom API key
   // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-  // processes but ignored by Claude Code itself (see auth.ts).
+  // processes but ignored by Omnicode Code itself (see auth.ts).
   if (process.env.ANTHROPIC_API_KEY && !isRunningOnHomespace()) {
     const customApiKeyTruncated = normalizeApiKeyForConfig(process.env.ANTHROPIC_API_KEY);
     const keyStatus = getCustomApiKeyStatus(customApiKeyTruncated);
@@ -280,7 +297,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
       const [{
         isChannelsEnabled
       }, {
-        getClaudeAIOAuthTokens
+        getOmnicodeAIOAuthTokens
       }] = await Promise.all([import('./services/mcp/channelAllowlist.js'), import('./utils/auth.js')]);
       // Skip the dialog when channels are blocked (tengu_harbor off or no
       // OAuth) — accepting then immediately seeing "not available" in
@@ -289,7 +306,7 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
       // named. dev:true here is for the flag label in ChannelsNotice
       // (hasNonDev check); the allowlist bypass it also grants is moot
       // since the gate blocks upstream.
-      if (!isChannelsEnabled() || !getClaudeAIOAuthTokens()?.accessToken) {
+      if (!isChannelsEnabled() || !getOmnicodeAIOAuthTokens()?.accessToken) {
         setAllowedChannels([...getAllowedChannels(), ...devChannels.map(c => ({
           ...c,
           dev: true
@@ -313,12 +330,12 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
     }
   }
 
-  // Show Chrome onboarding for first-time Claude in Chrome users
-  if (claudeInChrome && !getGlobalConfig().hasCompletedClaudeInChromeOnboarding) {
+  // Show Chrome onboarding for first-time Omnicode in Chrome users
+  if (omnicodeInChrome && !getGlobalConfig().hasCompletedOmnicodeInChromeOnboarding) {
     const {
-      ClaudeInChromeOnboarding
-    } = await import('./components/ClaudeInChromeOnboarding.js');
-    await showSetupDialog(root, done => <ClaudeInChromeOnboarding onDone={done} />);
+      OmnicodeInChromeOnboarding
+    } = await import('./components/OmnicodeInChromeOnboarding.js');
+    await showSetupDialog(root, done => <OmnicodeInChromeOnboarding onDone={done} />);
   }
   return onboardingShown;
 }
@@ -342,7 +359,7 @@ export function getRenderContext(exitOnCtrlC: boolean): {
   // offline analysis by bench/repl-scroll.ts. Captures the full TUI
   // render pipeline (yoga → screen buffer → diff → optimize → stdout)
   // so perf work on any phase can be validated against real user flows.
-  const frameTimingLogPath = process.env.CLAUDE_CODE_FRAME_TIMING_LOG;
+  const frameTimingLogPath = process.env.OMNICODE_FRAME_TIMING_LOG;
   return {
     getFpsMetrics: () => fpsTracker.getMetrics(),
     stats,
@@ -356,13 +373,13 @@ export function getRenderContext(exitOnCtrlC: boolean): {
           // on abrupt exit. ~100 bytes at ≤60fps is negligible. rss/cpu are
           // single syscalls; cpu is cumulative — bench side computes delta.
           const line =
-          // eslint-disable-next-line custom-rules/no-direct-json-operations -- tiny object, hot bench path
-          JSON.stringify({
-            total: event.durationMs,
-            ...event.phases,
-            rss: process.memoryUsage.rss(),
-            cpu: process.cpuUsage()
-          }) + '\n';
+            // eslint-disable-next-line custom-rules/no-direct-json-operations -- tiny object, hot bench path
+            JSON.stringify({
+              total: event.durationMs,
+              ...event.phases,
+              rss: process.memoryUsage.rss(),
+              cpu: process.cpuUsage()
+            }) + '\n';
           // eslint-disable-next-line custom-rules/no-sync-fs -- bench-only, sync so no frames dropped on exit
           appendFileSync(frameTimingLogPath, line);
         }
