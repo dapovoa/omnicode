@@ -919,11 +919,15 @@ function resolveCodexCredentials(processEnv: NodeJS.ProcessEnv):
 
 export function ProviderWizard({
   onDone,
+  onCancel,
 }: {
   onDone: LocalJSXCommandOnDone
+  onCancel?: () => void
 }): React.ReactNode {
   const defaults = getProviderWizardDefaults()
   const [step, setStep] = React.useState<Step>({ name: 'choose' })
+
+  const handleCancel = onCancel ?? (() => onDone())
 
   switch (step.name) {
     case 'choose':
@@ -950,7 +954,7 @@ export function ProviderWizard({
               setStep({ name: 'codex-check' })
             }
           }}
-          onCancel={() => onDone()}
+          onCancel={() => handleCancel()}
         />
       )
 
