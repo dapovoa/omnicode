@@ -61,7 +61,7 @@ This PR adds a GitHub Actions workflow that enables Claude Code integration in o
 
 ### What is Claude Code?
 
-[Claude Code](https://claude.com/claude-code) is an AI coding agent that can help with:
+Omnicode is an AI coding agent that can help with:
 - Bug fixes and improvements  
 - Documentation updates
 - Implementing new features

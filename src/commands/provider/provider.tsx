@@ -459,7 +459,7 @@ function ProviderChooser({
     options.push({
       label: 'Clear saved profile',
       value: 'clear',
-      description: 'Remove .openclaude-profile.json and return to normal startup',
+      description: 'Remove .omnicode-profile.json and return to normal startup',
     })
   }
 
@@ -944,7 +944,7 @@ export function ProviderWizard({
               setStep({ name: 'gemini-auth-method' })
             } else if (value === 'clear') {
               const filePath = deleteProfileFile()
-              onDone(`Removed saved provider profile at ${filePath}. Restart OpenClaude to go back to normal startup.`, {
+              onDone(`Removed saved provider profile at ${filePath}. Restart Omnicode to go back to normal startup.`, {
                 display: 'system',
               })
             } else {

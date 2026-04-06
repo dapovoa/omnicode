@@ -63,12 +63,12 @@ export function registerDebugSkill(): void {
 
 Debug logging was OFF for this session until now. Nothing prior to this /debug invocation was captured.
 
-Tell the user that debug logging is now active at \`${debugLogPath}\`, ask them to reproduce the issue, then re-read the log. If they can't reproduce, they can also restart with \`claude --debug\` to capture logs from startup.
+Tell the user that debug logging is now active at \`${debugLogPath}\`, ask them to reproduce the issue, then re-read the log. If they can't reproduce, they can also restart with \`omnicode --debug\` to capture logs from startup.
 `
 
       const prompt = `# Debug Skill
 
-Help the user debug an issue they're encountering in this current Claude Code session.
+Help the user debug an issue they're encountering in this current Omnicode session.
 ${justEnabledSection}
 ## Session Debug Log
 

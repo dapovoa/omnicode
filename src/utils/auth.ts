@@ -256,7 +256,7 @@ export function getAnthropicApiKeyWithSource(
     ? undefined
     : process.env.ANTHROPIC_API_KEY
 
-  // Always check for direct environment variable when the user ran claude --print.
+  // Always check for direct environment variable when the user ran omnicode --print.
   // This is useful for CI, etc.
   if (preferThirdPartyAuthentication() && apiKeyEnv) {
     return {

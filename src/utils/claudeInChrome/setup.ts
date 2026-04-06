@@ -302,7 +302,7 @@ function registerWindowsNativeHosts(manifestPath: string): void {
  * Create a wrapper script in ~/.claude/chrome/ that invokes the given command. This is
  * necessary because Chrome's native host manifest "path" field cannot contain arguments.
  *
- * @param command - The full command to execute (e.g., "/path/to/claude --chrome-native-host")
+ * @param command - The full command to execute (e.g., "/path/to/omnicode --chrome-native-host")
  * @returns The path to the wrapper script
  */
 async function createWrapperScript(command: string): Promise<string> {

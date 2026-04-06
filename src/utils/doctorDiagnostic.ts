@@ -442,7 +442,7 @@ async function detectConfigurationIssues(
     if (type === 'native' && config.installMethod !== 'native') {
       warnings.push({
         issue: `Running native installation but config install method is '${config.installMethod}'`,
-        fix: 'Run claude install to update configuration',
+        fix: 'Run omnicode install to update configuration',
       })
     }
   }
