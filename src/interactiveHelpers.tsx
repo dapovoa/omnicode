@@ -169,6 +169,11 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
           setStep('theme');
         };
 
+        const handleProviderCancel = () => {
+          // ESC on provider step goes back to theme, not exit
+          setStep('theme');
+        };
+
         return (
           <Box flexDirection="column">
             <WelcomeV2 />
@@ -183,14 +188,10 @@ export async function showSetupScreens(root: Root, permissionMode: PermissionMod
                 />
               )}
               {step === 'provider' && (
-                <Box flexDirection="column">
-                  <Box marginBottom={1}>
-                    <Text dimColor>← back to theme</Text>
-                  </Box>
-                  <ProviderWizard
-                    onComplete={handleProviderComplete}
-                  />
-                </Box>
+                <ProviderWizard
+                  onComplete={handleProviderComplete}
+                  onCancel={handleProviderCancel}
+                />
               )}
             </Box>
             {exitState.pending && (
